@@ -1,0 +1,389 @@
+diff --git a/include/rt64_extended_gbi.h b/include/rt64_extended_gbi.h
+index 165a705..482602e 100644
+--- a/include/rt64_extended_gbi.h
++++ b/include/rt64_extended_gbi.h
+@@ -79,7 +79,8 @@
+ #define G_EX_MATRIX_FLOAT_V1            0x000030
+ #define G_EX_SETVERTEXSEGMENT_V1        0x000031
+ #define G_EX_SETTEXCOORDWRAPPOINT_V1    0x000032
+-#define G_EX_MAX                        0x000033
++#define G_EX_SETRENDERTORAMASPECT_V1     0x000033
++#define G_EX_MAX                        0x000034
+ 
+ #define G_EX_ORIGIN_NONE            0x800
+ #define G_EX_ORIGIN_LEFT            0x0
+@@ -366,6 +367,12 @@ typedef union {
+         PARAM(force, 1, 0) \
+     )
+ 
++#define gEXSetRenderToRAMAspect(cmd, ratio) \
++    G_EX_COMMAND1(cmd, \
++        PARAM(RT64_EXTENDED_OPCODE, 8, 24) | PARAM(G_EX_SETRENDERTORAMASPECT_V1, 24, 0), \
++        (unsigned int)((ratio) * 65536.0f) \
++    )
++
+ #define gEXSetRenderToRAM(cmd, render) \
+     G_EX_COMMAND1(cmd, \
+         PARAM(RT64_EXTENDED_OPCODE, 8, 24) | PARAM(G_EX_SETRENDERTORAM_V1, 24, 0), \
+diff --git a/src/gbi/rt64_gbi_extended.cpp b/src/gbi/rt64_gbi_extended.cpp
+index 38e8088..78398db 100644
+--- a/src/gbi/rt64_gbi_extended.cpp
++++ b/src/gbi/rt64_gbi_extended.cpp
+@@ -185,6 +185,11 @@ namespace RT64 {
+             state->setRenderToRAM(render);
+         }
+ 
++        void setRenderToRAMAspectV1(State *state, DisplayList **dl) {
++            const float ratio = (*dl)->w1 / 65536.0f;
++            state->extended.renderToRAMAspect = (ratio >= 1.0f && ratio <= 4.0f) ? ratio : 1.0f;
++        }
++
+         void editGroupByAddressV1(State *state, DisplayList **dl) {
+             matrixGroupCommand(state, dl, true, true);
+         }
+@@ -401,6 +406,7 @@ namespace RT64 {
+             Map[G_EX_FORCESCALELOD_V1] = &forceScaleLODV1;
+             Map[G_EX_FORCEBRANCH_V1] = &forceBranchV1;
+             Map[G_EX_SETRENDERTORAM_V1] = &setRenderToRAMV1;
++            Map[G_EX_SETRENDERTORAMASPECT_V1] = &setRenderToRAMAspectV1;
+             Map[G_EX_EDITGROUPBYADDRESS_V1] = &editGroupByAddressV1;
+             Map[G_EX_VERTEX_V1] = &vertexV1;
+             Map[G_EX_PUSHVIEWPORT_V1] = &pushViewportV1;
+diff --git a/src/gbi/rt64_gbi_s2d.cpp b/src/gbi/rt64_gbi_s2d.cpp
+index adb13c7..f70766b 100644
+--- a/src/gbi/rt64_gbi_s2d.cpp
++++ b/src/gbi/rt64_gbi_s2d.cpp
+@@ -290,7 +290,10 @@ namespace RT64 {
+                 return false;
+             }
+ 
+-            return (stride == width) && (offsetS == 0) && (offsetT == 0) && ((width * height) >= 16384);
++            // SSSV's menu header is a smaller full-image replacement; keeping
++            // it intact allows its frame artwork and HD caption to be separate.
++            const bool menuHeader = (width == 320) && (height == 35);
++            return (stride == width) && (offsetS == 0) && (offsetT == 0) && (((width * height) >= 16384) || menuHeader);
+         }
+ 
+         static bool beginFullReplacementSprite(State *state, RDP *rdp, uint8_t fmt, uint8_t siz, uint32_t imageAddress,
+diff --git a/src/hle/rt64_game_frame.cpp b/src/hle/rt64_game_frame.cpp
+index 87392d0..747ca3e 100644
+--- a/src/hle/rt64_game_frame.cpp
++++ b/src/hle/rt64_game_frame.cpp
+@@ -994,6 +994,10 @@ namespace RT64 {
+                     curTransformMap.rigidBody.updateDecomposition(curMatrix);
+                     curTransformMap.prevTransformIndex = candidate.prevTransformIndex;
+                     curTransformMap.mapped = true;
++        if ((curGroup.matrixId & 0xFFFF0000u) == 0x10010000u) {
++            static FILE* trace = []() { const char* path = std::getenv("SSSV_TRACE_INTERPOLATION"); return path ? std::fopen(path, "w") : nullptr; }();
++            if (trace) { std::fprintf(trace, "%08X,%u,%u\n", curGroup.matrixId, curWorkload.drawData.worldTransformVertexCount(curTransformIndex), prevWorkload.drawData.worldTransformVertexCount(prevTransformIndex)); std::fflush(trace); }
++        }
+                     prevTransformMapped[candidate.prevTransformIndex] = true;
+ 
+                     const auto prevRange = prevCallMap.equal_range(candidate.prevTransformIndex);
+diff --git a/src/hle/rt64_present_queue.cpp b/src/hle/rt64_present_queue.cpp
+index 3227ab1..1fbea99 100644
+--- a/src/hle/rt64_present_queue.cpp
++++ b/src/hle/rt64_present_queue.cpp
+@@ -8,6 +8,14 @@
+ #include "rhi/rt64_render_hooks.h"
+ 
+ #include "rt64_workload_queue.h"
++#include <atomic>
++#include <filesystem>
++#include <fstream>
++#include <cstdlib>
++
++std::atomic<uint64_t> sssv_presented_frames{0};
++// Sampled by the application watchdog if presentation stops.
++std::atomic<int> sssv_present_stage{0};
+ 
+ namespace RT64 {
+     // PresentQueue
+@@ -93,6 +101,7 @@ namespace RT64 {
+     }
+ 
+     void PresentQueue::threadPresent(const Present &present, bool &swapChainValid) {
++        sssv_present_stage.store(2, std::memory_order_relaxed);
+         FramebufferManager &fbManager = ext.sharedResources->framebufferManager;
+         RenderTargetManager &targetManager = ext.sharedResources->renderTargetManager;
+         const bool usingMSAA = (targetManager.multisampling.sampleCount > 1);
+@@ -191,7 +200,9 @@ namespace RT64 {
+                 }
+                 else {
+                     lockedWorkloadMutex = true;
++                    sssv_present_stage.store(3, std::memory_order_relaxed);
+                     ext.sharedResources->workloadMutex.lock();
++                    sssv_present_stage.store(2, std::memory_order_relaxed);
+                 }
+ 
+                 RenderTargetKey colorTargetKey(presentFb->addressStart, presentFb->width, presentFb->siz, Framebuffer::Type::Color);
+@@ -227,7 +238,9 @@ namespace RT64 {
+                 scratchFb.siz = present.screenVI.fbSiz();
+ 
+                 lockedWorkloadMutex = true;
++                sssv_present_stage.store(3, std::memory_order_relaxed);
+                 ext.sharedResources->workloadMutex.lock();
++                sssv_present_stage.store(2, std::memory_order_relaxed);
+ 
+                 RenderTargetKey colorTargetKey(fbAddress, scratchFb.width, scratchFb.siz, Framebuffer::Type::Color);
+                 colorTarget = &targetManager.get(colorTargetKey, true);
+@@ -272,9 +285,11 @@ namespace RT64 {
+                 // Stall until the interpolated color target is available.
+                 const uint32_t targetIndex = usingMSAA ? i : (i - 1);
+                 std::unique_lock<std::mutex> interpolatedLock(ext.sharedResources->interpolatedMutex);
++                sssv_present_stage.store(4, std::memory_order_relaxed);
+                 ext.sharedResources->interpolatedCondition.wait(interpolatedLock, [&]() {
+                     return (frameCounters.available > targetIndex) || ((frameCounters.available == targetIndex) && frameCounters.skipped);
+                 });
++                sssv_present_stage.store(2, std::memory_order_relaxed);
+ 
+                 // Do not present any more frames after this one after reaching the last available frame if the workload was skipped.
+                 if ((frameCounters.available == targetIndex) && frameCounters.skipped) {
+@@ -300,7 +315,9 @@ namespace RT64 {
+             uint32_t swapChainIndex = 0;
+             const bool presentFrame = (i < framesToPresent) && swapChainValid;
+             if (presentFrame) {
++                sssv_present_stage.store(5, std::memory_order_relaxed);
+                 swapChainValid = ext.swapChain->acquireTexture(acquiredSemaphore.get(), &swapChainIndex);
++                sssv_present_stage.store(2, std::memory_order_relaxed);
+             }
+ 
+             if (presentFrame && swapChainValid) {
+@@ -308,6 +325,14 @@ namespace RT64 {
+                 RenderTexture *swapChainTexture = ext.swapChain->getTexture(swapChainIndex);
+                 RenderFramebuffer *swapChainFramebuffer = swapChainFramebuffers[swapChainIndex].get();
+                 RenderCommandList *commandList = ext.presentGraphicsWorker->commandList.get();
++                const char *capturePath = std::getenv("SSSV_TEST_CAPTURE");
++                std::error_code captureError;
++                const bool captureRequested = capturePath && std::filesystem::exists(std::string(capturePath) + ".request", captureError);
++                const uint32_t captureWidth = ext.swapChain->getWidth();
++                const uint32_t captureHeight = ext.swapChain->getHeight();
++                const uint32_t capturePitch = (captureWidth * 4 + 255) & ~255U;
++                std::unique_ptr<RenderBuffer> captureBuffer;
++                if (captureRequested) captureBuffer = ext.device->createBuffer(RenderBufferDesc::ReadbackBuffer(uint64_t(capturePitch) * captureHeight));
+                 commandList->begin();
+                 commandList->barriers(RenderBarrierStage::GRAPHICS, RenderTextureBarrier(swapChainTexture, RenderTextureLayout::COLOR_WRITE));
+                 
+@@ -359,13 +384,37 @@ namespace RT64 {
+                         inspector->draw(commandList);
+                     }
+                     
++                    if (captureBuffer) {
++                        commandList->barriers(RenderBarrierStage::COPY, RenderTextureBarrier(swapChainTexture, RenderTextureLayout::COPY_SOURCE));
++                        commandList->copyTextureRegion(RenderTextureCopyLocation::PlacedFootprint(captureBuffer.get(), RenderFormat::B8G8R8A8_UNORM, captureWidth, captureHeight, 1, capturePitch / 4), RenderTextureCopyLocation::Subresource(swapChainTexture));
++                    }
+                     commandList->barriers(RenderBarrierStage::NONE, RenderTextureBarrier(swapChainTexture, RenderTextureLayout::PRESENT));
+                     commandList->end();
+                     const RenderCommandList *commandList = ext.presentGraphicsWorker->commandList.get();
+                     RenderCommandSemaphore *waitSemaphore = acquiredSemaphore.get();
+                     RenderCommandSemaphore *signalSemaphore = drawSemaphores[swapChainIndex].get();
+                     ext.presentGraphicsWorker->commandQueue->executeCommandLists(&commandList, 1, &waitSemaphore, 1, &signalSemaphore, 1, ext.presentGraphicsWorker->commandFence.get());
++                    sssv_present_stage.store(6, std::memory_order_relaxed);
+                     ext.presentGraphicsWorker->wait();
++                    if (captureBuffer) {
++                        const auto *pixels = static_cast<const char *>(captureBuffer->map());
++                        const std::string temporary = std::string(capturePath) + ".tmp";
++                        std::ofstream image(temporary, std::ios::binary);
++                        auto u16 = [&](uint16_t v) { image.write(reinterpret_cast<const char *>(&v), 2); };
++                        auto u32 = [&](uint32_t v) { image.write(reinterpret_cast<const char *>(&v), 4); };
++                        image.write("BM", 2); u32(54 + captureWidth * captureHeight * 4); u32(0); u32(54);
++                        u32(40); u32(captureWidth); u32(uint32_t(-int32_t(captureHeight))); u16(1); u16(32);
++                        u32(0); u32(captureWidth * captureHeight * 4); u32(0); u32(0); u32(0); u32(0);
++                        for (uint32_t y = 0; y < captureHeight; ++y) image.write(pixels + uint64_t(y) * capturePitch, captureWidth * 4);
++                        image.close();
++                        captureBuffer->unmap();
++                        if (image) {
++                            std::filesystem::remove(capturePath, captureError);
++                            std::filesystem::rename(temporary, capturePath, captureError);
++                            if (!captureError) std::filesystem::remove(std::string(capturePath) + ".request", captureError);
++                        }
++                    }
++                    sssv_present_stage.store(2, std::memory_order_relaxed);
+                 }
+             }
+ 
+@@ -395,12 +444,19 @@ namespace RT64 {
+                 }
+ 
+                 if (presentWaitEnabled) {
++                    sssv_present_stage.store(7, std::memory_order_relaxed);
+                     ext.swapChain->wait();
++                    sssv_present_stage.store(2, std::memory_order_relaxed);
+                 }
+ 
+                 RenderCommandSemaphore *waitSemaphore = drawSemaphores[swapChainIndex].get();
+                 presentTimestamp = Timer::current();
++                sssv_present_stage.store(8, std::memory_order_relaxed);
+                 swapChainValid = ext.swapChain->present(swapChainIndex, &waitSemaphore, 1);
++                sssv_present_stage.store(2, std::memory_order_relaxed);
++                if (swapChainValid) {
++                    sssv_presented_frames.fetch_add(1, std::memory_order_relaxed);
++                }
+                 presentProfiler.logAndRestart();
+             }
+         }
+@@ -451,6 +507,7 @@ namespace RT64 {
+         bool swapChainValid = !ext.swapChain->needsResize();
+         while (presentThreadRunning) {
+             {
++                sssv_present_stage.store(1, std::memory_order_relaxed);
+                 std::unique_lock<std::mutex> cursorLock(cursorMutex);
+                 cursorCondition.wait(cursorLock, [&]() {
+                     return (writeCursor != threadCursor) || !presentThreadRunning;
+@@ -504,7 +561,9 @@ namespace RT64 {
+                 skipPresent = skipPresent || ext.swapChain->isEmpty();
+ 
+                 Present &present = presents[processCursor];
++                sssv_present_stage.store(9, std::memory_order_relaxed);
+                 ext.workloadQueue->waitForWorkloadId(present.workloadId);
++                sssv_present_stage.store(2, std::memory_order_relaxed);
+ 
+                 if (!presentThreadRunning) {
+                     continue;
+diff --git a/src/hle/rt64_state.cpp b/src/hle/rt64_state.cpp
+index a951c56..cebceda 100644
+--- a/src/hle/rt64_state.cpp
++++ b/src/hle/rt64_state.cpp
+@@ -781,6 +781,7 @@ namespace RT64 {
+         // Copy the current state's extended parameters into the workload.
+         workload.extended.ditherNoiseStrength = extended.ditherNoiseStrength;
+         workload.extended.texcoordWrapPoint = extended.texcoordWrapPoint;
++        workload.extended.renderToRAMAspect = extended.renderToRAMAspect;
+ 
+         auto emitTileWarning = [&](CommandWarning warning, size_t tileIndex) {
+             warning.indexType = CommandWarning::IndexType::TileIndex;
+@@ -1265,8 +1266,9 @@ namespace RT64 {
+                         drawParams.rasterShaderCache = ext.rasterShaderCache;
+                         drawParams.resolutionScale = resolutionScale;
+                         drawParams.aspectRatioSource = 1.0f;
+-                        drawParams.aspectRatioTarget = 1.0f;
+-                        drawParams.extAspectPercentage = 0.0f;
++                        drawParams.aspectRatioTarget = workload.extended.renderToRAMAspect;
++                        drawParams.nativeAspectScale = workload.extended.renderToRAMAspect;
++                        drawParams.extAspectPercentage = (workload.extended.renderToRAMAspect > 1.0f) ? 1.0f : 0.0f;
+                         drawParams.horizontalMisalignment = 0.0f;
+                         drawParams.rtEnabled = false;
+                         drawParams.submissionFrame = workload.submissionFrame;
+diff --git a/src/hle/rt64_state.h b/src/hle/rt64_state.h
+index 7a8c13b..c84e395 100644
+--- a/src/hle/rt64_state.h
++++ b/src/hle/rt64_state.h
+@@ -126,6 +126,7 @@ namespace RT64 {
+             hlslpp::float2 texcoordWrapPoint = { 8092.0f, 8092.0f };
+             uint16_t refreshRate = UINT16_MAX;
+             uint8_t renderToRAM = UINT8_MAX;
++            float renderToRAMAspect = 1.0f;
+             bool vertexTestZActive = false;
+             float ditherNoiseStrength = 1.0f;
+             bool extendRDRAM = false;
+@@ -174,4 +175,4 @@ namespace RT64 {
+         void clearExtended();
+         void updateRenderFlagSampleCount();
+     };
+-};
+\ No newline at end of file
++};
+diff --git a/src/hle/rt64_workload.h b/src/hle/rt64_workload.h
+index 8ea27d5..ad3e7d6 100644
+--- a/src/hle/rt64_workload.h
++++ b/src/hle/rt64_workload.h
+@@ -237,6 +237,7 @@ namespace RT64 {
+ 
+         struct {
+             uint32_t testZIndexCount = 0;
++            float renderToRAMAspect = 1.0f;
+             float ditherNoiseStrength = 1.0f;
+             hlslpp::float2 texcoordWrapPoint = {};
+         } extended;
+@@ -254,4 +255,4 @@ namespace RT64 {
+         bool addFramebufferPair(uint32_t colorAddress, uint8_t colorFmt, uint8_t colorSiz, uint16_t colorWidth, uint32_t depthAddress);
+         int currentFramebufferPairIndex() const;
+     };
+-};
+\ No newline at end of file
++};
+diff --git a/src/render/rt64_framebuffer_renderer.cpp b/src/render/rt64_framebuffer_renderer.cpp
+index b9955c4..cfb5564 100644
+--- a/src/render/rt64_framebuffer_renderer.cpp
++++ b/src/render/rt64_framebuffer_renderer.cpp
+@@ -1439,7 +1439,7 @@ namespace RT64 {
+         interop::RenderIndices renderIndices;
+         uint32_t globalCallIndex = 0;
+         const float wideWidth = p.fbWidth * p.resolutionScale.x;
+-        const float originalWidth = p.fbWidth * p.resolutionScale.y;
++        const float originalWidth = p.fbWidth * p.resolutionScale.y / p.nativeAspectScale;
+         const float commonHeight = float(p.targetHeight);
+         framebuffer.viewport = RenderViewport(0.0f, 0.0f, wideWidth, commonHeight);
+         
+@@ -1490,7 +1490,12 @@ namespace RT64 {
+                 FixedRect intersectionRect = proj.scissorRect.intersection(viewport.rect(viewportClipRatios));
+                 bool coversWholeWidth = !intersectionRect.isEmpty() && (intersectionRect.ulx <= fbPair.scissorRect.ulx) && (intersectionRect.lrx >= fbPair.scissorRect.lrx);
+                 bool horizontalRatio = !intersectionRect.isEmpty() && (intersectionRect.width(true, true) > intersectionRect.height(true, true));
+-                bool useWideViewport = (viewportOrigin == G_EX_ORIGIN_NONE) && coversWholeWidth && horizontalRatio;
++                // A packed widescreen snapshot must keep the same projection
++                // correction as the displayed scene. Its native-size scissor
++                // can otherwise make a wide game viewport look full-width,
++                // incorrectly bypassing the horizontal scale on capture only.
++                bool useWideViewport = (p.nativeAspectScale == 1.0f) &&
++                    (viewportOrigin == G_EX_ORIGIN_NONE) && coversWholeWidth && horizontalRatio;
+                 if (useWideViewport) {
+                     projInvRatioScale = 1.0f;
+                 }
+@@ -1535,11 +1540,15 @@ namespace RT64 {
+                         }
+                     }
+ 
+-                    float invRatioScale = 1.0f / aspectRatioScale;
++                    const bool explicitRectOrigins = (call.callDesc.rectLeftOrigin != G_EX_ORIGIN_NONE) ||
++                        (call.callDesc.rectRightOrigin != G_EX_ORIGIN_NONE);
++                    // Explicit UI origins request native-aspect placement even
++                    // when a wide background expands the pair's scissor union.
++                    float invRatioScale = explicitRectOrigins ? (p.aspectRatioSource / p.aspectRatioTarget) : (1.0f / aspectRatioScale);
+                     int32_t horizontalMisalignment = 0;
+ 
+                     // A rect that spans the whole width of the scissor.
+-                    if ((call.callDesc.rect.ulx <= fbPair.scissorRect.ulx) && (call.callDesc.rect.lrx >= fbPair.scissorRect.lrx)) {
++                    if (!explicitRectOrigins && (call.callDesc.rect.ulx <= fbPair.scissorRect.ulx) && (call.callDesc.rect.lrx >= fbPair.scissorRect.lrx)) {
+                         invRatioScale = 1.0f;
+                     }
+                     // A regular rectangle that should correct its misalignment.
+@@ -1645,7 +1654,11 @@ namespace RT64 {
+                             // The call's scissor spans the whole width of the framebuffer pair scissor. The rect must not be using extended origins.
+                             const bool regularOrigins = (call.callDesc.rectLeftOrigin == G_EX_ORIGIN_NONE) && (call.callDesc.rectRightOrigin == G_EX_ORIGIN_NONE);
+                             const bool coversScissorWidth = regularOrigins && (call.callDesc.rect.ulx <= fbPair.scissorRect.ulx) && (call.callDesc.rect.lrx >= fbPair.scissorRect.lrx);
+-                            if (tileCopiesUsed || coversScissorWidth) {
++                            if (!regularOrigins) {
++                                invRatioScale = p.aspectRatioSource / p.aspectRatioTarget;
++                                horizontalMisalignment = p.horizontalMisalignment;
++                            }
++                            else if (tileCopiesUsed || coversScissorWidth) {
+                                 invRatioScale = 1.0f;
+                             }
+                             else {
+@@ -1917,4 +1930,4 @@ namespace RT64 {
+         unsigned int im3dVertexCount;
+     };
+ };
+-*/
+\ No newline at end of file
++*/
+diff --git a/src/render/rt64_framebuffer_renderer.h b/src/render/rt64_framebuffer_renderer.h
+index 3add9c3..add4d46 100644
+--- a/src/render/rt64_framebuffer_renderer.h
++++ b/src/render/rt64_framebuffer_renderer.h
+@@ -137,6 +137,8 @@ namespace RT64 {
+             hlslpp::float2 resolutionScale;
+             float aspectRatioSource;
+             float aspectRatioTarget;
++            // Preserve the expanded composition when packing a snapshot into native RAM.
++            float nativeAspectScale = 1.0f;
+             float extAspectPercentage;
+             float horizontalMisalignment;
+             PresetScene presetScene;
+@@ -179,4 +181,4 @@ namespace RT64 {
+         void setRaytracingConfig(const RaytracingConfiguration &rtConfig, bool resolutionChanged);
+ #   endif
+     };
+-};
+\ No newline at end of file
++};

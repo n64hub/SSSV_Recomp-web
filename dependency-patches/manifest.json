@@ -1,0 +1,22 @@
+[
+  {
+    "path": "lib/N64ModernRuntime",
+    "revision": "ca568b6ad79b9029d14077f0c3ffa757727c5559",
+    "patch": "lib-N64ModernRuntime.patch"
+  },
+  {
+    "path": "lib/RecompFrontend",
+    "revision": "b3b7ebb4ec1a8a763c0191486f1b3329f9499a48",
+    "patch": "lib-RecompFrontend.patch"
+  },
+  {
+    "path": "lib/rt64",
+    "revision": "9166076c81de25c45b6f87eda32c83a4e627d0b2",
+    "patch": "lib-rt64.patch"
+  },
+  {
+    "path": "lib/rt64/src/contrib/plume",
+    "revision": "51b1ad443b9f202c5cfc930ae25345d3f2ba7716",
+    "patch": "lib-rt64-src-contrib-plume.patch"
+  }
+]

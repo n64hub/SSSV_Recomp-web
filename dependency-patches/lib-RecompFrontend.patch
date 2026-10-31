@@ -1,0 +1,124 @@
+diff --git a/recompui/include/recompui/renderer.h b/recompui/include/recompui/renderer.h
+index 33f79ab..65cc1ba 100644
+--- a/recompui/include/recompui/renderer.h
++++ b/recompui/include/recompui/renderer.h
+@@ -50,6 +50,8 @@ namespace recompui {
+         bool RT64HighPrecisionFBEnabled();
+ 
+         void trigger_texture_pack_update();
++        void set_hd_text_enabled(bool enabled);
++        void set_hd_hud_enabled(bool enabled);
+         void enable_texture_pack(const recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod);
+         void disable_texture_pack(const recomp::mods::ModHandle& mod);
+         void secondary_enable_texture_pack(const std::string& mod_id);
+diff --git a/recompui/src/config/ui_config_tab_graphics.cpp b/recompui/src/config/ui_config_tab_graphics.cpp
+index 4fdf81f..6c76b1a 100644
+--- a/recompui/src/config/ui_config_tab_graphics.cpp
++++ b/recompui/src/config/ui_config_tab_graphics.cpp
+@@ -91,7 +91,7 @@ namespace recompui {
+ 
+         static EnumOptionVector hud_ratio_mode_options = {
+             {ultramodern::renderer::HUDRatioMode::Original, "Original"},
+-            {ultramodern::renderer::HUDRatioMode::Clamp16x9, "Clamp16x9", "16:9"},
++            {ultramodern::renderer::HUDRatioMode::Clamp16x9, "Clamp16x9", "Adaptive"},
+             {ultramodern::renderer::HUDRatioMode::Full, "Expand"},
+         };
+ 
+@@ -336,7 +336,7 @@ namespace recompui {
+             config.add_enum_option(
+                 graphics::options::hr_option,
+                 "HUD Placement",
+-                "Adjusts the placement of HUD elements to fit the selected aspect ratio. <recomp-color primary>Expand</recomp-color> will use the aspect ratio of the game's output window.",
++                "Adjusts HUD placement in Expand aspect mode. <recomp-color primary>Adaptive</recomp-color> moves the HUD gradually outward on ultrawide windows, leaving space at the edges. Original keeps it inside 4:3; Expand follows the window edges.",
+                 hud_ratio_mode_options,
+                 ultramodern::renderer::HUDRatioMode::Clamp16x9
+             );
+diff --git a/recompui/src/renderer/rt64_render_context.cpp b/recompui/src/renderer/rt64_render_context.cpp
+index a7954c7..81f3925 100644
+--- a/recompui/src/renderer/rt64_render_context.cpp
++++ b/recompui/src/renderer/rt64_render_context.cpp
+@@ -2,6 +2,7 @@
+ #include <cstring>
+ #include <variant>
+ #include <algorithm>
++#include <atomic>
+ 
+ #include "hle/rt64_application.h"
+ #include "rt64_render_hooks.h"
+@@ -46,6 +47,20 @@ struct TexturePackUpdateAction {
+ using TexturePackAction = std::variant<TexturePackEnableAction, TexturePackDisableAction, TexturePackSecondaryEnableAction, TexturePackSecondaryDisableAction, TexturePackUpdateAction>;
+ 
+ static moodycamel::ConcurrentQueue<TexturePackAction> texture_pack_action_queue;
++static std::atomic_bool hd_text_enabled{true};
++
++void renderer::set_hd_text_enabled(bool enabled) {
++    if (hd_text_enabled.exchange(enabled) != enabled) {
++        texture_pack_action_queue.enqueue(TexturePackUpdateAction{});
++    }
++}
++static std::atomic_bool hd_hud_enabled{true};
++
++void renderer::set_hd_hud_enabled(bool enabled) {
++    if (hd_hud_enabled.exchange(enabled) != enabled) {
++        texture_pack_action_queue.enqueue(TexturePackUpdateAction{});
++    }
++}
+ 
+ unsigned int MI_INTR_REG = 0;
+ 
+@@ -157,19 +172,9 @@ void set_application_user_config(RT64::Application* application, const ultramode
+             break;
+     }
+ 
+-    switch (config.hr_option) {
+-        default:
+-        case ultramodern::renderer::HUDRatioMode::Original:
+-            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
+-            break;
+-        case ultramodern::renderer::HUDRatioMode::Clamp16x9:
+-            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Manual;
+-            application->userConfig.extAspectTarget = 16.0/9.0;
+-            break;
+-        case ultramodern::renderer::HUDRatioMode::Full:
+-            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Expand;
+-            break;
+-    }
++    // SSSV applies HUD placement to its HUD draws. Extended origins also serve
++    // full-screen backgrounds and scissors, which must follow the whole window.
++    application->userConfig.extAspectRatio = to_rt64(config.ar_option);
+ 
+     application->userConfig.aspectRatio = to_rt64(config.ar_option);
+     application->userConfig.antialiasing = to_rt64(config.msaa_option);
+@@ -313,6 +318,16 @@ renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::renderer::Window
+         return;
+     }
+ 
++    std::vector<RT64::ReplacementDirectory> bundled_packs;
++    for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "assets/hd-font"},
++                                      std::pair{hd_hud_enabled.load(), "assets/hd-hud"}}) {
++        std::error_code error;
++        if (enabled && std::filesystem::is_regular_file(std::filesystem::path(path) / "rt64.json", error)) {
++            bundled_packs.emplace_back(path);
++        }
++    }
++    if (!bundled_packs.empty()) app->textureCache->loadReplacementDirectories(bundled_packs);
++
+     // Set the application's fullscreen state.
+     app->setFullScreen(cur_config.wm_option == ultramodern::renderer::WindowMode::Fullscreen);
+ 
+@@ -470,6 +485,15 @@ void renderer::RT64Context::check_texture_pack_actions() {
+             replacement_directories.emplace_back(RT64::ReplacementDirectory(recomp::mods::get_mod_filename(mod_id)));
+         }
+ 
++        // Independent bundled packs follow user texture packs in priority.
++        for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "assets/hd-font"},
++                                          std::pair{hd_hud_enabled.load(), "assets/hd-hud"}}) {
++            std::error_code error;
++            if (enabled && std::filesystem::is_regular_file(std::filesystem::path(path) / "rt64.json", error)) {
++                replacement_directories.emplace_back(path);
++            }
++        }
++
+         if (!replacement_directories.empty()) {
+             app->textureCache->loadReplacementDirectories(replacement_directories);
+         }
