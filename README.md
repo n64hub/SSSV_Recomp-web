@@ -1,106 +1,40 @@
 # Space Station Silicon Valley: Recompiled
-Space Station Silicon Valley: Recompiled is a project that uses [N64: Recompiled](https://github.com/N64Recomp/N64Recomp) to **statically recompile** Space Station Silicon Valley into a native port with many new features, enhancements, and extensive mod support. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide graphical enhancements.
 
-### Check out the latest release in this repository's Releases section.
+## Purpose of Project
 
-### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
+This is a fork of Cellenseres's currently abandonned Space Station Silicon Valley Recompilation Project. This was done to fix the scaling of the appropriate graphics and fix the intro bugs among other things. Credit to Cellenseres for the original project.
 
-## Table of Contents
-* [System Requirements](#system-requirements)
-* [Features](#features)
-  * [Plug and Play](#plug-and-play)
-  * [Faithful Audio](#faithful-audio)
-  * [Easy-to-Use Menus](#easy-to-use-menus)
-  * [High Framerate Support](#high-framerate-support)
-  * [Low Input Lag](#low-input-lag)
-  * [Instant Load Times](#instant-load-times)
-  * [Linux and Steam Deck Support](#linux-and-steam-deck-support)
-* [Planned Features](#planned-features)
-* [FAQ](#faq)
-* [Known Issues](#known-issues)
-* [Building](#building)
-* [Libraries Used and Projects Referenced](#libraries-used-and-projects-referenced)
+## AI Disclosure
 
-## System Requirements
-A GPU supporting Direct3D 12.0 (Shader Model 6), Vulkan 1.2, or Metal Argument Buffers Tier 2 support is required to run this project. The oldest GPUs that should be supported for each vendor are:
-* GeForce GT 630
-* Radeon HD 7750 (the one from 2012, not to be confused with the RX 7000 series) and newer
-* Intel HD 510 (Skylake)
-* A Mac with Apple Silicon or an Intel 7th Gen CPU with MacOS 13.0+
+I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? I'm fine with it. I too am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp and all credit goes to Wiseguy and Dario plus the rest of his team for even making this possible in the first place even though I know they frown upon projects like this.
 
-On x86-64 PCs, a CPU supporting the SSE4.1 instruction set is also required (Intel Core 2 Penryn series or AMD Bulldozer and newer). ARM64 builds will work on any ARM64 CPU.
+## Changes
 
-If you have issues with crashes on startup, make sure your graphics drivers are fully up to date. 
+See [CHANGELOG.md](CHANGELOG.md) for the significant changes from the original project.
 
-## Features
+## Running
 
-#### Plug and Play
-Simply provide your copy of the North American 1.0 version of the game in the main menu and start playing! This project will automatically load assets from the provided copy, so there is no need to go through a separate extraction step or build the game yourself.
+Supply your own supported Space Station Silicon Valley (USA) 1.0 big-endian `.z64` ROM. No ROM or personal saves are included in this repository.
 
-#### Faithful Audio
-Music and sounds are perfectly faithful to the original N64 version of the game, with all audio processing intact and no popping or stuttering. Scenes that synchronize audio to visuals have their timings corrected to ensure they remain synchronized as they did on original hardware.
+Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` is missing, select your ROM in the file picker; the game validates it and installs it there. Saves are stored in `saves/` beside the executable.
 
-#### Easy-to-Use Menus
-Gameplay settings, graphics settings, input mappings, and audio settings can all be configured with the in-game config menu. The menus can all be used with mouse, controller, or keyboard for maximum convenience.
+- **Escape:** settings.
+- **Alt+Enter:** switch fullscreen/windowed.
+- **Start/Enter during the new-game intro:** skip with a transition into gameplay.
+- **HD Text** and **HD Hud** are enabled by default and can be disabled independently.
 
-#### High Framerate Support
-Play at any framerate you want thanks to functionality provided by RT64! Game objects and terrain, texture scrolling, screen effects, and all HUD elements are all rendered at high framerates. By default, this project is configured to run at your monitor's refresh rate. You can also play at the original framerate of the game if you prefer. **Changing framerate has no effect on gameplay.**
+## Building this version
 
-**Note**: External framerate limiters (such as the NVIDIA Control Panel) are known to potentially cause problems, so if you notice any stuttering then turn them off and use the manual framerate slider in the in-game graphics menu instead.
+1. Clone this repository and initialize its dependencies with `git submodule update --init --recursive`.
+2. Run `python tools/apply_dependency_patches.py` to apply this fork's runtime and renderer changes. The script checks all patches before applying and supports already-applied patches.
+3. Follow the toolchain/build instructions in [the upstream README](README.upstream.md) and `.github/workflows/validate.yml`. Supply the supported ROM locally as `sssv.us.z64`; it is required for recompilation and is never committed.
 
+The dependency patch manifest records the exact upstream revisions. The patches include all local changes to N64ModernRuntime, RecompFrontend, RT64 and Plume, so a fresh clone does not depend on unpublished submodule commits.
 
-#### Low Input Lag
-This project has been optimized to have as little input lag as possible, making the game feel more responsive than ever!
+## Upstream and credits
 
-#### Instant Load Times
-Saving and loading files, going from place to place, and pausing all happen in the blink of an eye thanks to the game running natively on modern hardware.
+Original project: [Cellenseres/SSSV_Recomp](https://github.com/Cellenseres/SSSV_Recomp), based on commit `a4dbfe40e205bd804c76db62227e94f6d5858a9b`.
 
-#### Linux and Steam Deck Support
-A Linux binary as well as a Flatpak is available for playing on most up-to-date distros, including on the Steam Deck.
+Built on [N64: Recompiled](https://github.com/N64Recomp/N64Recomp), [RT64](https://github.com/rt64/rt64), N64ModernRuntime, RecompFrontend, and the work of their contributors. Original upstream documentation and acknowledgements are preserved in [README.upstream.md](README.upstream.md). Dependencies retain their own copyright and license notices. Font licenses are included with their assets.
 
-To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the SSSVRecompiled executable file and select "Add to Steam". From there, you can return to Gaming mode and configure the controls as needed.
-
-## Added Features
-* Widescreen Support
-
-## Planned Features
-* Bugfixes regarding visual glitches
-* Ray Tracing via RT64
-
-## FAQ
-
-#### What is static recompilation?
-Static recompilation is the process of automatically translating an application from one platform to another. For more details, check out the full description of how this project's recompilation works here: [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp).
-
-#### How is this related to the decompilation project?
-Unlike N64 ports in the past, this project is not based on the source code provided by a decompilation of the game. This is because static recompilation bypasses the need for decompiled source code when making a port, allowing ports to be made **without source code**. However, the reverse engineering work done by the decompilation team was invaluable for providing some of the enhancements featured in this project. For this reason, the project uses headers and some functions from the decompilation project in order to make modifications to the game. Many thanks to the decompilation team for all of the hard work they've done.
-
-#### Where is the savefile stored?
-- Windows: `%LOCALAPPDATA%\SSSVRecompiled\saves`
-- Linux: `~/.config/SSSVRecompiled/saves`
-- macOS: `~/Library/Application Support/SSSVRecompiled/saves`
-
-#### How do I choose a different ROM?
-**You don't.** This project is **only** a port of Space Station Silicon Valley, and it will only accept one specific ROM: the US 1.0 version of the N64 release of Space Station Silicon Valley. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **This is not an emulator, and it cannot run any arbitrary ROM.**
-
-Instead, you can change the game by installing mods. See the [mod support](#mod-support) section for details.
-
-#### Can you run this project as a portable application?
-Yes, if you place a file named `portable.txt` in the same folder as the executable then this project will run in portable mode. In portable mode, the save files, config files, and mods are placed in the same folder as the executable.
-
-## Known Issues
-* Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
-
-## Building
-Building is not required to play this project, as prebuilt binaries (which do not contain game assets) can be found in the Releases section. Instructions on how to build this project can be found in the [BUILDING.md](BUILDING.md) file.
-
-## Libraries Used and Projects Referenced
-* [N64Recomp](https://github.com/N64Recomp/N64Recomp) for statically recompiling the game's code to run natively
-* [RT64](https://github.com/rt64/rt64) as the project's rendering engine (via our fork with added S2DEX support, which Space Station Silicon Valley uses frequently for sprite/background rendering)
-* [N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime) for replacing the original N64 runtime libraries and providing mod support
-* [RecompFrontend](https://github.com/N64Recomp/RecompFrontend) for menus and input handling
-* Space Station Silicon Valley decompilation project for headers and some function definitions, used for making patches or some enhancements
-
-#### What are F3DEX and S2DEX?
-F3DEX is a Fast3D "extended" RSP microcode/GBI used for the game's 3D display lists.  
-S2DEX is a sprite/background-focused RSP microcode/GBI designed for 2D rendering (sprites and BG operations). Space Station Silicon Valley uses S2DEX frequently, so we maintain a custom RT64 fork that adds S2DEX support.
+This repository is private for now. Because GitHub does not allow private forks of public repositories, it is maintained as an independent private repository preserving the original Git history.

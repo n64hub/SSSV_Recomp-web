@@ -381,6 +381,7 @@ target_sources(SSSVRecompiled PRIVATE
   "${CMAKE_SOURCE_DIR}/src/game/config.cpp"
   "${CMAKE_SOURCE_DIR}/src/game/recomp_api.cpp"
   "${CMAKE_SOURCE_DIR}/src/game/trophy_collision_patch.cpp"
+  "${CMAKE_SOURCE_DIR}/src/game/display_list_buffers.cpp"
   "${CMAKE_SOURCE_DIR}/src/game/sssv_log.cpp"
   "${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp"
 )
@@ -391,6 +392,7 @@ target_include_directories(SSSVRecompiled PRIVATE
   "${CMAKE_SOURCE_DIR}/RecompiledFuncs"
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/N64Recomp/include"
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/thirdparty/sse2neon"
+  "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/thirdparty/xxHash"
   "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib"
   "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/hlslpp/include"
   "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/inc"
@@ -441,7 +443,7 @@ if(WIN32)
   )
 
   set_target_properties(SSSVRecompiled PROPERTIES
-    LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
+    LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
     LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
     LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
     LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"

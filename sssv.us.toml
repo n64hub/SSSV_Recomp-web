@@ -10,6 +10,27 @@ rom_file_path = "sssv.us.z64"
 [patches]
 renamed = ["strncpy"]
 
+[[patches.hook]]
+func = "func_8039CAB8_7AE168"
+before_vram = 0x8039CCB4
+text = "sssv_hd_header_hook(rdram, ctx);"
+
+# Lift the two menu labels by one native pixel with HD Text enabled.
+[[patches.hook]]
+func = "display_zone_select_screen"
+before_vram = 0x80398C70
+text = "sssv_hd_menu_title_hook(rdram, ctx);"
+
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+before_vram = 0x8039A3B8
+text = "sssv_hd_menu_title_hook(rdram, ctx);"
+
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+before_vram = 0x8039A43C
+text = "sssv_hd_menu_title_hook(rdram, ctx);"
+
 # ============================================================================
 # Overlay Loading
 # ============================================================================
@@ -23,7 +44,169 @@ before_vram = 0x80129290
 # Gameplay Fixes
 # ============================================================================
 
+# A transition can reset the outstanding-frame counter while completion
+# messages from the asynchronous renderer are still queued. Do not let a late
+# completion wrap zero to 65535: thread6 would then stop submitting frames.
+# Clamp the loaded count before the original decrement, including both paths
+# through the frame-completion case.
+[[patches.hook]]
+func = "thread6_loop"
+before_vram = 0x8012A1FC
+text = "if (ctx->r12 == 0) { ctx->r12 = 1; }"
+
+# Treat the boot sequence as already watched after EEPROM initialization, even
+# when a missing save has just created fresh defaults. Keep all other flags and
+# player banks intact, and persist the change with the game's checksum writer.
+[[patches.hook]]
+func = "func_80130E44"
+before_vram = 0x80131048
+text = """
+if (MEM_W(0, S32(0x8023F2A8)) & 1) {
+    MEM_W(0, S32(0x8023F2A8)) &= ~1;
+    recomp_context saved = *ctx;
+    ctx->r4 = 4;
+    write_eeprom(rdram, ctx);
+    *ctx = saved;
+}
+"""
+
 [[patches.hook]]
 func = "check_collision_against_animals_6C8C7C"
 text = "sssv_patch_trophy_collision_guard(rdram, ctx);"
 before_vram = 0x802B75CC
+
+# Keep widescreen cutscene subtitles from overflowing the original mainDL.
+[[patches.hook]]
+func = "thread7"
+text = "sssv_begin_main_display_list(rdram, ctx);"
+before_vram = 0x8012A344
+
+[[patches.hook]]
+func = "func_8013107C"
+text = "sssv_submit_main_display_list(rdram, ctx);"
+before_vram = 0x8013107C
+
+# Opt-in Start skip for the new-game intro, before any frame data is assembled.
+[[patches.hook]]
+func = "render_gameplay_overlay_frame_6A6500"
+text = "sssv_intro_skip_hook(rdram, ctx);"
+before_vram = 0x80294E50
+
+# Release the intro-skip blackout only once the player's dog reaches model draw.
+[[patches.hook]]
+func = "func_802ED108_6FE7B8"
+text = "sssv_intro_skip_dog_hook(rdram, ctx);"
+before_vram = 0x802EDF4C
+
+# Demo text uses the native 320px UI coordinate system, not world view width.
+[[patches.hook]]
+func = "render_gameplay_overlay_frame_6A6500"
+text = "sssv_layout_demo_prompt(rdram, ctx);"
+before_vram = 0x80295CC0
+
+# Match the title's font selection and shadow setting for PRESS START.
+[[patches.hook]]
+func = "render_gameplay_overlay_frame_6A6500"
+text = "ctx->r5 = 0; ctx->r6 = 0;"
+before_vram = 0x80295C78
+
+# File-select foreground uses the native centred layout; stars and full-screen
+# dimming remain widescreen. Restore the caller's layout before the final flash.
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+text = "sssv_file_select_layout_hook(rdram, ctx, 0);"
+before_vram = 0x8039A30C
+
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+text = "sssv_file_select_layout_hook(rdram, ctx, 1);"
+before_vram = 0x8039A318
+
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+text = "sssv_file_select_layout_hook(rdram, ctx, 2);"
+before_vram = 0x8039A320
+
+[[patches.hook]]
+func = "func_8039A2DC_7AB98C"
+text = "sssv_file_select_layout_hook(rdram, ctx, 3);"
+before_vram = 0x8039BB94
+
+# Zone-select uses that same split for its header, station, text and preview.
+[[patches.hook]]
+func = "display_zone_select_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 0);"
+before_vram = 0x80398ABC
+
+[[patches.hook]]
+func = "display_zone_select_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 1);"
+before_vram = 0x80398AC4
+
+[[patches.hook]]
+func = "display_zone_select_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 2);"
+before_vram = 0x80398ACC
+
+[[patches.hook]]
+func = "display_zone_select_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 3);"
+before_vram = 0x8039A2C0
+
+# Pause menu uses the same native foreground / expanded stars split as bank select.
+[[patches.hook]]
+func = "load_pause_menu"
+text = "sssv_file_select_layout_hook(rdram, ctx, 0);"
+before_vram = 0x803935C8
+
+[[patches.hook]]
+func = "load_pause_menu"
+text = "sssv_file_select_layout_hook(rdram, ctx, 1);"
+before_vram = 0x803935D0
+
+[[patches.hook]]
+func = "load_pause_menu"
+text = "sssv_file_select_layout_hook(rdram, ctx, 2);"
+before_vram = 0x803935D8
+
+[[patches.hook]]
+func = "load_pause_menu"
+text = "sssv_file_select_layout_hook(rdram, ctx, 1);"
+before_vram = 0x8039503C
+
+[[patches.hook]]
+func = "load_pause_menu"
+text = "sssv_file_select_layout_hook(rdram, ctx, 3);"
+before_vram = 0x80395048
+
+# Keep the pause menu's mission-brief page in the same foreground layout.
+[[patches.hook]]
+func = "load_mission_brief_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 0);"
+before_vram = 0x80392A44
+
+[[patches.hook]]
+func = "load_mission_brief_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 1);"
+before_vram = 0x80392A50
+
+[[patches.hook]]
+func = "load_mission_brief_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 2);"
+before_vram = 0x80392A58
+
+[[patches.hook]]
+func = "load_mission_brief_screen"
+text = "sssv_file_select_layout_hook(rdram, ctx, 3);"
+before_vram = 0x80392FEC
+
+# Keep the complete health/power bar assembly at native size on the left edge.
+[[patches.hook]]
+func = "osd_draw_health_and_power_bars"
+text = "sssv_health_layout_hook(rdram, ctx, 0);"
+before_vram = 0x80348230
+
+[[patches.hook]]
+func = "osd_draw_health_and_power_bars"
+text = "sssv_health_layout_hook(rdram, ctx, 1);"
+before_vram = 0x803491D8
