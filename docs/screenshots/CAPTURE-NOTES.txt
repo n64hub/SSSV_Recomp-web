@@ -1,0 +1,19 @@
+Original project versus our build. Left: original; right: ours.
+
+Both builds captured directly from their rendered framebuffers at 2880x1620,
+16:9 Expand aspect, 2x MSAA, 60 FPS presentation and no texture mods.
+Our build has HD Text and HD Hud enabled. The original uses its Upscaled sprite
+setting. Comparisons preserve proportions and only resize each full screenshot
+uniformly to 1920x1080 below an identifying label; no retouching or brightness
+adjustment. Copyright images were captured after fade-in at full brightness.
+Animations, camera timing and moving objects may differ between captures.
+Gameplay and objective text show the same level and collected energy objective.
+The player was moved to the collectible in isolated copies for the text capture.
+
+Original capture copy retains upstream game rendering. Instrumentation adds
+background controller input, muted startup, 2880x1620 hidden window, and GPU
+readback; idle VI initialization and a readback null-destination fix are needed
+for automated startup/capture. The normal original executable/source were
+restored. Neither user's original save was modified.
+
+Contains six labelled comparisons plus all twelve raw PNG captures.
