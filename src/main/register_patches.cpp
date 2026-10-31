@@ -6,6 +6,7 @@
 #include "librecomp/game.hpp"
 
 extern "C" void recomp_get_target_aspect_ratio(uint8_t* rdram, recomp_context* ctx);
+extern "C" void recomp_get_hud_aspect_ratio(uint8_t* rdram, recomp_context* ctx);
 extern "C" void recomp_patch_debug_u32(uint8_t* rdram, recomp_context* ctx);
 extern "C" void recomp_get_patch_diag_flags(uint8_t* rdram, recomp_context* ctx);
 
@@ -24,6 +25,7 @@ constexpr LoadedPatchFunction kLoadedPatchFunctions[] = {
     { 0x8F000000, recomp_get_target_aspect_ratio },
     { 0x8F000004, recomp_patch_debug_u32 },
     { 0x8F000008, recomp_get_patch_diag_flags },
+    { 0x8F00000C, recomp_get_hud_aspect_ratio },
 };
 
 void register_loaded_patch_functions() {

@@ -5,6 +5,9 @@
 #include <array>
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
+#include <atomic>
+#include <chrono>
 #include <numeric>
 #include <stdexcept>
 #include <cinttypes>
@@ -44,9 +47,11 @@
 #include "sssv_game.h"
 #include "sssv_launcher.h"
 #include "theme.h"
+#include "input_movie.h"
 #include "librecomp/game.hpp"
 #include "librecomp/mods.hpp"
 #include "librecomp/helpers.hpp"
+#include "xxhash.h"
 #include "cs_sdk/launcher_model3d.h"
 #include "cs_sdk/launcher_music.h"
 #include "rt64_render_hooks.h"
@@ -57,6 +62,7 @@
 #endif
 
 #include "hle/rt64_application.h"
+#include "hle/rt64_state.h"
 #include "gbi/rt64_gbi_rdp.h"
 #include "gbi/rt64_gbi_f3dex.h"
 #include "gbi/rt64_gbi_s2d.h"
@@ -111,9 +117,32 @@ ultramodern::input::connected_device_info_t get_connected_device_info(int contro
 }
 
 SDL_Window* window;
+extern std::atomic<uint64_t> sssv_presented_frames;
+extern std::atomic<int> sssv_present_stage;
+static std::ofstream frame_diagnostics;
+static sssv::InputMovie input_movie;
+static std::atomic<uint64_t> submitted_display_lists{0};
+static std::atomic<uint64_t> processed_screen_updates{0};
+static std::atomic<int> graphics_operation{0};
+
+static const char* present_stage_name(int stage) {
+    switch (stage) {
+        case 1: return "waiting for a queued frame";
+        case 2: return "preparing a frame";
+        case 3: return "waiting for workload lock";
+        case 4: return "waiting for interpolated frame";
+        case 5: return "acquiring swapchain image";
+        case 6: return "waiting for GPU render";
+        case 7: return "waiting for display";
+        case 8: return "presenting to display";
+        case 9: return "waiting for render workload";
+        default: return "initializing";
+    }
+}
 
 ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     uint32_t flags = SDL_WINDOW_RESIZABLE;
+    if (std::getenv("SSSV_TEST_CONTROL") && !std::getenv("SSSV_TEST_VISIBLE")) flags |= SDL_WINDOW_HIDDEN;
 
 #if defined(__APPLE__)
     flags |= SDL_WINDOW_METAL;
@@ -121,7 +150,14 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
     flags |= SDL_WINDOW_VULKAN;
 #endif
 
-    window = SDL_CreateWindow("Space Station Silicon Valley: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
+    SDL_Rect display_bounds{};
+    int window_width = 1280;
+    int window_height = 720;
+    if (SDL_GetDisplayBounds(0, &display_bounds) == 0) {
+        window_width = display_bounds.w * 3 / 4;
+        window_height = display_bounds.h * 3 / 4;
+    }
+    window = SDL_CreateWindow("Space Station Silicon Valley | 0 FPS", SDL_WINDOWPOS_CENTERED_DISPLAY(0), SDL_WINDOWPOS_CENTERED_DISPLAY(0), window_width, window_height, flags);
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());
@@ -148,9 +184,64 @@ static constexpr float LAUNCHER_MUSIC_VOLUME_SCALE = 0.1f;
 
 void update_gfx(void*) {
     recompinput::handle_events();
-    float main_vol = static_cast<float>(recompui::config::sound::get_main_volume()) / 100.0f;
-    float launcher_volume = main_vol * LAUNCHER_MUSIC_VOLUME_SCALE;
-    csdk::launcher_music::update(launcher_volume);
+    if (input_movie.finished()) {
+        ultramodern::quit();
+        return;
+    }
+    using clock = std::chrono::steady_clock;
+    static auto last_update = clock::now();
+    static uint64_t last_frames = 0;
+    static uint64_t last_display_lists = 0;
+    static uint64_t last_screen_updates = 0;
+    static uint64_t observed_frames = 0;
+    static auto last_present = clock::now();
+    static auto last_report = clock::time_point{};
+    static bool stalled = false;
+    const auto now = clock::now();
+    const double elapsed = std::chrono::duration<double>(now - last_update).count();
+    const uint64_t current_frames = sssv_presented_frames.load(std::memory_order_relaxed);
+    if (current_frames != observed_frames) {
+        if (stalled && frame_diagnostics) {
+            frame_diagnostics << "presentation resumed after "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(now - last_present).count()
+                << " ms; frame=" << current_frames << std::endl;
+        }
+        observed_frames = current_frames;
+        last_present = now;
+        stalled = false;
+    } else if (observed_frames != 0 && window && frame_diagnostics &&
+               now - last_present >= std::chrono::milliseconds(250) &&
+               (!stalled || now - last_report >= std::chrono::seconds(1))) {
+        const auto flags = SDL_GetWindowFlags(window);
+        frame_diagnostics << "no present for "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(now - last_present).count()
+            << " ms; frame=" << current_frames
+            << "; stage=" << present_stage_name(sssv_present_stage.load(std::memory_order_relaxed))
+            << "; display_lists=" << submitted_display_lists.load(std::memory_order_relaxed)
+            << "; screen_updates=" << processed_screen_updates.load(std::memory_order_relaxed)
+            << "; graphics_operation=" << graphics_operation.load(std::memory_order_relaxed)
+            << "; minimized=" << ((flags & SDL_WINDOW_MINIMIZED) ? "yes" : "no") << std::endl;
+        last_report = now;
+        stalled = true;
+    }
+    if (window && elapsed >= 1.0) {
+        const uint64_t frames = sssv_presented_frames.load(std::memory_order_relaxed);
+        const auto fps = static_cast<unsigned>((frames - last_frames) / elapsed + 0.5);
+        const auto display_lists = submitted_display_lists.load(std::memory_order_relaxed);
+        const auto screen_updates = processed_screen_updates.load(std::memory_order_relaxed);
+        if (frame_diagnostics) {
+            frame_diagnostics << "interval_ms=" << static_cast<uint64_t>(elapsed * 1000)
+                << "; presents=" << frames - last_frames
+                << "; display_lists=" << display_lists - last_display_lists
+                << "; screen_updates=" << screen_updates - last_screen_updates << std::endl;
+        }
+        last_display_lists = display_lists;
+        last_screen_updates = screen_updates;
+        const std::string title = "Space Station Silicon Valley | " + std::to_string(fps) + " FPS";
+        SDL_SetWindowTitle(window, title.c_str());
+        last_update = now;
+        last_frames = frames;
+    }
 }
 
 static SDL_AudioCVT audio_convert;
@@ -509,7 +600,9 @@ void apply_unknown_gbi_fallback(RT64::Application* app, UnknownGBIFallback fallb
 class RT64CompatContext final : public ultramodern::renderer::RendererContext {
 public:
     RT64CompatContext(std::unique_ptr<ultramodern::renderer::RendererContext> inner_context, uint8_t* rdram)
-        : inner(std::move(inner_context)), rdram(rdram), s2dSpriteUpscalingEnabled(sssv::get_2d_sprite_upscaling_enabled()) {
+        : inner(std::move(inner_context)), rdram(rdram) {
+        render_timings.open("render-timings.log", std::ios::app);
+        render_timings << "\n--- session start ---" << std::endl;
         apply_sprite_upscaling_config();
     }
 
@@ -527,12 +620,7 @@ public:
 
     bool update_config(const ultramodern::renderer::GraphicsConfig& old_config, const ultramodern::renderer::GraphicsConfig& new_config) override {
         bool changed = inner->update_config(old_config, new_config);
-        const bool updatedSpriteUpscalingEnabled = sssv::get_2d_sprite_upscaling_enabled();
-        if (updatedSpriteUpscalingEnabled != s2dSpriteUpscalingEnabled) {
-            s2dSpriteUpscalingEnabled = updatedSpriteUpscalingEnabled;
-            apply_sprite_upscaling_config();
-            changed = true;
-        }
+        apply_sprite_upscaling_config();
 
         return changed;
     }
@@ -542,8 +630,30 @@ public:
     }
 
     void send_dl(const OSTask* task) override {
+        recompui::renderer::set_hd_text_enabled(sssv::get_hd_text_enabled());
+        recompui::renderer::set_hd_hud_enabled(sssv::get_hd_hud_enabled());
+        const auto start = std::chrono::steady_clock::now();
+        graphics_operation.store(1, std::memory_order_relaxed);
         maybe_apply_unknown_ucode_fallback(task);
+        const auto setup_done = std::chrono::steady_clock::now();
+        graphics_operation.store(2, std::memory_order_relaxed);
+        auto* rt64 = dynamic_cast<recompui::renderer::RT64Context*>(inner.get());
+        const auto previousWorkload = rt64->app->state->workloadId;
         inner->send_dl(task);
+        if (rt64->app->state->workloadId == previousWorkload) {
+            missing_sync_tasks++;
+            if (missing_sync_tasks == 1 || missing_sync_tasks % 30 == 0) {
+                render_timings << "missing full sync; consecutive_tasks=" << missing_sync_tasks
+                    << "; display_lists=" << submitted_display_lists.load() << std::endl;
+            }
+        } else {
+            if (missing_sync_tasks) render_timings << "full sync resumed after " << missing_sync_tasks << " tasks" << std::endl;
+            missing_sync_tasks = 0;
+        }
+        submitted_display_lists.fetch_add(1, std::memory_order_relaxed);
+        graphics_operation.store(0, std::memory_order_relaxed);
+        log_slow_operation("display list setup", start, setup_done);
+        log_slow_operation("display list processing", setup_done, std::chrono::steady_clock::now());
     }
 
     void send_dummy_workload(uint32_t fb_address) override {
@@ -551,7 +661,12 @@ public:
     }
 
     void update_screen() override {
+        const auto start = std::chrono::steady_clock::now();
+        graphics_operation.store(3, std::memory_order_relaxed);
         inner->update_screen();
+        processed_screen_updates.fetch_add(1, std::memory_order_relaxed);
+        graphics_operation.store(0, std::memory_order_relaxed);
+        log_slow_operation("screen update", start, std::chrono::steady_clock::now());
     }
 
     void shutdown() override {
@@ -567,10 +682,20 @@ public:
     }
 
 private:
+    std::ofstream render_timings;
+    uint64_t missing_sync_tasks = 0;
+    void log_slow_operation(const char* operation, std::chrono::steady_clock::time_point start,
+                           std::chrono::steady_clock::time_point end) {
+        const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        if (duration >= 20000 && render_timings) {
+            render_timings << operation << "; duration_us=" << duration
+                << "; display_lists=" << submitted_display_lists.load(std::memory_order_relaxed)
+                << "; presents=" << sssv_presented_frames.load(std::memory_order_relaxed) << std::endl;
+        }
+    }
     std::unique_ptr<ultramodern::renderer::RendererContext> inner;
     uint8_t* rdram = nullptr;
     UnknownGBIFallback active_fallback = UnknownGBIFallback::None;
-    bool s2dSpriteUpscalingEnabled = true;
 
     void apply_sprite_upscaling_config() {
         auto* rt64_context = dynamic_cast<recompui::renderer::RT64Context*>(inner.get());
@@ -578,9 +703,7 @@ private:
             return;
         }
 
-        RT64::UserConfiguration::SpriteUpscaling targetMode = s2dSpriteUpscalingEnabled
-            ? RT64::UserConfiguration::SpriteUpscaling::Upscaled
-            : RT64::UserConfiguration::SpriteUpscaling::Original;
+        const auto targetMode = RT64::UserConfiguration::SpriteUpscaling::Upscaled;
 
         if (rt64_context->app->userConfig.spriteUpscaling == targetMode) {
             return;
@@ -875,6 +998,92 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
+    // Resolve all bundled resources relative to the executable, regardless of
+    // the working directory used to start it.
+    char* base_path = SDL_GetBasePath();
+    if (!base_path) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not locate the application folder.", nullptr);
+        return EXIT_FAILURE;
+    }
+    const std::filesystem::path executable_dir{base_path};
+    SDL_free(base_path);
+    try {
+        const char* record = std::getenv("SSSV_INPUT_RECORD");
+        const char* replay = std::getenv("SSSV_INPUT_REPLAY");
+        input_movie.configure(record ? std::filesystem::path(record) : std::filesystem::path{},
+                              replay ? std::filesystem::path(replay) : std::filesystem::path{});
+    } catch (const std::exception& error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Input recording error", error.what(), nullptr);
+        return EXIT_FAILURE;
+    }
+    frame_diagnostics.open(executable_dir / "frame-stalls.log", std::ios::app);
+    if (frame_diagnostics) {
+        const auto timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        frame_diagnostics << "\n--- session start (Unix time " << timestamp << ") ---" << std::endl;
+    }
+    ultramodern::set_save_directory(executable_dir / "saves");
+    std::error_code path_error;
+    std::filesystem::current_path(executable_dir, path_error);
+    if (path_error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not open the application folder.", nullptr);
+        return EXIT_FAILURE;
+    }
+    const auto rom_path = executable_dir / "assets" / "data.z64";
+    auto source_path = rom_path;
+    const bool import_rom = !std::filesystem::exists(rom_path, path_error);
+    if (path_error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not access assets/data.z64.", nullptr);
+        return EXIT_FAILURE;
+    }
+    if (import_rom) {
+        if (NFD_Init() != NFD_OKAY) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not open the game data file picker.", nullptr);
+            return EXIT_FAILURE;
+        }
+        nfdnchar_t* selected_path = nullptr;
+        const nfdresult_t result = NFD_OpenDialogN(&selected_path, nullptr, 0, nullptr);
+        if (result == NFD_OKAY) {
+            source_path = std::filesystem::path{selected_path};
+            NFD_FreePathN(selected_path);
+        }
+        NFD_Quit();
+        if (result != NFD_OKAY) {
+            if (result == NFD_ERROR) {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not select the game data file.", nullptr);
+            }
+            return EXIT_FAILURE;
+        }
+    }
+    // Check the complete contents before creating the installed copy. A filename
+    // or a valid N64 header alone is not enough to identify the supported game.
+    std::vector<uint8_t> rom_data(8 * 1024 * 1024);
+    {
+        std::ifstream rom_file(source_path, std::ios::binary | std::ios::ate);
+        if (!rom_file || rom_file.tellg() != static_cast<std::streamoff>(rom_data.size()) ||
+            !rom_file.seekg(0) ||
+            !rom_file.read(reinterpret_cast<char*>(rom_data.data()), rom_data.size()) ||
+            XXH3_64bits(rom_data.data(), rom_data.size()) != supported_games[0].rom_hash) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "This file is not the supported Space Station Silicon Valley (USA) 1.0 .z64 ROM.", nullptr);
+            return EXIT_FAILURE;
+        }
+    }
+    if (import_rom) {
+        std::filesystem::create_directories(rom_path.parent_path(), path_error);
+        if (path_error) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not create the assets folder. Check that the application folder is writable.", nullptr);
+            return EXIT_FAILURE;
+        }
+        std::ofstream installed_rom(rom_path, std::ios::binary | std::ios::trunc);
+        installed_rom.write(reinterpret_cast<const char*>(rom_data.data()), rom_data.size());
+        installed_rom.close();
+        if (!installed_rom) {
+            std::filesystem::remove(rom_path, path_error);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not save assets/data.z64. Check that the application folder is writable and has enough free space.", nullptr);
+            return EXIT_FAILURE;
+        }
+    }
+    recomp::set_rom_contents(std::move(rom_data));
+
     recomp::Version project_version{};
     if (!recomp::Version::from_string(version_string, project_version)) {
         ultramodern::error_handling::message_box(("Invalid version string: " + version_string).c_str());
@@ -910,7 +1119,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef _WIN32
-    SDL_setenv("SDL_AUDIODRIVER", "wasapi", true);
+    SDL_setenv("SDL_AUDIODRIVER", (std::getenv("SSSV_TEST_CONTROL") && !std::getenv("SSSV_TEST_VISIBLE")) ? "dummy" : "wasapi", true);
 #endif
 
 #if defined(__linux__) && defined(RECOMP_FLATPAK)
@@ -924,6 +1133,13 @@ int main(int argc, char** argv) {
     recompui::programconfig::set_program_id(sssv::program_id);
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
+    if (std::getenv("SSSV_TEST_CONTROL") && !std::getenv("SSSV_TEST_VISIBLE")) {
+        // Background tests consume their controller file exclusively. Physical
+        // input must not open settings or interfere while the user works.
+        SDL_SetEventFilter([](void*, SDL_Event* event) -> int {
+            return event->type < SDL_KEYDOWN || event->type >= SDL_FINGERDOWN;
+        }, nullptr);
+    }
     if (!reset_audio(48000)) {
         return EXIT_FAILURE;
     }
@@ -933,28 +1149,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
     }
 
-    recompui::register_primary_font("LDF-ComicSans.ttf", "LDFComicSans");
-    recompui::register_extra_font("InterVariable.ttf");
-
-    csdk::launcher_music::Config launcher_music_config{
-        .wav_path = recompui::file::get_asset_path("launcher_music.wav"),
-        .output_sample_rate = output_sample_rate,
-        .output_channels = output_channels,
-        .target_queue_ms = 200,
-        .chunk_frames = 1024,
-    };
-    csdk::launcher_music::Callbacks launcher_music_callbacks{
-        .is_launcher_visible = launcher_is_visible,
-        .is_game_started = launcher_game_started,
-        .get_queued_ms = launcher_get_queued_ms,
-        .queue_audio = launcher_queue_audio,
-        .start_playback = launcher_start_playback,
-        .stop_playback = launcher_stop_playback,
-    };
-
-    // Initialize launcher music with Cellenseres SDK
-    csdk::launcher_music::init(launcher_music_config, launcher_music_callbacks);
-    csdk::launcher_music::set_enabled(true);
+    recompui::register_primary_font("InterVariable.ttf", "Inter Variable");
 
     recomp::register_config_path(recompui::file::get_app_folder_path());
 
@@ -973,8 +1168,7 @@ int main(int argc, char** argv) {
 
     sssv::init_config();
 
-    recompui::register_launcher_init_callback(on_launcher_init);
-    recompui::register_launcher_update_callback(sssv::launcher_animation_update);
+    recomp::start_game(supported_games[0].game_id, {});
 
     recomp::rsp::callbacks_t rsp_callbacks{
         .get_rsp_microcode = get_rsp_microcode,
@@ -1004,12 +1198,6 @@ int main(int argc, char** argv) {
                 (rt64_context && rt64_context->app && rt64_context->app->renderInterface) ? "set" : "null",
                 (rt64_context && rt64_context->app && rt64_context->app->device) ? "set" : "null");
             fflush(stdout);
-
-            csdk::launcher3d::install_render_hook_chain();
-            csdk::launcher3d::prime_render_backend(
-                (rt64_context && rt64_context->app && rt64_context->app->renderInterface) ? rt64_context->app->renderInterface.get() : nullptr,
-                (rt64_context && rt64_context->app && rt64_context->app->device) ? rt64_context->app->device.get() : nullptr
-            );
 
             RT64::RenderHookInit* after_init = RT64::GetRenderHookInit();
             RT64::RenderHookDraw* after_draw = RT64::GetRenderHookDraw();
@@ -1042,7 +1230,9 @@ int main(int argc, char** argv) {
 
     ultramodern::input::callbacks_t input_callbacks{
         .poll_input = recompinput::poll_inputs,
-        .get_input = recompinput::profiles::get_n64_input,
+        .get_input = [](int controller, uint16_t* buttons, float* x, float* y) {
+            return input_movie.get(controller, buttons, x, y, recompinput::profiles::get_n64_input);
+        },
         .set_rumble = recompinput::set_rumble,
         .get_connected_device_info = get_connected_device_info,
     };
