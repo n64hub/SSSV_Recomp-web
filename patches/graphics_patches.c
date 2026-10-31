@@ -36,7 +36,64 @@ static u32 g_dbg_world_perspective_calls = 0;
 static u32 g_dbg_depth_clear_calls = 0;
 static u32 g_dbg_world_depth_failsafe_calls = 0;
 
+s32 sssv_intro_4_3_frame = 0;
+static s32 s_title_layout_frame = 0;
+static s32 s_file_select_layout = 0;
+static s16 s_file_select_saved_width;
+extern u8 gIntroSceneState;
+extern void sssv_prepare_pause_capture(void);
+extern u16 D_80299E08_63D4A8;
+extern u8 D_80302E88[];
+
 void setup_intro_perspective_638558(Gfx** dl);
+void init_sprite2d_render(Gfx** dl, u8 r, u8 g, u8 b, u8 a);
+void init_sprite2d_render_zdepth(Gfx** dl, u8 color);
+extern void func_801356C0(s32 x, s32 y, s32 width, s32 height, Gfx** dl,
+    u8* image, f32 scale_x, f32 scale_y, u8 depth);
+
+static void set_centered_menu_layout(void) {
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+        -160 * 4, 0, -160 * 4, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+        -160, 0, -160, 0, 0, 0, 320, 240);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
+}
+
+static void set_stretched_menu_layout(void) {
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE,
+        0, 0, 0, 0, 0, 0, 4095, 4095);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0, gScreenWidth, 240);
+}
+
+// Called at bank-select and pause-menu draw boundaries, with backgrounds outside
+// the native-aspect scope. These helpers never change the renderer preference.
+RECOMP_EXPORT void sssv_file_select_begin(void) {
+    s_file_select_saved_width = gScreenWidth;
+    s_file_select_layout = 1;
+    sssv_intro_4_3_frame = 1;
+    gScreenWidth = 320;
+    set_centered_menu_layout();
+}
+
+RECOMP_EXPORT void sssv_file_select_background(void) {
+    sssv_intro_4_3_frame = 0;
+    gScreenWidth = s_file_select_saved_width;
+    set_stretched_menu_layout();
+}
+
+RECOMP_EXPORT void sssv_file_select_foreground(void) {
+    sssv_intro_4_3_frame = 1;
+    gScreenWidth = 320;
+    set_centered_menu_layout();
+}
+
+RECOMP_EXPORT void sssv_file_select_end(void) {
+    sssv_file_select_background();
+    s_file_select_layout = 0;
+}
 
 static inline void write_main_viewport_expand(s16 viewport_width, s16 viewport_height) {
     gMainViewport.vscale[0] = (s16)(viewport_width * 2);
@@ -430,11 +487,36 @@ RECOMP_PATCH void begin_f3dex_render_sync(Gfx **dl, DisplayList *ddl) {
     gDPSetAlphaDither((*dl)++, G_AD_PATTERN);
 }
 
+// The DMA character stage has finite white scenery. Its authored camera
+// visibility mask is 0x80; Take 2 uses 0x8F in the same level. Extend only
+// the white stage, leaving Take 2's black backdrop and other levels intact.
+extern s16 D_803A05C0_7B1C70;
+extern void func_802B4148_6C57F8(Gfx** dl);
+
+RECOMP_PATCH void func_802B3EC0_6C5570(Gfx** dl, s16 mode, f32 arg2, f32 arg3, f32 arg4, f32 arg5) {
+    D_803A05C0_7B1C70 = 1 - D_803A05C0_7B1C70;
+
+    if ((gGameState.level == 36) && (gCameraVisibilityMask[0] == 0x80)) {
+        draw_rectangle(dl, 0, 0, SSSV_BASE_WIDTH, SSSV_BASE_HEIGHT, 255, 255, 255, 255);
+    } else if (mode == 0) {
+        draw_rectangle(dl, 0, 0, SSSV_BASE_WIDTH, SSSV_BASE_HEIGHT, 0, 0, 0, 255);
+        func_802B4148_6C57F8(dl);
+    } else if (mode == 2) {
+        draw_rectangle(dl, 8, 8, gScreenWidth - 8, gScreenHeight - 8,
+            gFogState.r, gFogState.g, gFogState.b, 255);
+    }
+}
+
 RECOMP_PATCH void draw_rectangle(Gfx** dl, s16 x0, s16 y0, s16 x1, s16 y1, u8 r, u8 g, u8 b, u8 alpha) {
     if (alpha == 0) {
         return;
     }
 
+    const s32 file_background = s_file_select_layout && (dl == &gMainDL) &&
+        is_legacy_fullscreen_or_overscan_rect(x0, y0, x1, y1);
+    if (file_background) {
+        sssv_file_select_background();
+    }
     const s32 expanded_widescreen = ui_is_expand_active();
     const s16 screen_w = display_policy_frame_width();
     const s16 screen_h = display_policy_frame_height();
@@ -480,6 +562,9 @@ RECOMP_PATCH void draw_rectangle(Gfx** dl, s16 x0, s16 y0, s16 x1, s16 y1, u8 r,
     gDPSetScissor((*dl)++, G_SC_NON_INTERLACE, 0, 0, screen_w, screen_h);
     gDPPipeSync((*dl)++);
 
+    if (file_background) {
+        sssv_file_select_foreground();
+    }
     g_dbg_draw_rectangle_calls++;
     if (SHOULD_TRACE_PERIODIC(g_dbg_draw_rectangle_calls, 6, 300)) {
         PATCH_TRACE(PATCH_TAG_DRAW_RECTANGLE, g_dbg_draw_rectangle_calls, (u8)alpha, (u16)screen_w);
@@ -502,6 +587,156 @@ static inline void append_intro_depth_clear_fallback(Gfx** dl) {
     set_framebuffer_color_image(dl);
 
     gDPPipeSync((*dl)++);
+}
+
+RECOMP_PATCH void draw_sprite_with_prim_depth(Gfx** dl, uSprite* image, u16 width, u16 height,
+    u16 scale_x, u16 scale_y, u8 flip_x, u8 flip_y, u16 screen_x, u16 screen_y, u16 depth) {
+    const s32 title_background = s_title_layout_frame && (depth == 0xFFFF) &&
+        (width == 160) && (height == 128);
+    s32 draw_x = screen_x;
+    if (title_background) {
+        // Expand only the starfield. Keep a native-width scissor with explicit
+        // edge origins so RT64 still corrects the foreground's aspect ratio.
+        const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
+        scale_x = (u16)MAX(320, (s32)(240.0f * aspect + 0.5f));
+        draw_x = (320 - (s32)scale_x) / 2;
+        rc_ensure_rt64_extended_enabled(dl);
+        gEXSetScissorAlign((*dl)++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
+            0, 0, -320, 0, 0, 0, 320, 240);
+        gDPSetScissor((*dl)++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
+    }
+
+    gDPPipeSync((*dl)++);
+    gDPSetPrimDepth((*dl)++, depth, 0);
+    uSprite* sprite = &gDisplayListContext->sprites[gDisplayListContext->usedSprites];
+    guSprite2DInit(sprite, image, 0, width, width, height, 0, 2, 0, 0);
+    gSPSprite2DBase((*dl)++, osVirtualToPhysical(sprite));
+    gSPSprite2DScaleFlip((*dl)++, (width / (f32)scale_x) * 1024.0f,
+        (height / (f32)scale_y) * 1024.0f, flip_x, flip_y);
+    gSPSprite2DDraw((*dl)++, draw_x * 4, screen_y * 4);
+    gDisplayListContext->usedSprites++;
+    gDPPipeSync((*dl)++);
+
+    if (title_background) {
+        gEXSetScissorAlign((*dl)++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+            -160, 0, -160, 0, 0, 0, 320, 240);
+        gDPSetScissor((*dl)++, G_SC_NON_INTERLACE, 8, 8, 312, 232);
+    }
+}
+
+RECOMP_PATCH void func_80295EB0_639550(s32 x) {
+    // The final news-report slide becomes the title background. Use the same
+    // width and centre as the title, and scale its travel by that width too.
+    const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
+    const s32 width = MAX(320, (s32)(240.0f * aspect + 0.5f));
+    const s32 draw_x = (320 - width) / 2 + (x * width) / 320;
+
+    init_sprite2d_render(&gMainDL, 255, 255, 255, 255);
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+        -160 * 4, 0, -160 * 4, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
+        0, 0, -320, 0, 0, 0, 320, 240);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
+    gDPPipeSync(gMainDL++);
+
+    uSprite* sprite = &gDisplayListContext->sprites[gDisplayListContext->usedSprites];
+    guSprite2DInit(sprite, (uSprite*)(D_80302E88 + 0x28000), 0,
+        160, 160, 128, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0);
+    gSPSprite2DBase(gMainDL++, osVirtualToPhysical(sprite));
+    gSPSprite2DScaleFlip(gMainDL++, (160.0f / width) * 1024.0f,
+        (128.0f / 241.0f) * 1024.0f, 0, 0);
+    gSPSprite2DDraw(gMainDL++, draw_x * 4, 0);
+    gDisplayListContext->usedSprites++;
+    gDPPipeSync(gMainDL++);
+
+    if (sssv_intro_4_3_frame) {
+        gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+            -160, 0, -160, 0, 0, 0, 320, 240);
+    } else {
+        gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+        gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE,
+            0, 0, 0, 0, 0, 0, 4095, 4095);
+    }
+    init_f3dex_render(&gMainDL, gDisplayListContext);
+    gSPViewport(gMainDL++, &gMainViewport);
+    set_framebuffer_color_image(&gMainDL);
+}
+
+// The native framebuffer capture contains the centre 320 pixels. Supply the
+// additional starfield columns separately so the same tile effect spans wide
+// displays without widening the captured logo, ship or text.
+#define TITLE_WING_COLUMNS 16
+static u16 s_title_wing_tiles[2][TITLE_WING_COLUMNS][8][32 * 32];
+static s32 s_title_wing_width = 0;
+
+static void draw_title_transition_wings(u8 size, u8 brightness) {
+    const s32 width = MAX(320, (s32)(240.0f * recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT) + 0.5f));
+    const s32 left = (320 - width) / 2;
+    const s32 columns = MIN(TITLE_WING_COLUMNS, (width - 320 + 63) / 64);
+    if (columns == 0) {
+        return;
+    }
+    if (s_title_wing_width != width || size == 32) {
+        const u16* background = (const u16*)(D_80302E88 + 0x28000);
+        const f32 source_scale_x = 160.0f / width;
+        for (s32 side = 0; side < 2; side++) {
+            for (s32 col = 0; col < columns; col++) {
+                const s32 tile_x = side ? 320 + col * 32 : -(col + 1) * 32;
+                for (s32 row = 0; row < 8; row++) {
+                    for (s32 y = 0; y < 32; y++) {
+                        const s32 source_y = MIN(127, (row * 32 + y) * 128 / 241);
+                        for (s32 x = 0; x < 32; x++) {
+                            const s32 source_x = MAX(0, MIN(159, (s32)((tile_x + x - left) * source_scale_x)));
+                            s_title_wing_tiles[side][col][row][y * 32 + x] = background[source_y * 160 + source_x];
+                        }
+                    }
+                }
+            }
+        }
+        s_title_wing_width = width;
+    }
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
+        0, 0, -320, 0, 0, 0, 320, 240);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 8, 320, 232);
+    for (s32 side = 0; side < 2; side++) {
+        for (s32 col = 0; col < columns; col++) {
+            const s32 tile_x = side ? 320 + col * 32 : -(col + 1) * 32;
+            const s32 offset = (tile_x + 16 - size / 2 - 160) * 4;
+            // Keep local texture coordinates nonnegative; signed extended
+            // origins position the extra columns beyond the native frame.
+            gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+                offset, 0, offset, 0);
+            for (s32 row = 0; row < 8; row++) {
+                gDPSetPrimColor(gMainDL++, 0, 0, brightness, brightness, brightness, 255);
+                func_801356C0(0, row * 32 + 16 - size / 2, size, size, &gMainDL,
+                    (u8*)s_title_wing_tiles[side][col][row], size, size, 16);
+            }
+        }
+    }
+    set_centered_menu_layout();
+}
+
+RECOMP_PATCH void func_80298C70_63C310(u8 size) {
+    const u8 brightness = (size << 3) - 1;
+    gSPDisplayList(gMainDL++, gPrimitiveFillRenderSetupDl);
+    func_801356C0(1, 1, 1, 1, &gMainDL, D_80302E88 + 0x62000, 1.0f, 1.0f, 8);
+    if (gIntroSceneState == 10) {
+        draw_title_transition_wings(size, brightness);
+    }
+    for (s32 row = 0; row < 8; row++) {
+        for (s32 col = 0; col < 10; col++) {
+            const s32 x = col * 32 + 16 - size / 2;
+            const s32 y = row * 32 + 16 - size / 2;
+            gDPSetPrimColor(gMainDL++, 0, 0, 0, 0, 0, 255);
+            gDPFillRectangle(gMainDL++, x - 1, y - 1, x + size + 1, y + size + 1);
+            gDPSetPrimColor(gMainDL++, 0, 0, brightness, brightness, brightness, 255);
+            func_801356C0(x, y, size, size, &gMainDL,
+                D_80302E88 + 0x62000 + (row * 10 + col) * 0x800, size, size, 16);
+        }
+    }
+    gDPSetPrimColor(gMainDL++, 0, 0, 255, 255, 255, 255);
 }
 
 RECOMP_PATCH void init_sprite2d_render_zdepth(Gfx **dl, u8 color) {
@@ -723,6 +958,14 @@ RECOMP_PATCH void setup_intro_perspective_638558(Gfx** dl) {
 }
 
 RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
+    // The copyright card is a single 320x240 image, including its starfield.
+    // Keep it and the TV report compositions at native aspect. Snapshot the
+    // state before it advances; the final starfield slide handles its own width.
+    const s32 copyright_frame = (gIntroSceneState == 0) && (D_80299E08_63D4A8 < 260);
+    sssv_intro_4_3_frame = copyright_frame || (gIntroSceneState == 1) ||
+        (gIntroSceneState == 2) || (gIntroSceneState == 9) || (gIntroSceneState == 10);
+    s_title_layout_frame = (gIntroSceneState == 3) || (gIntroSceneState == 5);
+    sssv_intro_4_3_frame |= s_title_layout_frame;
     const s16 target_width = compute_target_width_for_height_patch(SSSV_BASE_HEIGHT);
 
     rc_begin_frame();
@@ -735,6 +978,10 @@ RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
     clear_depth_buffer(&gMainDL);
     write_main_viewport_expand(gScreenWidth, gScreenHeight);
 
+    if (s_title_layout_frame) {
+        rc_ensure_rt64_extended_enabled(&gMainDL);
+        gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_CENTER, -160 * 4, 0);
+    }
     gSPViewport(gMainDL++, &gMainViewport);
     set_framebuffer_color_image(&gMainDL);
     gDPPipeSync(gMainDL++);
@@ -746,8 +993,27 @@ RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
     gDisplayListContext->unk39310 = 0;
     gDisplayListContext->usedHilites = 0;
 
+    if (sssv_intro_4_3_frame) {
+        // Clear the entire output first; explicit centred origins then keep
+        // every rectangle (including full-screen sprites) at native aspect.
+        draw_rectangle(&gMainDL, 0, 0, 320, 240, 0, 0, 0, 255);
+        rc_ensure_rt64_extended_enabled(&gMainDL);
+        gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+            -160 * 4, 0, -160 * 4, 0);
+        gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+            -160, 0, -160, 0, 0, 0, 320, 240);
+        gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 8, 8, 312, 232);
+    }
+
     render_title_screen_frame(gFrameContextPtr);
     append_intro_black_border_mask(&gMainDL);
+    if (sssv_intro_4_3_frame) {
+        rc_ensure_rt64_extended_enabled(&gMainDL);
+        gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+        gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE,
+            0, 0, 0, 0, 0, 0, 4095, 4095);
+        gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_NONE, 0, 0);
+    }
     if (gIntroTransitionPending != 0) {
         gCurrentOverlay = 0;
         gOverlayState = 4;
@@ -778,6 +1044,7 @@ RECOMP_PATCH void end_display_lists(void) {
     append_enddl_cmd(gXluDL++);
     append_enddl_cmd(gAuxDL++);
 
+    sssv_prepare_pause_capture();
     append_fullsync_cmd(gMainDL++);
     append_enddl_cmd(gMainDL++);
 
@@ -788,6 +1055,8 @@ RECOMP_PATCH void end_display_lists(void) {
     }
 
     rc_end_frame();
+    sssv_intro_4_3_frame = 0;
+    s_title_layout_frame = 0;
 }
 
 RECOMP_PATCH void setup_world_perspective_6AB090(DisplayList* arg0) {

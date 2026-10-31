@@ -9,6 +9,60 @@ static u32 g_dbg_osd_timer_calls = 0;
 static u32 g_dbg_osd_text_calls = 0;
 static u32 g_dbg_credits_calls = 0;
 
+// The textless HD image retains the original frame and decorations. Its caption
+// is drawn with actual glyphs, using the same font and layout as other text.
+RECOMP_EXPORT void sssv_draw_hd_header(void) {
+    s16 text[32];
+    load_default_display_list(&gMainDL);
+    select_font(0, 0, 0, 0);
+    set_menu_text_color(255, 255, 0, 255);
+    prepare_text((u8*)"SPACE STATION SILICON VALLEY", text);
+    // A slightly shorter caption leaves balanced breathing room inside the
+    // blue border without changing the approved horizontal placement.
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+        -160 * 4, 0, -160 * 4, 0);
+    display_text_centered(&gMainDL, text, 120, 19, 11.0f, 9.0f);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+        -160 * 4, 0, -160 * 4, 0);
+    gDPPipeSync(gMainDL++);
+}
+
+// Rectangles keep their native pixel proportions; only their anchor moves in
+// Expand mode. The camera and background retain the selected aspect ratio.
+static void set_hud_anchor(s32 origin, s16 offset) {
+    const f32 window_aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
+    if (window_aspect <= SSSV_BASE_ASPECT + 0.000001f) {
+        return;
+    }
+    if (origin == G_EX_ORIGIN_LEFT || origin == G_EX_ORIGIN_RIGHT) {
+        const f32 inset = (window_aspect - recomp_get_hud_aspect_ratio()) * 240.0f * 2.0f;
+        const s16 inset_quarters = (s16)MIN(inset + 0.5f, 30000.0f);
+        offset += (origin == G_EX_ORIGIN_LEFT) ? inset_quarters : -inset_quarters;
+    }
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, origin, origin, offset, 0, offset, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
+        0, 0, -320, 0, 0, 0, 320, 240);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
+}
+
+RECOMP_EXPORT void sssv_hud_left_begin(void) {
+    set_hud_anchor(G_EX_ORIGIN_LEFT, 0);
+}
+
+RECOMP_EXPORT void sssv_hud_layout_end(void) {
+    if (recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT) <= SSSV_BASE_ASPECT + 0.000001f) {
+        return;
+    }
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE,
+        0, 0, 0, 0, 0, 0, 4095, 4095);
+    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0,
+        compute_target_width_for_height_patch(get_safe_screen_height()), get_safe_screen_height());
+}
+
 static inline u32 begin_hud_pass(void) {
     u32 hud_id = rc_next_hud_transform_id();
 
@@ -19,16 +73,19 @@ static inline u32 begin_hud_pass(void) {
 
     rt64_tag_projection_matrix(&gMainDL, SSSV_PROJECTION_HUD_TRANSFORM_ID);
     rt64_tag_model_matrix(&gMainDL, hud_id, 0);
+    set_hud_anchor(G_EX_ORIGIN_CENTER, -160 * 4);
     return hud_id;
 }
 
 static inline void end_hud_pass(void) {
     rt64_pop_model_matrix(&gMainDL);
+    sssv_hud_layout_end();
 }
 
 RECOMP_PATCH void osd_draw_score(void) {
     const u8 font_lcd = 1;
     const u32 hud_id = begin_hud_pass();
+    set_hud_anchor(G_EX_ORIGIN_RIGHT, -320 * 4);
     sprintf((char*)gGameState.scoreText, "%8d", gGameState.score);
     select_font(0, font_lcd, 1, 0);
     display_score(&gMainDL, (u8*)gGameState.scoreText, ui_safe_right_anchor(34), (u16)((gHudBarBaseY >> 2) - 10));
@@ -84,16 +141,99 @@ RECOMP_PATCH void draw_hud_center_text(s16 arg0) {
     }
 }
 
+// RDP text rectangles have no interpolated vertex positions. Reuse the native
+// font layout/texture loads, replacing only their rectangles with RSP quads.
+// Each credit entry retains its own ID when the 16-line window rolls forward.
+static Vtx s_credits_vertices[3][4096] __attribute__((aligned(8)));
+static Mtx s_credits_projection;
+static Mtx s_credits_identity;
+static VpRaw s_credits_viewport __attribute__((aligned(8)));
+#define CREDITS_VERTEX_CAPACITY 4096
+static Vtx* credits_vertices(void) { return s_credits_vertices[rc_frame_index() % 3]; }
+
+static void credits_matrix(Mtx* target, const f32* source) {
+    u32* packed = (u32*)target;
+    s32 i;
+    for (i = 0; i < 8; i++) {
+        const s32 a = (s32)(source[i * 2] * 65536.0f);
+        const s32 b = (s32)(source[i * 2 + 1] * 65536.0f);
+        packed[i] = ((u32)a & 0xFFFF0000u) | (((u32)b >> 16) & 0xFFFFu);
+        packed[i + 8] = ((u32)a << 16) | ((u32)b & 0xFFFFu);
+    }
+}
+
+static void credits_begin_quads(void) {
+    Mtx* projection_mtx = &s_credits_projection;
+    Mtx* identity_mtx = &s_credits_identity;
+    VpRaw* viewport = &s_credits_viewport;
+    const f32 projection[16] = {
+        1.0f / 160.0f, 0, 0, 0, 0, -1.0f / 120.0f, 0, 0,
+        0, 0, -1, 0, -1, 1, 0, 1
+    };
+    const f32 identity[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+    credits_matrix(projection_mtx, projection);
+    credits_matrix(identity_mtx, identity);
+    viewport->vscale[0] = viewport->vtrans[0] = 640;
+    viewport->vscale[1] = viewport->vtrans[1] = 480;
+    viewport->vscale[2] = viewport->vtrans[2] = 511;
+    viewport->vscale[3] = viewport->vtrans[3] = 0;
+    gEXSetRDRAMExtended(gMainDL++, 1);
+    gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_CENTER, -160 * 4, 0);
+    gSPViewport(gMainDL++, viewport);
+    rt64_tag_projection_matrix(&gMainDL, 0x00001014u);
+    gSPMatrix(gMainDL++, projection_mtx, G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(gMainDL++, identity_mtx, G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_PUSH);
+    // F3D G_CLEARGEOMETRYMODE: Z, culling, fog, lighting and generated UVs.
+    gImmp1_(gMainDL++, 0xB6, 0x000F3001u);
+    // RSP triangles need perspective texture coordinates even with an
+    // orthographic projection; the rectangle-only affine mode halves UVs.
+    gDPSetTexturePersp(gMainDL++, G_TP_PERSP);
+    gSPTexture(gMainDL++, 0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_ON);
+}
+
+static void credits_convert_rects(Gfx* first, Gfx* end, Vtx* vertices, s32* count) {
+    Gfx* command;
+    for (command = first; command + 2 < end; command++) {
+        const u32 w0 = command->words.w0;
+        const u32 w1 = command->words.w1;
+        s32 x0, y0, x1, y1, j;
+        Vtx* quad;
+        if ((w0 >> 24) != G_TEXRECT || *count + 4 > CREDITS_VERTEX_CAPACITY) continue;
+        x0 = (w1 >> 12) & 0xFFF; y0 = w1 & 0xFFF;
+        x1 = (w0 >> 12) & 0xFFF; y1 = w0 & 0xFFF;
+        if (y0 & 0x800) y0 -= 0x1000;
+        if (y1 & 0x800) y1 -= 0x1000;
+        quad = &vertices[*count];
+        *count += 4;
+        for (j = 0; j < 4; j++) {
+            quad[j].v.ob[0] = ((j & 1) ? x1 : x0) / 4;
+            quad[j].v.ob[1] = ((j & 2) ? y1 : y0) / 4;
+            quad[j].v.ob[2] = 0;
+            quad[j].v.flag = 0;
+            quad[j].v.tc[0] = (j & 1) ? 16 * 32 : 0;
+            quad[j].v.tc[1] = (j & 2) ? 16 * 32 : 0;
+            quad[j].v.cn[0] = quad[j].v.cn[1] = quad[j].v.cn[2] = quad[j].v.cn[3] = 255;
+        }
+        gSPVertex(command, quad, 4, 0);
+        gSP1Triangle(command + 1, 0, 1, 2, 0);
+        gSP1Triangle(command + 2, 2, 1, 3, 0);
+        command += 2;
+    }
+}
+
 RECOMP_PATCH s32 display_credits(void) {
     s16 i;
     s16 wide[58];
     u8 ascii[64];
     const u16 center_x = ui_safe_center_x();
     const u32 hud_id = begin_hud_pass();
+    Vtx* vertices = credits_vertices();
+    s32 vertex_count = 0;
 
     load_default_display_list(&gMainDL);
     set_menu_text_color(0xFF, 0xFF, 0xFF, 0xFF);
     select_font(0, 0, 0, 0);
+    credits_begin_quads();
 
     for (i = 0; i < 16; i++) {
         sprintf((char*)ascii, "%s", gCreditsLines[i + gCreditsEntryOffset]);
@@ -102,7 +242,15 @@ RECOMP_PATCH s32 display_credits(void) {
             gCreditsEntryOffset = 0;
             i = 1000;
         } else {
+            Gfx* first;
+            rt64_tag_model_matrix(&gMainDL, 0x10010000u + gCreditsEntryOffset + i, 0);
+            // A group tag alone does not create a new RSP transform. Each line
+            // needs a matrix load so rolling the text window preserves matches.
+            gSPMatrix(gMainDL++, &s_credits_identity, G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+            first = gMainDL;
             display_text_centered(&gMainDL, wide, center_x, (u16)(gCreditsVerticalPosition + (i * 16)), 16.0f, 16.0f);
+            credits_convert_rects(first, gMainDL, vertices, &vertex_count);
+            rt64_pop_model_matrix(&gMainDL);
         }
     }
 
@@ -111,6 +259,10 @@ RECOMP_PATCH s32 display_credits(void) {
         gCreditsEntryOffset += 1;
         gCreditsVerticalPosition = 0;
     }
+    gSPPopMatrix(gMainDL++, G_MTX_MODELVIEW);
+    gEXSetRDRAMExtended(gMainDL++, 0);
+    gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_NONE, 0, 0);
+    gSPViewport(gMainDL++, &gMainViewport);
     end_hud_pass();
 
     g_dbg_credits_calls++;
@@ -139,6 +291,7 @@ RECOMP_PATCH void check_cheats(OSContPad *contPad) {
     rt64_tag_projection_matrix(&gMainDL, SSSV_PROJECTION_HUD_TRANSFORM_ID);
 
     if (gCheats.debugMode != 0) {
+        set_hud_anchor(G_EX_ORIGIN_CENTER, -160 * 4);
         load_default_display_list(&gMainDL);
         set_menu_text_color(0xFF, 0xFF, 0, 0xFF);
         select_font(0, 0, 0, 0);
@@ -155,6 +308,7 @@ RECOMP_PATCH void check_cheats(OSContPad *contPad) {
             prepare_text((u8*)"Ver - 1.37", text);
             display_text(&gMainDL, text, ui_safe_right_anchor(20), 36, 16.0f, 16.0f);
         }
+        sssv_hud_layout_end();
     }
 
     lastButton = 0;
@@ -296,11 +450,13 @@ RECOMP_PATCH void no_controller_message(void) {
         load_segments(&gMainDL, gDisplayListContext);
         draw_rectangle(&gMainDL, 0, 16, 320, 36, 40, 40, 40, 128);
         gDPPipeSync(gMainDL++);
+        set_hud_anchor(G_EX_ORIGIN_CENTER, -160 * 4);
 
         load_default_display_list(&gMainDL);
         select_font(0, 0 /* FONT_DEFAULT */, 0, 0);
         set_menu_text_color(0xFF, 0xFF, 0xFF, 0xFF);
         display_text_centered(&gMainDL, gNoControllerMessageText, ui_safe_center_x(), 20, 16.0f, 16.0f);
         gDPPipeSync(gMainDL++);
+        sssv_hud_layout_end();
     }
 }

@@ -6,6 +6,7 @@
 static u8 s_transition_r = 0;
 static u8 s_transition_g = 0;
 static u8 s_transition_b = 0;
+extern void sssv_draw_intro_skip_blackout(void);
 
 RECOMP_PATCH void perform_screen_transition(void) {
     s32 phi_v1;
@@ -241,5 +242,6 @@ RECOMP_PATCH void perform_screen_transition(void) {
         }
     }
 
+    sssv_draw_intro_skip_blackout();
     rc_pop();
 }

@@ -104,7 +104,11 @@ RECOMP_PATCH void render_rig_instance_xlu(s32 x, s32 y, s32 z, s16 pitch, s16 ya
         gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);
     }
 
-    append_joint_pose_transform(1, &gRigPoseStates[pose_bank][1]);
+    // The DMA letters use a different hierarchy: the D needs the second
+    // middle-joint transform. Dan's hair and Evo's visor must not inherit it.
+    if (rig_variant == 4) {
+        append_joint_pose_transform(1, &gRigPoseStates[pose_bank][1]);
+    }
 
     if (pose_bank == 1) {
         gDPSetPrimColor(gXluDL++, 0, 0, 0xEA, 0xE6, 0xFF, 0xFF);
@@ -122,7 +126,10 @@ RECOMP_PATCH void render_rig_instance_xlu(s32 x, s32 y, s32 z, s16 pitch, s16 ya
     gSPDisplayList(gXluDL++, gRigPartDisplayLists[rig_variant][9]);
     gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);
     gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);
-    gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);
+
+    if (rig_variant == 4) {
+        gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);
+    }
 
     // Return to the caller's stack depth before the next translucent draw.
     gSPPopMatrix(gXluDL++, G_MTX_MODELVIEW);

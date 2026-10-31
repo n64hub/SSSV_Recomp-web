@@ -500,7 +500,11 @@ static inline s32 billboard_screen_extent_to_world_half(
         return 0;
     }
 
-    *out_world_x = screen_extent_x4 * (-z_clip) / screen_row_x;
+    // Sprite extents were authored in the original square-pixel 320x240
+    // canvas. Inverting the widened camera's X projection made their world
+    // width grow with the window aspect. Use the vertical pixel scale for
+    // both extents, while retaining each sprite's authored width/height ratio.
+    *out_world_x = screen_extent_x4 * (-z_clip) / screen_row_y;
     *out_world_y = screen_extent_y4 * (-z_clip) / screen_row_y;
     return 1;
 }

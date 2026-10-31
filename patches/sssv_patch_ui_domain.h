@@ -3,12 +3,23 @@
 
 #include "sssv_patch_common.h"
 
+// Set for the complete news broadcast frame, including its Sprite2D inserts.
+extern s32 sssv_intro_4_3_frame;
+
 static inline f32 get_target_aspect(void) {
+    if (sssv_intro_4_3_frame) {
+        return SSSV_BASE_ASPECT;
+    }
     f32 target_aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
     if (target_aspect < SSSV_BASE_ASPECT) {
         target_aspect = SSSV_BASE_ASPECT;
     }
-    return target_aspect;
+    // RDP scissor and rectangle coordinates are unsigned 10.2 fixed point.
+    // Keep the game's logical canvas representable; RT64 expands that canvas
+    // to the actual window independently. Projection and viewport must use
+    // the same bounded aspect so crossing this limit never changes the zoom.
+    const f32 max_aspect = 1022.0f / SSSV_BASE_HEIGHT;
+    return (target_aspect > max_aspect) ? max_aspect : target_aspect;
 }
 
 static inline s16 compute_target_width_for_height_patch(s16 source_height) {
@@ -22,8 +33,8 @@ static inline s16 compute_target_width_for_height_patch(s16 source_height) {
     if (width < SSSV_BASE_WIDTH) {
         width = SSSV_BASE_WIDTH;
     }
-    if (width > 0x7FFE) {
-        width = 0x7FFE;
+    if (width > 1022) {
+        width = 1022;
     }
 
     if ((width & 1) != 0) {
