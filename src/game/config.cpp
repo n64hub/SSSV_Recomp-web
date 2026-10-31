@@ -1,6 +1,7 @@
 #include "sssv_config.h"
 #include "sssv_game.h"
 #include "recompui/config.h"
+#include "recompui/renderer.h"
 #include "util/file.h"
 
 #include <filesystem>
@@ -11,16 +12,15 @@ namespace sssv {
 
 namespace {
     using EnumOptionVector = const std::vector<recomp::config::ConfigOptionEnumOption>;
-    enum class SpriteUpscalingOption {
-        Original,
-        Upscaled
+    constexpr const char* HDHudOptionId = "sssv_hd_hud";
+    constexpr const char* HDTextOptionId = "sssv_hd_text";
+    enum class HDTextOption { Off, On };
+    static EnumOptionVector hd_text_options = {
+        { HDTextOption::On, "On" },
+        { HDTextOption::Off, "Off" }
     };
-    constexpr const char* SpriteUpscaleOptionId = "sssv_2d_sprite_upscaling";
 
-    static EnumOptionVector sprite_upscaling_options = {
-        { SpriteUpscalingOption::Original, "Original" },
-        { SpriteUpscalingOption::Upscaled, "Upscaled" }
-    };
+
 }
 
 void init_config() {
@@ -38,38 +38,42 @@ void init_config() {
     recompui::config::create_general_tab(general_options);
     recomp::config::Config& graphics_config = recompui::config::create_graphics_tab();
     graphics_config.add_enum_option(
-        SpriteUpscaleOptionId,
-        "2D Sprite Upscaling",
-        "Controls whether legacy Sprite2D elements such as title art, menu sprites and similar 2D images use RT64's higher resolution sprite upscale path."
-        "<br />"
-        "<br />"
-        "<recomp-color primary>Original</recomp-color> keeps those sprites on the original low-resolution texel grid."
-        "<br />"
-        "<recomp-color primary>Upscaled</recomp-color> renders them through the shared high-resolution sprite path."
-        "<br />"
-        "<br />"
-        "This only has a visible effect when rendering above the original sprite resolution.",
-        sprite_upscaling_options,
-        SpriteUpscalingOption::Upscaled
+        HDTextOptionId,
+        "HD Text",
+        "Uses sharper in-game text and menu header lettering. Off restores the original bitmap text and header.",
+        hd_text_options,
+        HDTextOption::On
+    );
+    graphics_config.add_enum_option(
+        HDHudOptionId,
+        "HD Hud",
+        "Uses high-resolution health and energy bars and green LCD numbers. Off restores the original HUD artwork.",
+        hd_text_options,
+        HDTextOption::On
     );
     recompui::config::create_controls_tab();
     recompui::config::create_sound_tab();
     recompui::config::create_mods_tab();
     recompui::config::finalize();
+    recompui::renderer::set_hd_text_enabled(get_hd_text_enabled());
+    recompui::renderer::set_hd_hud_enabled(get_hd_hud_enabled());
 }
 
-bool get_2d_sprite_upscaling_enabled() {
+bool get_hd_text_enabled() {
     try {
-        recomp::config::Config& graphics_config = recompui::config::get_graphics_config();
-        if (!graphics_config.has_option(SpriteUpscaleOptionId)) {
-            return true;
-        }
-
-        const auto option_value = graphics_config.get_option_value(SpriteUpscaleOptionId);
-        const auto sprite_upscaling = static_cast<SpriteUpscalingOption>(std::get<uint32_t>(option_value));
-        return sprite_upscaling == SpriteUpscalingOption::Upscaled;
+        auto& config = recompui::config::get_graphics_config();
+        return !config.has_option(HDTextOptionId) ||
+            static_cast<HDTextOption>(std::get<uint32_t>(config.get_option_value(HDTextOptionId))) == HDTextOption::On;
+    } catch (const std::exception&) {
+        return true;
     }
-    catch (const std::exception&) {
+}
+bool get_hd_hud_enabled() {
+    try {
+        auto& config = recompui::config::get_graphics_config();
+        return !config.has_option(HDHudOptionId) ||
+            static_cast<HDTextOption>(std::get<uint32_t>(config.get_option_value(HDHudOptionId))) == HDTextOption::On;
+    } catch (const std::exception&) {
         return true;
     }
 }

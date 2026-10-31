@@ -8,12 +8,158 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <filesystem>
+#include <fstream>
 
 #include "recomp.h"
 #include "librecomp/helpers.hpp"
 #include "recompui/recompui.h"
+#include "sssv_config.h"
 #include "ultramodern/ultra64.h"
 #include "ultramodern/ultramodern.hpp"
+
+extern "C" void sssv_file_select_begin(uint8_t*, recomp_context*);
+extern "C" void sssv_file_select_background(uint8_t*, recomp_context*);
+extern "C" void sssv_file_select_foreground(uint8_t*, recomp_context*);
+extern "C" void sssv_file_select_end(uint8_t*, recomp_context*);
+extern "C" void sssv_update_intro_skip(uint8_t*, recomp_context*);
+extern "C" void sssv_hud_left_begin(uint8_t*, recomp_context*);
+extern "C" void sssv_hud_layout_end(uint8_t*, recomp_context*);
+extern "C" void func_803136B0_724D60(uint8_t*, recomp_context*);
+
+extern "C" void func_802DA90C_6EBFBC(uint8_t*, recomp_context*);
+extern "C" void reset_credits_counters(uint8_t*, recomp_context*);
+extern "C" void func_8038FC58_7A1308(uint8_t*, recomp_context*);
+
+extern "C" void sssv_draw_hd_header(uint8_t*, recomp_context*);
+
+extern "C" void sssv_hd_menu_title_hook(uint8_t*, recomp_context* ctx) {
+    if (sssv::get_hd_text_enabled()) ctx->r7 = 30;
+}
+
+extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
+    if (!sssv::get_hd_text_enabled()) return;
+    static const bool available = std::filesystem::exists("assets/hd-font/header-frame.png");
+    if (!available) return;
+    const recomp_context saved = *ctx;
+    sssv_draw_hd_header(rdram, ctx);
+    *ctx = saved;
+}
+
+static void sssv_test_update(uint8_t* rdram, recomp_context* ctx) {
+    if (MEM_BU(0, S32(0x803F2D10)) == 0) {
+        if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
+            const std::string prefix(control);
+            std::error_code error;
+            // Start the native credits loader atomically on the game thread.
+            // This avoids racing a level/menu switch against frame assembly.
+            if (std::filesystem::exists(prefix + ".credits", error)) {
+                std::filesystem::remove(prefix + ".credits", error);
+                MEM_H(0, S32(0x803F2D38)) = 35;
+                MEM_B(0, S32(0x803F7DD5)) = 34;
+                MEM_B(0, S32(0x80204288)) = 10;
+                MEM_H(0, S32(0x803E1BC0)) = 0;
+                MEM_H(0, S32(0x803C0426)) = 0;
+                MEM_H(0, S32(0x803C0428)) = 0;
+                MEM_H(0, S32(0x803C042A)) = 0;
+                for (int offset = 0x2A; offset <= 0x2C; ++offset) {
+                    MEM_B(offset, S32(0x803F6680)) = 0;
+                }
+                const recomp_context saved = *ctx;
+                reset_credits_counters(rdram, ctx);
+                func_8038FC58_7A1308(rdram, ctx);
+                *ctx = saved;
+                return;
+            }
+            const int playerIndex = MEM_H(0, S32(0x803D5534));
+            if (playerIndex >= 0 && playerIndex < 50 && std::filesystem::exists(prefix + ".protect", error)) {
+                const uint32_t address = MEM_W(0, S32(0x801D9ED8 + 0x3EB0 + playerIndex * 8 + 4));
+                if (address >= 0x80000000U && address <= 0x807FF000U) {
+                    const gpr actor = S32(address);
+                    const int health = MEM_H(0x14C, actor);
+                    // Zero health also marks the outgoing body during a
+                    // possession. Never revive that body or interrupt it.
+                    if (health > 0 && health < 127 && MEM_H(12, actor) < 15000) {
+                        std::ofstream log(prefix + ".damage.log", std::ios::app);
+                        log << playerIndex << ' ' << health << ' ' << MEM_H(4, actor) << ' '
+                            << MEM_H(8, actor) << ' ' << MEM_H(12, actor) << '\n';
+                        MEM_H(0x14C, actor) = 127;
+                    }
+                }
+            }
+            if (playerIndex >= 0 && playerIndex < 50 && std::filesystem::exists(prefix + ".warp", error)) {
+                std::ifstream command(prefix + ".warp");
+                int x, z, y;
+                const uint32_t address = MEM_W(0, S32(0x801D9ED8 + 0x3EB0 + playerIndex * 8 + 4));
+                if ((command >> x >> z >> y) && address >= 0x80000000U && address <= 0x807FF000U &&
+                    x >= 0 && x < 32000 && z >= 0 && z < 32000 && y >= -1000 && y < 32000) {
+                    const gpr actor = S32(address);
+                    MEM_W(4, actor) = MEM_W(0x10, actor) = x * 65536;
+                    MEM_W(8, actor) = MEM_W(0x14, actor) = z * 65536;
+                    MEM_W(12, actor) = MEM_W(0x18, actor) = y * 65536;
+                    MEM_W(0x1C, actor) = MEM_W(0x20, actor) = MEM_W(0x24, actor) = 0;
+                    // Reclassify terrain layers after crossing the map. A stale
+                    // bridge/underwater layer can otherwise snap to 0x4000.
+                    const recomp_context beforeWarpRefresh = *ctx;
+                    ctx->r4 = actor;
+                    func_803136B0_724D60(rdram, ctx);
+                    ctx->r4 = actor;
+                    func_802DA90C_6EBFBC(rdram, ctx);
+                    *ctx = beforeWarpRefresh;
+                }
+                command.close();
+                std::filesystem::remove(prefix + ".warp", error);
+            }
+            if (std::filesystem::exists(prefix + ".state.request", error)) {
+                std::ofstream output(prefix + ".state");
+                output << "current " << MEM_H(0, S32(0x803D5534)) << '\n';
+                for (int i = 0; i < 50; ++i) {
+                    const uint32_t address = MEM_W(0, S32(0x801D9ED8 + 0x3EB0 + i * 8 + 4));
+                    if (address < 0x80000000U || address > 0x807FF000U) continue;
+                    const gpr actor = S32(address);
+                    output << i << ' ' << std::hex << address << std::dec
+                        << ' ' << MEM_H(4, actor) << ' ' << MEM_H(8, actor) << ' ' << MEM_H(12, actor)
+                        << ' ' << MEM_H(0x14C, actor) << '\n';
+                }
+                output.close();
+                std::filesystem::remove(prefix + ".state.request", error);
+            }
+        }
+    }
+}
+
+extern "C" void sssv_health_layout_hook(uint8_t* rdram, recomp_context* ctx, int end) {
+    const recomp_context saved = *ctx;
+    if (end) sssv_hud_layout_end(rdram, ctx);
+    else sssv_hud_left_begin(rdram, ctx);
+    *ctx = saved;
+}
+extern "C" void sssv_intro_skip_dog_drawn(uint8_t*, recomp_context*);
+
+extern "C" void sssv_intro_skip_dog_hook(uint8_t* rdram, recomp_context* ctx) {
+    const recomp_context saved = *ctx;
+    sssv_intro_skip_dog_drawn(rdram, ctx);
+    *ctx = saved;
+}
+
+extern "C" void sssv_intro_skip_hook(uint8_t* rdram, recomp_context* ctx) {
+    const recomp_context saved = *ctx;
+    sssv_test_update(rdram, ctx);
+    sssv_update_intro_skip(rdram, ctx);
+    *ctx = saved;
+}
+
+// Injected calls must preserve the original function's live MIPS registers.
+extern "C" void sssv_file_select_layout_hook(uint8_t* rdram, recomp_context* ctx, int stage) {
+    const recomp_context saved = *ctx;
+    switch (stage) {
+    case 0: sssv_file_select_begin(rdram, ctx); break;
+    case 1: sssv_file_select_background(rdram, ctx); break;
+    case 2: sssv_file_select_foreground(rdram, ctx); break;
+    case 3: sssv_file_select_end(rdram, ctx); break;
+    }
+    *ctx = saved;
+}
 
 namespace {
 
@@ -424,7 +570,7 @@ int16_t compute_target_width_for_height(int16_t source_height) {
 
     const int16_t safe_height = (source_height > 0) ? source_height : kBaseHeight;
     int raw_width = static_cast<int>(std::lround(static_cast<float>(safe_height) * target_aspect));
-    raw_width = std::clamp(raw_width, static_cast<int>(kBaseWidth), 0x7FFE);
+    raw_width = std::clamp(raw_width, static_cast<int>(kBaseWidth), 1022);
 
     // Keep viewport symmetric around center.
     if ((raw_width & 1) != 0) {
@@ -440,6 +586,15 @@ void export_target_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
 }
 
 } // namespace sssv::aspect
+
+// Only the demo prompt uses this correction; the world camera stays widescreen.
+extern "C" void sssv_layout_demo_prompt(uint8_t* rdram, recomp_context* ctx) noexcept(false) {
+    ctx->r6 = 160;
+    const float width = 16.0f * kBaseGameAspect / sssv::aspect::get_target_aspect_ratio(kBaseGameAspect);
+    uint32_t width_bits;
+    std::memcpy(&width_bits, &width, sizeof(width_bits));
+    MEM_W(0x10, ctx->r29) = width_bits;
+}
 
 extern "C" void __ll_rshift_recomp(uint8_t* rdram, recomp_context* ctx) {
     (void)rdram;
@@ -485,6 +640,20 @@ extern "C" void sssv_osViSetYScale_recomp(uint8_t* rdram, recomp_context* ctx) {
 
 extern "C" void recomp_get_target_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
     sssv::aspect::export_target_aspect_ratio(rdram, ctx);
+}
+
+extern "C" void recomp_get_hud_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
+    const float window_aspect = sssv::aspect::get_target_aspect_ratio(kBaseGameAspect);
+    const auto config = ultramodern::renderer::get_graphics_config();
+    float hud_aspect = window_aspect;
+    if (config.hr_option == ultramodern::renderer::HUDRatioMode::Original) {
+        hud_aspect = kBaseGameAspect;
+    } else if (config.hr_option == ultramodern::renderer::HUDRatioMode::Clamp16x9) {
+        // Beyond 16:9, follow half of the additional width rather than either
+        // pinning the HUD to 16:9 or pushing it against the outermost edges.
+        hud_aspect -= std::max(window_aspect - kExpandGameAspect, 0.0f) * 0.5f;
+    }
+    _return(ctx, hud_aspect);
 }
 
 extern "C" void recomp_get_patch_diag_flags(uint8_t* rdram, recomp_context* ctx) {
