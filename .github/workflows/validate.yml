@@ -1,7 +1,11 @@
-name: Linux and macOS releases
+name: Platform release builds
 on:
   workflow_dispatch:
-  workflow_call:
+    inputs:
+      release_tag:
+        description: 'New release tag (leave blank to build artifacts only)'
+        type: string
+        default: 'v2026.11.01'
   push:
     tags: ['v*']
 permissions:
@@ -18,6 +22,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - runner: windows-latest
+            platform: Windows
+            arch: x64
           - runner: ubuntu-24.04
             platform: Linux
             arch: x64
@@ -42,6 +49,23 @@ jobs:
         run: python tools/ci_release.py prepare
       - name: Apply every runtime and renderer modification
         run: python tools/apply_dependency_patches.py
+      - name: Set up Windows compiler environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+      - name: Install Windows build tools
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install make --no-progress -y
+          Invoke-WebRequest -Uri 'https://github.com/DragonMinded/libdragon/releases/download/toolchain-continuous-prerelease/gcc-toolchain-mips64-win64.zip' -OutFile n64-toolchain.zip
+          Expand-Archive n64-toolchain.zip n64-toolchain
+          $patchGcc = Get-ChildItem n64-toolchain -Recurse -Filter mips64-elf-gcc.exe | Select-Object -First 1
+          $patchLd = Get-ChildItem n64-toolchain -Recurse -Filter mips64-elf-ld.exe | Select-Object -First 1
+          if (-not $patchGcc -or -not $patchLd) { throw 'Missing MIPS toolchain' }
+          "PATCH_CC=$($patchGcc.FullName.Replace('\','/'))" >> $env:GITHUB_ENV
+          "PATCH_LD=$($patchLd.FullName.Replace('\','/'))" >> $env:GITHUB_ENV
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
@@ -68,16 +92,25 @@ jobs:
           persist-credentials: false
       - name: Build patch recompiler (no ROM input)
         run: |
-          cmake -S N64RecompSource -B build-tools -G Ninja -DCMAKE_BUILD_TYPE=Release
+          args=()
+          if [ "$RUNNER_OS" = Windows ]; then
+            args+=(-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl '-DCMAKE_CXX_FLAGS=-Xclang -fexceptions -Xclang -fcxx-exceptions')
+          fi
+          cmake -S N64RecompSource -B build-tools -G Ninja -DCMAKE_BUILD_TYPE=Release "${args[@]}"
           cmake --build build-tools --target N64RecompCLI --parallel 3
-          if [ -f build-tools/N64Recomp ]; then
+          if [ "$RUNNER_OS" = Windows ]; then
+            cp build-tools/N64Recomp.exe ./N64Recomp.exe
+          elif [ -f build-tools/N64Recomp ]; then
             cp build-tools/N64Recomp ./N64Recomp
           else
             cp build-tools/N64RecompCLI ./N64Recomp
           fi
       - name: Configure Release
         run: |
-          args=()
+          args=(-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++)
+          if [ "$RUNNER_OS" = Windows ]; then
+            args=(-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl '-DCMAKE_CXX_FLAGS=-Xclang -fexceptions -Xclang -fcxx-exceptions')
+          fi
           if [ "$RUNNER_OS" = macOS ]; then
             args+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0)
             if [ "${{ matrix.arch }}" = arm64 ]; then
@@ -86,11 +119,14 @@ jobs:
               args+=(-DCMAKE_OSX_ARCHITECTURES=x86_64)
             fi
           fi
-          cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DPATCHES_C_COMPILER="$PATCH_CC" -DPATCHES_LD="$PATCH_LD" "${args[@]}"
+          cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DPATCHES_C_COMPILER="$PATCH_CC" -DPATCHES_LD="$PATCH_LD" "${args[@]}"
       - name: Compile our game and patches
         run: cmake --build build-release --target SSSVRecompiled --parallel 3
       - name: Package assets and licenses; reject ROMs and saves
         run: python tools/ci_release.py package --platform '${{ matrix.platform }}' --arch '${{ matrix.arch }}'
+      - name: Package corresponding source
+        if: runner.os == 'Linux'
+        run: python tools/ci_release.py source
       - name: Upload audited release package
         uses: actions/upload-artifact@v4
         with:
@@ -101,3 +137,25 @@ jobs:
             dist/*.sha256
           if-no-files-found: error
           retention-days: 14
+
+  publish:
+    name: Publish all platform packages
+    needs: build
+    if: github.event_name == 'push' || inputs.release_tag != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-packages
+          merge-multiple: true
+      - name: Create repository release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" release-packages/* --target "$GITHUB_SHA" --title "Space Station Silicon Valley Recompiled - $RELEASE_TAG" --notes-file docs/RELEASE-NOTES.md
