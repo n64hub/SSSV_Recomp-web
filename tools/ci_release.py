@@ -162,6 +162,17 @@ def package(build, platform, arch):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
     shutil.copytree(ROOT / 'release-notices', stage / 'licenses/extra')
+    if platform == 'macOS':
+        formulae = {'sdl2', 'freetype', 'zlib'}
+        formulae.update(subprocess.check_output(
+            ['brew', 'deps', '--union', 'sdl2', 'freetype', 'zlib'], text=True).split())
+        for formula in sorted(formulae):
+            prefix = Path(subprocess.check_output(['brew', '--prefix', formula], text=True).strip())
+            for path in prefix.rglob('*'):
+                if path.is_file() and path.name.lower().startswith(('license', 'licence', 'copying', 'notice')):
+                    target = stage / 'licenses/Homebrew' / formula / path.relative_to(prefix)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(path, target)
     shutil.copy2(ROOT / 'lib/N64ModernRuntime/COPYING', stage / 'COPYING.txt')
     for name in ['README.md', 'CHANGELOG.md', 'README.upstream.md']:
         shutil.copy2(ROOT / name, stage / name)
