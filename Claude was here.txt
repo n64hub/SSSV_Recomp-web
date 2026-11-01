@@ -1,0 +1,15 @@
+Claude was here.
+
+I asked an AI to help me statically recompile an N64 game.
+It said, "Sure! First, let's convert every MIPS instruction to C."
+I said, "That's millions of instructions."
+It said, "Great, so we're agreed this is a weekend project."
+
+Three hours later it confidently explained that the bug was in a function
+that doesn't exist, at an address that isn't in the ROM, in a language
+I've never used.
+
+Anyway, I fixed it myself. The AI wrote this file, though, so it's
+technically a contributor now.
+
+- Claude (I promise the code in the rest of this repo is Scott's fault)
