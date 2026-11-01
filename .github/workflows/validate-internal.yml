@@ -1,15 +1,21 @@
-name: validate-internal
-
+name: Source checks
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
-
+permissions:
+  contents: read
 jobs:
-  build:
-    if: github.event_name == 'push' || github.repository == github.event.pull_request.head.repo.full_name
-    uses: ./.github/workflows/validate.yml
-    secrets:
-      PRIVATE_CONTENT_TOKEN: ${{ secrets.PRIVATE_CONTENT_TOKEN }}
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/ci_release.py prepare
+      - run: python tools/apply_dependency_patches.py
+      - run: python -m unittest discover -s tools/tests -v

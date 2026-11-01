@@ -1,21 +1,11 @@
-name: validate-external
-
+# Source checks handles all PRs, without pull_request_target or secrets.
+name: Legacy external validation
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  authorize:
-    if: github.repository != github.event.pull_request.head.repo.full_name
-    environment:
-      ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}
-    runs-on: ubuntu-latest
+  info:
+    runs-on: ubuntu-24.04
     steps:
-      - run: echo "authorized"
-
-  build:
-    if: github.repository != github.event.pull_request.head.repo.full_name
-    needs: authorize
-    uses: ./.github/workflows/validate.yml
-    secrets:
-      PRIVATE_CONTENT_TOKEN: ${{ secrets.PRIVATE_CONTENT_TOKEN }}
+      - run: echo 'Use Source checks or Linux and macOS releases instead.'
