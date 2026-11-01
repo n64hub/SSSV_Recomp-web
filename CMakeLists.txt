@@ -128,10 +128,15 @@ if(WIN32)
   add_compile_definitions(NOMINMAX)
 else()
   if(APPLE)
+    if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+      set(SSSV_HOST_ARCH arm64)
+    else()
+      set(SSSV_HOST_ARCH x64)
+    endif()
     set(DXC
       ${CMAKE_COMMAND} -E env
-      "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64"
-      "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-macos"
+      "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/${SSSV_HOST_ARCH}"
+      "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/${SSSV_HOST_ARCH}/dxc-macos"
     )
 
     if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")

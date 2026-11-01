@@ -103,11 +103,15 @@ Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` i
 - **Start/Enter during the new-game intro:** skip with a transition into gameplay.
 - **HD Text** and **HD Hud** are enabled by default and can be disabled independently.
 
+## Linux and macOS builds
+
+Use **Actions > Linux and macOS releases > Run workflow** for Linux x64, Mac Apple Silicon and Mac Intel packages. These builds apply this fork's dependency patches and include HD assets and licenses. No ROM is uploaded or packaged. [Platform build instructions](docs/PLATFORM-BUILDS.md).
+
 ## Building this version
 
 1. Clone this repository and initialize its dependencies with `git submodule update --init --recursive`.
 2. Run `python tools/apply_dependency_patches.py` to apply this fork's runtime and renderer changes. The script checks all patches before applying and supports already-applied patches.
-3. Follow the toolchain/build instructions in [the upstream README](README.upstream.md) and `.github/workflows/validate.yml`. Supply the supported ROM locally as `sssv.us.z64`; it is required for recompilation and is never committed.
+3. Follow the toolchain/build instructions in [the upstream README](README.upstream.md) and `.github/workflows/validate.yml`. For ROM-free builds, first run `python tools/ci_release.py prepare` to restore the checked generated C source. Regenerating that source requires your supported ROM locally as `sssv.us.z64`; it is never committed.
 
 The dependency patch manifest records the exact upstream revisions. The patches include all local changes to N64ModernRuntime, RecompFrontend, RT64 and Plume, so a fresh clone does not depend on unpublished submodule commits.
 
