@@ -136,8 +136,6 @@ Original project: [Cellenseres/SSSV_Recomp](https://github.com/Cellenseres/SSSV_
 
 Built on [N64: Recompiled](https://github.com/N64Recomp/N64Recomp), [RT64](https://github.com/rt64/rt64), N64ModernRuntime, RecompFrontend, and the work of their contributors. Original upstream documentation and acknowledgements are preserved in [README.upstream.md](README.upstream.md). Dependencies retain their own copyright and license notices. Font licenses are included with their assets.
 
-This repository is private for now. Because GitHub does not allow private forks of public repositories, it is maintained as an independent private repository preserving the original Git history.
-
 ## AI Disclosure
 
 I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? Understandable. I'm not going to make any excuses for it.
