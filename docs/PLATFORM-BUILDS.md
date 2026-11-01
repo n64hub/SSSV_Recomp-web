@@ -1,10 +1,10 @@
 # Linux and macOS release builds
 
-In GitHub, open **Actions > Linux and macOS releases > Run workflow**.
-The same workflow runs for tags beginning with `v`. It builds Linux x64,
+In GitHub, open **Actions > Platform release builds > Run workflow**.
+The same workflow runs for tags beginning with `v`. It builds Windows x64, Linux x64,
 macOS Apple Silicon, and macOS Intel separately. Successful jobs provide
 downloadable packages and SHA-256 checksums in the run's Artifacts section.
-Nothing is automatically published as a GitHub Release.
+Enter a new release tag to publish all four packages and corresponding source together after every build succeeds. Leave the tag blank to produce artifacts only. Tag-triggered builds publish under that tag.
 
 The Mac builds currently target macOS 15 and later. They are ad-hoc signed,
 not Developer ID signed or notarized. Linux is built on Ubuntu 24.04 and
@@ -45,4 +45,4 @@ are recompiled on each build and do not require a new snapshot.
 Licenses/notices are copied from initialized dependency sources and
 `release-notices/`. Archives identify the exact source commit. The old
 private-ROM checkout and its access token are no longer used. Source checks
-run on pushes and PRs; full platform builds run only manually or on `v*` tags.
+run on pushes and PRs; full platform builds run only manually or on `v*` tags. The release publishing job alone has write access; build jobs have read-only access.
