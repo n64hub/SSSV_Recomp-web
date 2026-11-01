@@ -52,10 +52,10 @@ jobs:
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install ninja sdl2 freetype llvm pkgconf
+          brew install ninja sdl2 freetype llvm lld pkgconf
           python -m pip install macholib
           echo "PATCH_CC=$(brew --prefix llvm)/bin/clang" >> "$GITHUB_ENV"
-          echo "PATCH_LD=$(brew --prefix llvm)/bin/ld.lld" >> "$GITHUB_ENV"
+          echo "PATCH_LD=$(brew --prefix lld)/bin/ld.lld" >> "$GITHUB_ENV"
           echo "CMAKE_PREFIX_PATH=$(brew --prefix sdl2):$(brew --prefix freetype)" >> "$GITHUB_ENV"
           chmod +x .github/macos/ld64
       - name: Check out pinned recompiler tools
