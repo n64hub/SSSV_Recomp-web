@@ -16,7 +16,19 @@ endif()
 set(APPS "${APP_BUNDLE}")
 
 # Set up framework search paths
-set(DIRS "${BUILD_PREFIX}SSSVRecompiled.app/Contents/Frameworks")
+set(DIRS "${APP_BUNDLE}/Contents/Frameworks")
+
+# Homebrew dependencies can refer to one another through @rpath rather than
+# absolute paths (e.g. FreeType -> Brotli). Give BundleUtilities the actual
+# library search roots so it can copy and rewrite the whole dependency graph.
+find_program(BREW_EXECUTABLE brew)
+if(BREW_EXECUTABLE)
+    execute_process(COMMAND "${BREW_EXECUTABLE}" --prefix
+        OUTPUT_VARIABLE BREW_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY)
+    file(GLOB BREW_LIBRARY_DIRS "${BREW_PREFIX}/opt/*/lib")
+    list(APPEND DIRS "${BREW_PREFIX}/lib" ${BREW_LIBRARY_DIRS})
+endif()
 
 # Detect if we're using pkgx
 if(PKGX_EXECUTABLE)
