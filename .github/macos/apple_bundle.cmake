@@ -34,8 +34,8 @@ set(ICNS_FILE ${CMAKE_BINARY_DIR}/resources/AppIcon.icns)
 add_custom_command(
         OUTPUT ${ICONSET_STAMP}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${ICONSET_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy ${ICON_SOURCE} ${ICONSET_DIR}/icon_512x512.png
-        COMMAND ${CMAKE_COMMAND} -E copy ${ICON_SOURCE} ${ICONSET_DIR}/icon_512x512@2x.png
+        COMMAND sips -z 512 512 ${ICON_SOURCE} --out ${ICONSET_DIR}/icon_512x512.png
+        COMMAND sips -z 1024 1024 ${ICON_SOURCE} --out ${ICONSET_DIR}/icon_512x512@2x.png
         COMMAND ${CMAKE_COMMAND} -E touch ${ICONSET_STAMP}
         DEPENDS ${ICON_SOURCE}
         COMMENT "Creating iconset directory and copying PNG file"
@@ -78,7 +78,7 @@ endif()
 # Post-build steps for macOS bundle
 add_custom_command(TARGET SSSVRecompiled POST_BUILD
     # Copy and fix frameworks first
-    COMMAND ${CMAKE_COMMAND} -D CMAKE_BUILD_TYPE=$<CONFIG> -D CMAKE_GENERATOR=${CMAKE_GENERATOR} -P ${CMAKE_SOURCE_DIR}/.github/macos/fixup_bundle.cmake
+    COMMAND ${CMAKE_COMMAND} -DAPP_BUNDLE=$<TARGET_BUNDLE_DIR:SSSVRecompiled> -D CMAKE_BUILD_TYPE=$<CONFIG> -D CMAKE_GENERATOR=${CMAKE_GENERATOR} -P ${CMAKE_SOURCE_DIR}/.github/macos/fixup_bundle.cmake
 
     # Copy all resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/temp_assets

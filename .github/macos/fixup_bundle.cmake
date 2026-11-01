@@ -10,7 +10,10 @@ if (CMAKE_GENERATOR STREQUAL "Xcode")
 endif()
 
 # Use generator expressions to get the absolute path to the bundle
-set(APPS "${BUILD_PREFIX}SSSVRecompiled.app/Contents/MacOS/SSSVRecompiled")
+if(NOT DEFINED APP_BUNDLE)
+    message(FATAL_ERROR "Pass APP_BUNDLE to fix up the exact built app")
+endif()
+set(APPS "${APP_BUNDLE}")
 
 # Set up framework search paths
 set(DIRS "${BUILD_PREFIX}SSSVRecompiled.app/Contents/Frameworks")
