@@ -2,11 +2,7 @@
 
 ## Purpose of Project
 
-This is a fork of Cellenseres's currently abandonned Space Station Silicon Valley Recompilation Project. This was done to fix the scaling of the appropriate graphics and fix the intro bugs among other things. Credit to Cellenseres for the original project.
-
-## AI Disclosure
-
-I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? I'm fine with it. I too am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp and all credit goes to Wiseguy and Dario plus the rest of his team for even making this possible in the first place even though I know they frown upon projects like this.
+This is a fork of Cellenseres's Space Station Silicon Valley Recompilation Project. This was done to fix the scaling of the appropriate graphics and fix the intro bugs among other things. Credit to Cellenseres for the original project.
 
 ## Screenshot comparisons
 
@@ -122,3 +118,11 @@ Original project: [Cellenseres/SSSV_Recomp](https://github.com/Cellenseres/SSSV_
 Built on [N64: Recompiled](https://github.com/N64Recomp/N64Recomp), [RT64](https://github.com/rt64/rt64), N64ModernRuntime, RecompFrontend, and the work of their contributors. Original upstream documentation and acknowledgements are preserved in [README.upstream.md](README.upstream.md). Dependencies retain their own copyright and license notices. Font licenses are included with their assets.
 
 This repository is private for now. Because GitHub does not allow private forks of public repositories, it is maintained as an independent private repository preserving the original Git history.
+
+## AI Disclosure
+
+I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? Understandable. I'm not going to make any excuses for it. 
+
+I am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp myself.
+
+All credit goes to Wiseguy and Dario plus the rest of his team for even making this possible in the first place even though I know they frown upon projects like this.
