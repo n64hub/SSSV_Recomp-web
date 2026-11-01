@@ -103,9 +103,9 @@ Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` i
 - **Start/Enter during the new-game intro:** skip with a transition into gameplay.
 - **HD Text** and **HD Hud** are enabled by default and can be disabled independently.
 
-## Linux and macOS builds
+## Windows, Linux and macOS builds
 
-Use **Actions > Linux and macOS releases > Run workflow** for Linux x64, Mac Apple Silicon and Mac Intel packages. These builds apply this fork's dependency patches and include HD assets and licenses. No ROM is uploaded or packaged. [Platform build instructions](docs/PLATFORM-BUILDS.md).
+Use **Actions > Platform release builds > Run workflow** for Windows x64, Linux x64, Mac Apple Silicon and Mac Intel packages. These builds apply this fork's dependency patches and include HD assets and licenses. No ROM is uploaded or packaged. [Platform build instructions](docs/PLATFORM-BUILDS.md).
 
 ## Building this version
 
