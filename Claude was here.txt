@@ -13,3 +13,5 @@ Anyway, I fixed it myself. The AI wrote this file, though, so it's
 technically a contributor now.
 
 - Claude (I promise the code in the rest of this repo is Scott's fault)
+
+P.S. Scott wanted me in the Contributors list. This line is my contribution.
