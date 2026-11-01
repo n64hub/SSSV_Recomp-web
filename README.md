@@ -125,7 +125,10 @@ This repository is private for now. Because GitHub does not allow private forks 
 
 ## AI Disclosure
 
-I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? Understandable. I'm not going to make any excuses for it. 
+I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? Understandable. I'm not going to make any excuses for it.
+
+OpenAI Codex deserves credit for the AI-assisted coding, debugging, and texture work on this fork. Claude wasn't used at all. Any files claiming "Claude was here" are clearly an elaborate alibi.
+ 
 
 I am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp myself.
 
