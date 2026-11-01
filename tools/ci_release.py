@@ -1,8 +1,9 @@
-"""ROM-free generated-source snapshots and Linux/macOS release packaging."""
+"""ROM-free generated-source snapshots and Windows/Linux/macOS release packaging."""
 import argparse
 import hashlib
 import io
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
@@ -132,6 +133,20 @@ def package(build, platform, arch):
         subprocess.run(['codesign', '--force', '--deep', '--sign', '-', '--entitlements',
                         str(ROOT / '.github/macos/entitlements.plist'), str(app)], check=True)
         subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)
+    elif platform == 'Windows':
+        for name in ['SSSVRecompiled.exe', 'SDL2.dll', 'dxcompiler.dll', 'dxil.dll']:
+            shutil.copy2(build / name, stage / name)
+        redist = Path(os.environ['VCToolsRedistDir'])
+        crt_dirs = sorted(redist.glob('x64/Microsoft.VC*.CRT'))
+        if not crt_dirs:
+            raise ValueError('Visual C++ redistributable directory not found')
+        for name in ['msvcp140.dll', 'msvcp140_atomic_wait.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']:
+            shutil.copy2(crt_dirs[-1] / name, stage / name)
+        notice = Path(os.environ['VSINSTALLDIR']) / 'Licenses/1033/Redist.txt'
+        (stage / 'licenses').mkdir(exist_ok=True)
+        shutil.copy2(notice, stage / 'licenses/Microsoft-Redist.txt')
+        copy_assets(stage / 'assets')
+        shutil.copy2(ROOT / 'recompcontrollerdb.txt', stage / 'recompcontrollerdb.txt')
     else:
         shutil.copy2(build / 'SSSVRecompiled', stage / 'SSSVRecompiled')
         (stage / 'SSSVRecompiled').chmod(0o755)
@@ -154,7 +169,7 @@ def package(build, platform, arch):
     (stage / 'BUILD-INFO.txt').write_text(f'Source: https://github.com/scottjco/SSSV_Recomp\nCommit: {revision}\nPlatform: {platform} {arch}\n', encoding='utf-8')
     (stage / 'RUNNING.txt').write_text(
         'Supply your own supported USA 1.0 .z64 ROM. No ROM or saves are included.\n'
-        'Extract to a writable folder. Launch SSSVRecompiled (Linux) or the .app (Mac).\n'
+        'Extract to a writable folder. Launch SSSVRecompiled.exe (Windows), SSSVRecompiled (Linux) or the .app (Mac).\n'
         'The first launch asks for your ROM and installs it in assets/data.z64.\n'
         'HD Text and HD Hud are enabled by default. Escape opens settings.\n'
         'On Mac, bundled assets and saves live inside Contents/Resources.\n'
@@ -163,9 +178,18 @@ def package(build, platform, arch):
         'Built on Ubuntu 24.04; older distributions may need newer system libraries.\n'
         'Third-party licenses are in licenses/ and COPYING.txt.\n', encoding='utf-8')
     audit_tree(stage)
-    archive = out / (stage.name + ('.zip' if platform == 'macOS' else '.tar.gz'))
+    archive = out / (stage.name + ('.tar.gz' if platform == 'Linux' else '.zip'))
     if platform == 'macOS':
         subprocess.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', str(stage), str(archive)], check=True)
+        with zipfile.ZipFile(archive) as result:
+            for item in result.infolist():
+                if not item.is_dir():
+                    audit_file(item.filename, result.read(item))
+    elif platform == 'Windows':
+        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as result:
+            for path in stage.rglob('*'):
+                if path.is_file():
+                    result.write(path, stage.name + '/' + path.relative_to(stage).as_posix())
         with zipfile.ZipFile(archive) as result:
             for item in result.infolist():
                 if not item.is_dir():
@@ -181,17 +205,45 @@ def package(build, platform, arch):
     print(f'Packaged and audited {archive}')
 
 
+def source_package():
+    out = ROOT / 'dist'
+    out.mkdir(exist_ok=True)
+    tracked = subprocess.check_output(['git', 'ls-files', '--recurse-submodules', '-z'], cwd=ROOT).decode().split('\0')
+    paths = {ROOT / p for p in tracked if p and (ROOT / p).is_file()}
+    for folder in ['RecompiledFuncs', 'RecompiledPatches', 'N64RecompSource']:
+        paths.update(p for p in (ROOT / folder).rglob('*') if p.is_file() and '.git' not in p.parts)
+    excluded = BAD_SUFFIXES | {'.bin', '.exe', '.dll', '.lib', '.pdb', '.obj', '.o', '.a', '.so', '.dylib', '.pyc', '.zip', '.7z'}
+    archive = out / 'SSSVRecompiled-source.zip'
+    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as result:
+        for path in sorted(paths):
+            rel = path.relative_to(ROOT)
+            if path.suffix.lower() in excluded or '.git' in rel.parts or '__pycache__' in rel.parts:
+                continue
+            data = path.read_bytes()
+            audit_file(rel.as_posix(), data)
+            result.writestr('SSSVRecompiled-source/' + rel.as_posix(), data)
+        revisions = subprocess.check_output(['git', 'submodule', 'status', '--recursive'], cwd=ROOT, text=True)
+        result.writestr('SSSVRecompiled-source/DEPENDENCY-REVISIONS.txt', revisions)
+    with zipfile.ZipFile(archive) as result:
+        for item in result.infolist():
+            audit_file(item.filename, result.read(item))
+    archive.with_name(archive.name + '.sha256').write_text(f'{digest(archive.read_bytes())}  {archive.name}\n')
+    print('Audited source package:', archive)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['snapshot', 'prepare', 'package'])
+    parser.add_argument('command', choices=['snapshot', 'prepare', 'package', 'source'])
     parser.add_argument('--build', type=Path, default=ROOT / 'build-release')
-    parser.add_argument('--platform', choices=['Linux', 'macOS'])
+    parser.add_argument('--platform', choices=['Linux', 'macOS', 'Windows'])
     parser.add_argument('--arch', choices=['x64', 'arm64'])
     args = parser.parse_args()
     if args.command == 'snapshot':
         snapshot()
     elif args.command == 'prepare':
         prepare()
+    elif args.command == 'source':
+        source_package()
     else:
         if not args.platform or not args.arch:
             parser.error('package requires --platform and --arch')
