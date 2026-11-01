@@ -78,11 +78,12 @@ jobs:
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install ninja sdl2 freetype llvm lld pkgconf
+          brew install ninja sdl2 freetype llvm lld pkgconf zlib
           python -m pip install macholib
           echo "PATCH_CC=$(brew --prefix llvm)/bin/clang" >> "$GITHUB_ENV"
           echo "PATCH_LD=$(brew --prefix lld)/bin/ld.lld" >> "$GITHUB_ENV"
           echo "CMAKE_PREFIX_PATH=$(brew --prefix sdl2):$(brew --prefix freetype)" >> "$GITHUB_ENV"
+          echo "SSSV_ZLIB_LIBRARY=$(brew --prefix zlib)/lib/libz.dylib" >> "$GITHUB_ENV"
           chmod +x .github/macos/ld64
       - name: Check out pinned recompiler tools
         uses: actions/checkout@v4
@@ -114,7 +115,7 @@ jobs:
             args=(-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl '-DCMAKE_CXX_FLAGS=-Xclang -fexceptions -Xclang -fcxx-exceptions')
           fi
           if [ "$RUNNER_OS" = macOS ]; then
-            args+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0)
+            args+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 "-DZLIB_LIBRARY=$SSSV_ZLIB_LIBRARY")
             if [ "${{ matrix.arch }}" = arm64 ]; then
               args+=(-DCMAKE_OSX_ARCHITECTURES=arm64)
             else
