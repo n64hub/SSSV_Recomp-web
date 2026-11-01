@@ -5,7 +5,7 @@ Both builds captured directly from rendered framebuffers at 2880x1620,
 Current captures use HD Text and HD Textures, including the bundled texture pack.
 The original uses its Upscaled sprite setting and no replacement texture pack.
 Comparisons preserve proportions: each complete screenshot is uniformly resized
- to 1920x1080 below a label. No retouching or brightness adjustment was applied.
+to 1920x1080 below a label. No retouching or brightness adjustment was applied.
 Copyright was captured at full brightness. Current copyright, title, bank and
 zone captures were refreshed on 1 November 2026 after the HD menu changes.
 
@@ -16,12 +16,15 @@ null-destination fix permit automated startup/capture; these do not change
 upstream scene rendering. Normal original executable/source remain restored.
 The original copyright capture is the earlier full-brightness run3-02 capture;
 original title/bank/zone were captured again on 1 November 2026.
+Current DMA was captured again on 1 November 2026; original DMA uses run3-17.
 
 Animation timing and moving objects can differ between captures. Current bank
 and zone use an isolated complete test save (31 secure zones); upstream shows
 its isolated earlier comparison progress (1 secure zone). The differing counts
 are save progress rather than rendering changes. No normal user saves changed.
-Gameplay and objective captures use the first level; background controls and
+Current gameplay and objective captures were refreshed on 1 November 2026.
+Original gameplay uses gameplay-final.png and original objective uses message-03.png.
+Both show the first level; background controls and
 player positioning operate only in isolated test copies.
 
 Seven labelled comparisons and their full-resolution raw PNGs are included.
