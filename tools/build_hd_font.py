@@ -29,7 +29,7 @@ source = ctypes.create_string_buffer(compressed[18:] + b'\0' * 16)
 target = ctypes.create_string_buffer(size + 16)
 lib.unpack(source, target, size)
 glyphs = target.raw[:size]
-out = root / 'assets/hd-font'
+out = root / 'Textures/hd-font'
 out.mkdir(exist_ok=True)
 font = ImageFont.truetype(str(out / 'ComicNeue-Bold.ttf'), 256)
 entries = []

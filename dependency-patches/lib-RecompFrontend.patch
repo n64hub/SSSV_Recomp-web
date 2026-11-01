@@ -1,5 +1,21 @@
+diff --git a/recompui/include/recompui/config.h b/recompui/include/recompui/config.h
+index 38b84f569d4454477cd6247bc7a8c170ecc9851b..1c08ae94354dbbc56a28fc4cd327cbe8f1444d41 100644
+--- a/recompui/include/recompui/config.h
++++ b/recompui/include/recompui/config.h
+@@ -95,6 +95,11 @@ namespace recompui {
+          */
+         recomp::config::Config &create_config_tab(const std::string &name, const std::string &id, bool requires_confirmation);
+ 
++        // Adds a non-interactive section heading immediately before an option.
++        // Section headings are presentation only and are never saved as options.
++        void set_option_section_heading(const std::string &config_id, const std::string &first_option_id, const std::string &heading);
++        std::string get_option_section_heading(const std::string &config_id, const std::string &first_option_id);
++
+         /**
+          * @brief Adds a new tab to the config modal. This is for manually rendering your own tab's UI.
+          * 
 diff --git a/recompui/include/recompui/renderer.h b/recompui/include/recompui/renderer.h
-index 33f79ab..65cc1ba 100644
+index 33f79ab10a092f52d0c0e10014916ea7c05837ad..65cc1ba45753093b047d5023c1afc9c64762aed0 100644
 --- a/recompui/include/recompui/renderer.h
 +++ b/recompui/include/recompui/renderer.h
 @@ -50,6 +50,8 @@ namespace recompui {
@@ -11,8 +27,73 @@ index 33f79ab..65cc1ba 100644
          void enable_texture_pack(const recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod);
          void disable_texture_pack(const recomp::mods::ModHandle& mod);
          void secondary_enable_texture_pack(const std::string& mod_id);
+diff --git a/recompui/src/config/ui_config.cpp b/recompui/src/config/ui_config.cpp
+index 6c84c0531464f211705d094afabbf7414b6ac504..31774e1f9c41f3cad713be8053e48fcdeadbdc87 100644
+--- a/recompui/src/config/ui_config.cpp
++++ b/recompui/src/config/ui_config.cpp
+@@ -5,6 +5,7 @@
+ #include "recompinput/profiles.h"
+ #include "util/file.h"
+ #include "librecomp/game.hpp"
++#include <unordered_map>
+ 
+ static std::vector<std::pair<std::string, recomp::config::Config>> configs;
+ 
+@@ -16,10 +17,22 @@ struct PendingTab {
+ };
+ static std::vector<PendingTab> pending_tabs;
+ static bool loaded_configs = false;
++static std::unordered_map<std::string, std::unordered_map<std::string, std::string>> option_section_headings;
+ 
+ namespace recompui {
+     static recompui::TabbedModal *config_modal = nullptr;
+ 
++    void config::set_option_section_heading(const std::string &config_id, const std::string &first_option_id, const std::string &heading) {
++        option_section_headings[config_id][first_option_id] = heading;
++    }
++
++    std::string config::get_option_section_heading(const std::string &config_id, const std::string &first_option_id) {
++        const auto config_it = option_section_headings.find(config_id);
++        if (config_it == option_section_headings.end()) return {};
++        const auto option_it = config_it->second.find(first_option_id);
++        return option_it == config_it->second.end() ? std::string{} : option_it->second;
++    }
++
+     recomp::config::Config &config::get_config(const std::string &id) {
+         for (auto &[config_id, config] : configs) {
+             if (config_id == id) {
+diff --git a/recompui/src/config/ui_config_page_options_menu.cpp b/recompui/src/config/ui_config_page_options_menu.cpp
+index 6ba64e2a349cc9b5732d6e61e7d4824d4e496867..c9c0a16868440a7f9ba70164b35d9743777efca0 100644
+--- a/recompui/src/config/ui_config_page_options_menu.cpp
++++ b/recompui/src/config/ui_config_page_options_menu.cpp
+@@ -1,4 +1,5 @@
+ #include "ui_config_page_options_menu.h"
++#include "recompui/config.h"
+ 
+ 
+ namespace recompui {
+@@ -183,6 +184,19 @@ void ConfigPageOptionsMenu::render_config_options() {
+         auto schema = config->get_config_schema();
+         for (size_t i = 0; i < schema.options.size(); i++) {
+             auto &config_option = schema.options[i];
++            if (is_internal && !config->is_config_option_hidden(i)) {
++                const std::string section = recompui::config::get_option_section_heading(config->id, config_option.id);
++                if (!section.empty()) {
++                    auto heading = context.create_element<Label>(body_left_scroll, section, theme::Typography::Header3);
++                    heading->set_width(100.0f, Unit::Percent);
++                    heading->set_margin_top(24.0f);
++                    heading->set_padding_top(20.0f);
++                    heading->set_padding_bottom(8.0f);
++                    heading->set_padding_left(12.0f);
++                    heading->set_border_top_width(1.0f);
++                    heading->set_border_top_color(theme::color::Border);
++                }
++            }
+             ConfigOptionElement *element = nullptr;
+             switch (config_option.type) {
+                 case recomp::config::ConfigOptionType::Enum: {
 diff --git a/recompui/src/config/ui_config_tab_graphics.cpp b/recompui/src/config/ui_config_tab_graphics.cpp
-index 4fdf81f..6c76b1a 100644
+index 4fdf81f43809012a098511a8529af5ba910db2a7..6c76b1a7825ba27f50a77ecbe608ba675dfc3e79 100644
 --- a/recompui/src/config/ui_config_tab_graphics.cpp
 +++ b/recompui/src/config/ui_config_tab_graphics.cpp
 @@ -91,7 +91,7 @@ namespace recompui {
@@ -34,10 +115,10 @@ index 4fdf81f..6c76b1a 100644
                  ultramodern::renderer::HUDRatioMode::Clamp16x9
              );
 diff --git a/recompui/src/renderer/rt64_render_context.cpp b/recompui/src/renderer/rt64_render_context.cpp
-index a7954c7..81f3925 100644
+index a7954c7f9b286ac8cd0341776d32f9332d8f2c79..e6b4c905fe1f0d8485ba637f35195fa35e88e488 100644
 --- a/recompui/src/renderer/rt64_render_context.cpp
 +++ b/recompui/src/renderer/rt64_render_context.cpp
-@@ -2,6 +2,7 @@
+@@ -2,9 +2,11 @@
  #include <cstring>
  #include <variant>
  #include <algorithm>
@@ -45,7 +126,11 @@ index a7954c7..81f3925 100644
  
  #include "hle/rt64_application.h"
  #include "rt64_render_hooks.h"
-@@ -46,6 +47,20 @@ struct TexturePackUpdateAction {
++#include "gbi/rt64_gbi_s2d.h"
+ #include "overloaded.h"
+ 
+ #include "ultramodern/ultramodern.hpp"
+@@ -46,6 +48,22 @@ struct TexturePackUpdateAction {
  using TexturePackAction = std::variant<TexturePackEnableAction, TexturePackDisableAction, TexturePackSecondaryEnableAction, TexturePackSecondaryDisableAction, TexturePackUpdateAction>;
  
  static moodycamel::ConcurrentQueue<TexturePackAction> texture_pack_action_queue;
@@ -59,6 +144,8 @@ index a7954c7..81f3925 100644
 +static std::atomic_bool hd_hud_enabled{true};
 +
 +void renderer::set_hd_hud_enabled(bool enabled) {
++    RT64::GBI_S2D::setTitlePanoramaEnabled(enabled && std::filesystem::exists("Textures/hd-title/rt64.json"));
++    RT64::GBI_S2D::setMenuTexturesEnabled(enabled && std::filesystem::exists("Textures/hd-menu/rt64.json"));
 +    if (hd_hud_enabled.exchange(enabled) != enabled) {
 +        texture_pack_action_queue.enqueue(TexturePackUpdateAction{});
 +    }
@@ -66,7 +153,7 @@ index a7954c7..81f3925 100644
  
  unsigned int MI_INTR_REG = 0;
  
-@@ -157,19 +172,9 @@ void set_application_user_config(RT64::Application* application, const ultramode
+@@ -157,19 +175,9 @@ void set_application_user_config(RT64::Application* application, const ultramode
              break;
      }
  
@@ -89,13 +176,15 @@ index a7954c7..81f3925 100644
  
      application->userConfig.aspectRatio = to_rt64(config.ar_option);
      application->userConfig.antialiasing = to_rt64(config.msaa_option);
-@@ -313,6 +318,16 @@ renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::renderer::Window
+@@ -313,6 +321,18 @@ renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::renderer::Window
          return;
      }
  
 +    std::vector<RT64::ReplacementDirectory> bundled_packs;
-+    for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "assets/hd-font"},
-+                                      std::pair{hd_hud_enabled.load(), "assets/hd-hud"}}) {
++    for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "Textures/hd-font"},
++                                      std::pair{hd_hud_enabled.load(), "Textures/hd-hud"},
++                                      std::pair{hd_hud_enabled.load(), "Textures/hd-title"},
++                                      std::pair{hd_hud_enabled.load(), "Textures/hd-menu"}}) {
 +        std::error_code error;
 +        if (enabled && std::filesystem::is_regular_file(std::filesystem::path(path) / "rt64.json", error)) {
 +            bundled_packs.emplace_back(path);
@@ -106,13 +195,15 @@ index a7954c7..81f3925 100644
      // Set the application's fullscreen state.
      app->setFullScreen(cur_config.wm_option == ultramodern::renderer::WindowMode::Fullscreen);
  
-@@ -470,6 +485,15 @@ void renderer::RT64Context::check_texture_pack_actions() {
+@@ -470,6 +490,17 @@ void renderer::RT64Context::check_texture_pack_actions() {
              replacement_directories.emplace_back(RT64::ReplacementDirectory(recomp::mods::get_mod_filename(mod_id)));
          }
  
 +        // Independent bundled packs follow user texture packs in priority.
-+        for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "assets/hd-font"},
-+                                          std::pair{hd_hud_enabled.load(), "assets/hd-hud"}}) {
++        for (const auto& [enabled, path] : {std::pair{hd_text_enabled.load(), "Textures/hd-font"},
++                                          std::pair{hd_hud_enabled.load(), "Textures/hd-hud"},
++                                      std::pair{hd_hud_enabled.load(), "Textures/hd-title"},
++                                      std::pair{hd_hud_enabled.load(), "Textures/hd-menu"}}) {
 +            std::error_code error;
 +            if (enabled && std::filesystem::is_regular_file(std::filesystem::path(path) / "rt64.json", error)) {
 +                replacement_directories.emplace_back(path);

@@ -9,3 +9,5 @@ recomp_patch_debug_u32 = 0x8F000004;
 D_801D9E7C = 0x801D9E7C;
 D_801D9E90 = 0x801D9E90;
 D_801D9EB8 = 0x801D9EB8;
+
+recomp_get_hd_title_enabled = 0x8F000010;

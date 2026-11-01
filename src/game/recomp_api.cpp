@@ -14,6 +14,7 @@
 #include "recomp.h"
 #include "librecomp/helpers.hpp"
 #include "recompui/recompui.h"
+#include "recompui/config.h"
 #include "sssv_config.h"
 #include "ultramodern/ultra64.h"
 #include "ultramodern/ultramodern.hpp"
@@ -38,8 +39,28 @@ extern "C" void sssv_hd_menu_title_hook(uint8_t*, recomp_context* ctx) {
 }
 
 extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
-    if (!sssv::get_hd_text_enabled()) return;
-    static const bool available = std::filesystem::exists("assets/hd-font/header-frame.png");
+    // Background QA can apply the same live settings changes as the UI while
+    // the Bank/Zone Select screen is active, without controlling the desktop.
+    if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
+        const std::string path = std::string(control) + ".hd-options";
+        std::ifstream command(path);
+        uint32_t text, textures;
+        if ((command >> text >> textures) && text <= 1 && textures <= 1) {
+            auto& graphics = recompui::config::get_graphics_config();
+            if (graphics.has_option("sssv_hd_text") && graphics.has_option("sssv_hd_hud")) {
+                graphics.set_option_value("sssv_hd_text", text);
+                graphics.set_option_value("sssv_hd_hud", textures);
+                graphics.apply_option_value("sssv_hd_text");
+                graphics.apply_option_value("sssv_hd_hud");
+            }
+            command.close();
+            std::error_code error;
+            std::filesystem::remove(path, error);
+        }
+    }
+    const bool menu_textures = sssv::get_hd_hud_enabled() && std::filesystem::exists("Textures/hd-menu/rt64.json");
+    if (!sssv::get_hd_text_enabled() && !menu_textures) return;
+    const bool available = menu_textures || std::filesystem::exists("Textures/hd-font/header-frame.png");
     if (!available) return;
     const recomp_context saved = *ctx;
     sssv_draw_hd_header(rdram, ctx);
@@ -818,4 +839,9 @@ extern "C" void recomp_patch_debug_u32(uint8_t* rdram, recomp_context* ctx) {
         c
     );
 #endif
+}
+
+extern "C" void recomp_get_hd_title_enabled(uint8_t* rdram, recomp_context* ctx) {
+    const bool available = std::filesystem::exists("Textures/hd-title/rt64.json");
+    ctx->r2 = sssv::get_hd_hud_enabled() && available ? 1 : 0;
 }

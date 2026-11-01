@@ -28,3 +28,6 @@ __pycache__/
 .env
 .env.*
 /assets/data.z64
+
+/test-saves/
+/comparison-screenshots/

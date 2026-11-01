@@ -18,7 +18,9 @@ INPUTS = ['sssv.us.toml', 'aspMain.toml',
 BAD_SUFFIXES = {'.z64', '.n64', '.v64', '.rom', '.sav', '.srm', '.eep', '.fla'}
 ROM_MAGIC = {b'\x80\x37\x12\x40', b'\x37\x80\x40\x12', b'\x40\x12\x37\x80'}
 ASSET_FILES = ['InterVariable.ttf', 'NotoEmoji-Regular.ttf', 'recomp.rcss']
-ASSET_DIRS = ['icons', 'promptfont', 'hd-font', 'hd-hud']
+ASSET_DIRS = ['icons', 'promptfont']
+TEXTURE_DIRS = ['hd-font', 'hd-hud', 'hd-title', 'hd-menu']
+TEXTURE_FILES = ['name.txt']
 
 
 def digest(data):
@@ -115,6 +117,14 @@ def copy_assets(destination):
         shutil.copytree(ROOT / 'assets' / name, destination / name)
 
 
+def copy_textures(destination):
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in TEXTURE_FILES:
+        shutil.copy2(ROOT / 'Textures' / name, destination / name)
+    for name in TEXTURE_DIRS:
+        shutil.copytree(ROOT / 'Textures' / name, destination / name)
+
+
 def package(build, platform, arch):
     out = ROOT / 'dist'
     stage = out / f'SSSVRecompiled-{platform}-{arch}'
@@ -125,10 +135,12 @@ def package(build, platform, arch):
         app = stage / 'SSSVRecompiled.app'
         shutil.copytree(build / app.name, app, symlinks=True)
         # Rebuild the app's resource folder from an explicit runtime allowlist.
-        for location in [app / 'Contents/Resources/assets', app / 'Contents/MacOS/assets']:
+        for location in [app / 'Contents/Resources/assets', app / 'Contents/MacOS/assets',
+                         app / 'Contents/Resources/Textures', app / 'Contents/MacOS/Textures']:
             if location.exists():
                 shutil.rmtree(location)
         copy_assets(app / 'Contents/Resources/assets')
+        copy_textures(app / 'Contents/Resources/Textures')
         shutil.copy2(ROOT / 'recompcontrollerdb.txt', app / 'Contents/Resources/recompcontrollerdb.txt')
         subprocess.run(['codesign', '--force', '--deep', '--sign', '-', '--entitlements',
                         str(ROOT / '.github/macos/entitlements.plist'), str(app)], check=True)
@@ -146,11 +158,13 @@ def package(build, platform, arch):
         (stage / 'licenses').mkdir(exist_ok=True)
         shutil.copy2(notice, stage / 'licenses/Microsoft-Redist.txt')
         copy_assets(stage / 'assets')
+        copy_textures(stage / 'Textures')
         shutil.copy2(ROOT / 'recompcontrollerdb.txt', stage / 'recompcontrollerdb.txt')
     else:
         shutil.copy2(build / 'SSSVRecompiled', stage / 'SSSVRecompiled')
         (stage / 'SSSVRecompiled').chmod(0o755)
         copy_assets(stage / 'assets')
+        copy_textures(stage / 'Textures')
         shutil.copy2(ROOT / 'recompcontrollerdb.txt', stage / 'recompcontrollerdb.txt')
 
     # Include the actual licenses from the checked-out dependency sources.
@@ -182,8 +196,9 @@ def package(build, platform, arch):
         'Supply your own supported USA 1.0 .z64 ROM. No ROM or saves are included.\n'
         'Extract to a writable folder. Launch SSSVRecompiled.exe (Windows), SSSVRecompiled (Linux) or the .app (Mac).\n'
         'The first launch asks for your ROM and installs it in assets/data.z64.\n'
-        'HD Text and HD Hud are enabled by default. Escape opens settings.\n'
-        'On Mac, bundled assets and saves live inside Contents/Resources.\n'
+        'Keep the Textures folder beside the executable; it contains the optional HD artwork.\n'
+        'HD Text and HD Textures are enabled by default. Escape opens settings.\n'
+        'On Mac, bundled assets, Textures and saves live inside Contents/Resources.\n'
         'The Mac app is ad-hoc signed, not Apple Developer ID signed/notarized.\n'
         'Linux requires SDL2, GTK3, FreeType, X11/XRandR and a Vulkan-capable driver.\n'
         'Built on Ubuntu 24.04; older distributions may need newer system libraries.\n'

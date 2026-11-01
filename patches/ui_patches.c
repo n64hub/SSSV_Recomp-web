@@ -11,10 +11,15 @@ static u32 g_dbg_credits_calls = 0;
 
 // The textless HD image retains the original frame and decorations. Its caption
 // is drawn with actual glyphs, using the same font and layout as other text.
+extern u8* sssv_begin_hd_header_font(void);
+extern void sssv_end_hd_header_font(u8* original);
+
 RECOMP_EXPORT void sssv_draw_hd_header(void) {
     s16 text[32];
+    u8* original_bitmap;
     load_default_display_list(&gMainDL);
     select_font(0, 0, 0, 0);
+    original_bitmap = sssv_begin_hd_header_font();
     set_menu_text_color(255, 255, 0, 255);
     prepare_text((u8*)"SPACE STATION SILICON VALLEY", text);
     // A slightly shorter caption leaves balanced breathing room inside the
@@ -23,6 +28,7 @@ RECOMP_EXPORT void sssv_draw_hd_header(void) {
     gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
         -160 * 4, 0, -160 * 4, 0);
     display_text_centered(&gMainDL, text, 120, 19, 11.0f, 9.0f);
+    sssv_end_hd_header_font(original_bitmap);
     gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
         -160 * 4, 0, -160 * 4, 0);
     gDPPipeSync(gMainDL++);

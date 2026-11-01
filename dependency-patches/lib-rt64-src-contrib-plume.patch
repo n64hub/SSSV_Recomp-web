@@ -1,5 +1,5 @@
 diff --git a/plume_d3d12.cpp b/plume_d3d12.cpp
-index 8c239f4..f785b19 100644
+index 8c239f4d33122292cc9be0f95213f04ad0928584..f785b193ec11ffee8a07e8e2fe6faa5ee5be4483 100644
 --- a/plume_d3d12.cpp
 +++ b/plume_d3d12.cpp
 @@ -2312,7 +2312,9 @@ namespace plume {
@@ -14,7 +14,7 @@ index 8c239f4..f785b19 100644
          resetSamplePositions();
      }
 diff --git a/plume_vulkan.cpp b/plume_vulkan.cpp
-index 2800022..0b441f7 100644
+index 2800022ab9c663d54f4846a073cf935815bdc3a5..0b441f719581ab98364bab2d2b1947d8341d664f 100644
 --- a/plume_vulkan.cpp
 +++ b/plume_vulkan.cpp
 @@ -2332,7 +2332,7 @@ namespace plume {

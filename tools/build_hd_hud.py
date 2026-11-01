@@ -17,7 +17,7 @@ root = Path(__file__).resolve().parents[1]
 rom = (root / 'sssv.us.z64').read_bytes()
 assert xxhash.xxh3_64_intdigest(rom) == 0x912A068AADB0D0C5
 parser = argparse.ArgumentParser()
-parser.add_argument('--output', type=Path, default=root/'assets/hd-hud')
+parser.add_argument('--output', type=Path, default=root/'Textures/hd-hud')
 args = parser.parse_args()
 out = args.output
 out.mkdir(parents=True,exist_ok=True)

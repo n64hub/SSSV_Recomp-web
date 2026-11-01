@@ -5,6 +5,8 @@
 #include "util/file.h"
 
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -19,6 +21,21 @@ namespace {
         { HDTextOption::On, "On" },
         { HDTextOption::Off, "Off" }
     };
+
+    bool texture_pack_present() {
+        std::error_code error;
+        return std::filesystem::is_directory(recompui::file::get_program_path() / "Textures", error);
+    }
+
+    std::string texture_pack_heading() {
+        std::ifstream file(recompui::file::get_program_path() / "Textures" / "name.txt", std::ios::binary);
+        std::string name{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+        if (name.starts_with("\xEF\xBB\xBF")) name.erase(0, 3);
+        const auto first = name.find_first_not_of(" \t\r\n\f\v");
+        if (first == std::string::npos) return "Textures";
+        const auto last = name.find_last_not_of(" \t\r\n\f\v");
+        return name.substr(first, last - first + 1);
+    }
 
 
 }
@@ -37,20 +54,23 @@ void init_config() {
 
     recompui::config::create_general_tab(general_options);
     recomp::config::Config& graphics_config = recompui::config::create_graphics_tab();
-    graphics_config.add_enum_option(
-        HDTextOptionId,
-        "HD Text",
-        "Uses sharper in-game text and menu header lettering. Off restores the original bitmap text and header.",
-        hd_text_options,
-        HDTextOption::On
-    );
-    graphics_config.add_enum_option(
-        HDHudOptionId,
-        "HD Hud",
-        "Uses high-resolution health and energy bars and green LCD numbers. Off restores the original HUD artwork.",
-        hd_text_options,
-        HDTextOption::On
-    );
+    if (texture_pack_present()) {
+        recompui::config::set_option_section_heading(recompui::config::graphics::id, HDTextOptionId, texture_pack_heading());
+        graphics_config.add_enum_option(
+            HDTextOptionId,
+            "HD Text",
+            "Uses sharper in-game text. Off restores the original bitmap text.",
+            hd_text_options,
+            HDTextOption::On
+        );
+        graphics_config.add_enum_option(
+            HDHudOptionId,
+            "HD Textures",
+            "Uses high-resolution title and menu artwork, level thumbnails, trophies, health and energy bars, and green LCD numbers. Off restores the original textures.",
+            hd_text_options,
+            HDTextOption::On
+        );
+    }
     recompui::config::create_controls_tab();
     recompui::config::create_sound_tab();
     recompui::config::create_mods_tab();
@@ -60,6 +80,7 @@ void init_config() {
 }
 
 bool get_hd_text_enabled() {
+    if (!texture_pack_present()) return false;
     try {
         auto& config = recompui::config::get_graphics_config();
         return !config.has_option(HDTextOptionId) ||
@@ -69,6 +90,7 @@ bool get_hd_text_enabled() {
     }
 }
 bool get_hd_hud_enabled() {
+    if (!texture_pack_present()) return false;
     try {
         auto& config = recompui::config::get_graphics_config();
         return !config.has_option(HDHudOptionId) ||

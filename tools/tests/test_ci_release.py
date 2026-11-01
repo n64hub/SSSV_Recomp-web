@@ -30,13 +30,20 @@ class ReleaseSafety(unittest.TestCase):
             for name in ci.ASSET_DIRS:
                 (root / 'assets' / name).mkdir(parents=True)
                 (root / 'assets' / name / 'example.png').write_bytes(b'\x89PNGfixture')
+            for name in ci.TEXTURE_DIRS:
+                (root / 'Textures' / name).mkdir(parents=True)
+                (root / 'Textures' / name / 'example.png').write_bytes(b'\x89PNGfixture')
+            for name in ci.TEXTURE_FILES:
+                (root / 'Textures' / name).write_text("Scott's Terrible AI Texture Pack\n")
             (root / 'assets/data.z64').write_bytes(next(iter(ci.ROM_MAGIC)) + b'private ROM')
             with patch.object(ci, 'ROOT', root), patch.object(ci.subprocess, 'check_output', return_value='abc123\n'):
                 ci.package(build, 'Linux', 'x64')
             with tarfile.open(root / 'dist/SSSVRecompiled-Linux-x64.tar.gz') as archive:
                 names = archive.getnames()
-                self.assertTrue(any(n.endswith('assets/hd-hud/example.png') for n in names))
-                self.assertTrue(any(n.endswith('assets/hd-font/example.png') for n in names))
+                self.assertTrue(any(n.endswith('Textures/hd-hud/example.png') for n in names))
+                self.assertTrue(any(n.endswith('Textures/hd-font/example.png') for n in names))
+                self.assertTrue(any(n.endswith('Textures/name.txt') for n in names))
+                self.assertFalse(any('/assets/hd-' in n for n in names))
                 self.assertTrue(any(n.endswith('licenses/extra/Inter-OFL.txt') for n in names))
                 self.assertFalse(any(n.endswith('.z64') for n in names))
                 for member in archive.getmembers():
@@ -50,7 +57,7 @@ class ReleaseSafety(unittest.TestCase):
         for magic in ci.ROM_MAGIC:
             with self.assertRaises(ValueError):
                 ci.audit_file('assets/innocent.png', magic + b'example')
-        ci.audit_file('assets/hd-hud/frame.png', b'\x89PNGexample')
+        ci.audit_file('Textures/hd-hud/frame.png', b'\x89PNGexample')
 
     def test_snapshot_roundtrip_stale_inputs_and_path_traversal(self):
         with tempfile.TemporaryDirectory() as temp:

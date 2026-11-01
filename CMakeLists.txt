@@ -533,6 +533,9 @@ add_custom_command(TARGET SSSVRecompiled POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/assets"
     "$<TARGET_FILE_DIR:SSSVRecompiled>/assets"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/Textures"
+    "$<TARGET_FILE_DIR:SSSVRecompiled>/Textures"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt"
     "$<TARGET_FILE_DIR:SSSVRecompiled>/recompcontrollerdb.txt"

@@ -1,0 +1,109 @@
+{
+  "canvas": [
+    320,
+    240
+  ],
+  "scale": 8,
+  "font": "Arial Black",
+  "lines": [
+    {
+      "text": "Space Station Silicon Valley",
+      "ink_box": [
+        43,
+        31,
+        273,
+        42
+      ]
+    },
+    {
+      "text": "Developed By DMA Design",
+      "ink_box": [
+        52,
+        45,
+        264,
+        56
+      ]
+    },
+    {
+      "text": "Published By",
+      "ink_box": [
+        106,
+        73,
+        210,
+        84
+      ]
+    },
+    {
+      "text": "Take 2 Interactive TM",
+      "ink_box": [
+        68,
+        87,
+        247,
+        98
+      ]
+    },
+    {
+      "text": "Space Station Silicon ValleyTM",
+      "ink_box": [
+        29,
+        113,
+        284,
+        124
+      ]
+    },
+    {
+      "text": "© 1998 Take 2 Interactive TM",
+      "ink_box": [
+        36,
+        130,
+        276,
+        141
+      ]
+    },
+    {
+      "text": "Licensed By Nintendo",
+      "ink_box": [
+        70,
+        143,
+        247,
+        154
+      ]
+    },
+    {
+      "text": "Nintendo, The Official Seal,",
+      "ink_box": [
+        78,
+        166,
+        242,
+        174
+      ]
+    },
+    {
+      "text": "Nintendo 64, 3D ‘N’ Logo & Rumble",
+      "ink_box": [
+        55,
+        175,
+        265,
+        184
+      ]
+    },
+    {
+      "text": "Pak Are Trademarks",
+      "ink_box": [
+        100,
+        187,
+        221,
+        195
+      ]
+    },
+    {
+      "text": "Of Nintendo Of America, Inc.",
+      "ink_box": [
+        73,
+        197,
+        246,
+        205
+      ]
+    }
+  ]
+}

@@ -33,6 +33,7 @@ extern Overlay2MenuState gOverlayMenuState;
 extern s32 gIntroTransitionPending;
 extern f32 recomp_get_target_aspect_ratio(f32 original_aspect);
 extern f32 recomp_get_hud_aspect_ratio(void);
+extern s32 recomp_get_hd_title_enabled(void);
 extern s16 gHudTimerSeconds;
 extern s16* gHudCenterText;
 extern s16 gHudBarBaseY;

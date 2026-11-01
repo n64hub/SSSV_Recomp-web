@@ -1,5 +1,5 @@
 diff --git a/librecomp/src/pi.cpp b/librecomp/src/pi.cpp
-index 62656ad..b1c0e95 100644
+index 62656adfaeb7d3a50130d19a9a4d49d8d7e74da7..b1c0e95ddcfbc7dd729b003ad35368fd00680a18 100644
 --- a/librecomp/src/pi.cpp
 +++ b/librecomp/src/pi.cpp
 @@ -99,13 +99,18 @@ struct {
@@ -23,7 +23,7 @@ index 62656ad..b1c0e95 100644
          save_folder_path = save_folder_path / subfolder;
      }
 diff --git a/librecomp/src/recomp.cpp b/librecomp/src/recomp.cpp
-index 1200f77..7c1d6d4 100644
+index 1200f7702e4d34e55e62cf209521639553d311b2..7c1d6d4765dfa56193df4290d3eddf47d2f92e20 100644
 --- a/librecomp/src/recomp.cpp
 +++ b/librecomp/src/recomp.cpp
 @@ -705,7 +705,7 @@ bool wait_for_game_started(uint8_t* rdram, recomp_context* context) {
@@ -36,7 +36,7 @@ index 1200f77..7c1d6d4 100644
                  }
  
 diff --git a/ultramodern/include/ultramodern/ultramodern.hpp b/ultramodern/include/ultramodern/ultramodern.hpp
-index 3b28af3..074612a 100644
+index 3b28af3c3354a4676bd36e9afcfa3daab85259d3..074612ae2f046d563a365fee9a9dc65a85aad027 100644
 --- a/ultramodern/include/ultramodern/ultramodern.hpp
 +++ b/ultramodern/include/ultramodern/ultramodern.hpp
 @@ -41,6 +41,7 @@ void init_thread_cleanup();
@@ -48,7 +48,7 @@ index 3b28af3..074612a 100644
  // Thread queues.
  constexpr PTR(PTR(OSThread)) running_queue = (PTR(PTR(OSThread)))-1;
 diff --git a/ultramodern/src/events.cpp b/ultramodern/src/events.cpp
-index 090cc42..d77b4c9 100644
+index 090cc426b28ef4f113444717e6898fa2c43a0587..d77b4c95b0da93354579165bab6e5114540f16b6 100644
 --- a/ultramodern/src/events.cpp
 +++ b/ultramodern/src/events.cpp
 @@ -614,6 +614,9 @@ void ultramodern::init_events(RDRAM_ARG ultramodern::renderer::WindowHandle wind

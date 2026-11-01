@@ -1,0 +1,130 @@
+{
+  "configuration": {
+    "configurationVersion": 3,
+    "hashVersion": 5,
+    "defaultOperation": "preload",
+    "defaultShift": "none"
+  },
+  "textures": [
+    {
+      "path": "frame-left.png",
+      "hashes": {
+        "rt64": "415ae72683fa049c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "frame-right.png",
+      "hashes": {
+        "rt64": "b12f58e945ca33e3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "power-green.png",
+      "hashes": {
+        "rt64": "b9354c96ce7d3ba5"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "power-blue.png",
+      "hashes": {
+        "rt64": "16912cb8e2cf10c3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "fill-ramp.png",
+      "hashes": {
+        "rt64": "ee398169ed5a6bea"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-0.png",
+      "hashes": {
+        "rt64": "2ea11923de53bc1f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-1.png",
+      "hashes": {
+        "rt64": "d56db2d832224b7c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-2.png",
+      "hashes": {
+        "rt64": "7d44a7b7ef245c0e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-3.png",
+      "hashes": {
+        "rt64": "07387adc802dd6b6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-4.png",
+      "hashes": {
+        "rt64": "af6da231c43bff70"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-5.png",
+      "hashes": {
+        "rt64": "a02e7f7949c3b047"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-6.png",
+      "hashes": {
+        "rt64": "ddfeb3dca90db788"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-7.png",
+      "hashes": {
+        "rt64": "dec6297225704c6e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-8.png",
+      "hashes": {
+        "rt64": "07bc17b6af71c3cb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "lcd-9.png",
+      "hashes": {
+        "rt64": "4640ff99d7a29261"
+      },
+      "operation": "preload",
+      "shift": "none"
+    }
+  ]
+}

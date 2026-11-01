@@ -157,6 +157,10 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
         window_width = display_bounds.w * 3 / 4;
         window_height = display_bounds.h * 3 / 4;
     }
+    if (std::getenv("SSSV_TEST_CONTROL")) {
+        if (const char* value = std::getenv("SSSV_TEST_WINDOW_WIDTH")) window_width = std::clamp(std::atoi(value), 320, 7680);
+        if (const char* value = std::getenv("SSSV_TEST_WINDOW_HEIGHT")) window_height = std::clamp(std::atoi(value), 120, 4320);
+    }
     window = SDL_CreateWindow("Space Station Silicon Valley | 0 FPS", SDL_WINDOWPOS_CENTERED_DISPLAY(0), SDL_WINDOWPOS_CENTERED_DISPLAY(0), window_width, window_height, flags);
 
     if (window == nullptr) {

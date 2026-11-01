@@ -1,6 +1,6 @@
 # Changelog
 
-## Current version — 31 October 2026
+## Current version — 1 November 2026
 
 Significant changes from the original Cellenseres repository.
 
@@ -39,15 +39,26 @@ Significant changes from the original Cellenseres repository.
 - Added Start/Enter skipping to the new-game intro, with a transition that holds black until the dog is visible.
 - Allowed startup logos and the TV report to be skipped even with a fresh save.
 
-### HD text and HUD
+### HD text and textures
 
 - Added **HD Text**, enabled by default, with an option to restore the original lettering.
 - Replaced in-game bitmap lettering with sharper text and adjusted spacing, sizing and baselines.
 - Replaced menu header lettering with live HD text over a textless frame.
-- Added **HD Hud**, enabled by default.
+- Added **HD Textures** (previously HD Hud), enabled by default.
 - Created clearer health and energy bars with concentric lights and consistent silver shading.
 - Added HD green LCD digits with visible inactive segments.
 - Removed the separate "2D Sprite Upscaling" option and permanently selected Upscaled.
+
+### Optional texture pack
+
+- Added an HD title logo and an expanded title background: show the centre at 16:9, reveal more of the panorama up to 32:9, and stretch beyond that width.
+- Rebuilt the copyright screen with sharp lettering over a separate HD background, using the same ultrawide panorama rules.
+- Added HD bank and zone select artwork, including circular progress rings, spiral centres, collectible icons, trophies and all 32 level thumbnails.
+- Added an HD SV television test card while preserving its transition animation.
+- Put the optional assets in `Textures/` beside the executable. The settings heading reads `Textures/name.txt`, falling back to “Textures” when the name is absent.
+- Hide the texture-pack heading and HD settings when the texture folder is absent.
+- Keep the menu's top caption sharp when HD Textures is enabled, even if HD Text is disabled.
+- Preserve original artwork when HD settings are off, including after changing settings during transitions.
 
 ### Stability and credits
 

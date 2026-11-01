@@ -598,7 +598,7 @@ RECOMP_PATCH void draw_sprite_with_prim_depth(Gfx** dl, uSprite* image, u16 widt
         // Expand only the starfield. Keep a native-width scissor with explicit
         // edge origins so RT64 still corrects the foreground's aspect ratio.
         const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
-        scale_x = (u16)MAX(320, (s32)(240.0f * aspect + 0.5f));
+        scale_x = (u16)MAX(recomp_get_hd_title_enabled() ? 853 : 320, (s32)(240.0f * aspect + 0.5f));
         draw_x = (320 - (s32)scale_x) / 2;
         rc_ensure_rt64_extended_enabled(dl);
         gEXSetScissorAlign((*dl)++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
@@ -628,7 +628,7 @@ RECOMP_PATCH void func_80295EB0_639550(s32 x) {
     // The final news-report slide becomes the title background. Use the same
     // width and centre as the title, and scale its travel by that width too.
     const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
-    const s32 width = MAX(320, (s32)(240.0f * aspect + 0.5f));
+    const s32 width = MAX(recomp_get_hd_title_enabled() ? 853 : 320, (s32)(240.0f * aspect + 0.5f));
     const s32 draw_x = (320 - width) / 2 + (x * width) / 320;
 
     init_sprite2d_render(&gMainDL, 255, 255, 255, 255);
@@ -935,7 +935,7 @@ RECOMP_PATCH void setup_intro_perspective_638558(Gfx** dl) {
 
     guScale(&gDisplayListContext->unk37450, gIntroScaleX, gIntroScaleY, gIntroScaleZ);
     guScale(&gDisplayListContext->unk374D0, gIntroScaleX, gIntroScaleY, gIntroScaleZ);
-    
+
     guLookAt(
         &gDisplayListContext->unk37490,
         gIntroCamEyeX,
@@ -1006,7 +1006,12 @@ RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
     }
 
     render_title_screen_frame(gFrameContextPtr);
-    append_intro_black_border_mask(&gMainDL);
+    // The HD copyright artwork has a separately expanded starfield. Applying
+    // the native card's edge mask here would cut vertical black seams through
+    // that background at the boundaries of its centred 4:3 lettering.
+    if (!(copyright_frame && recomp_get_hd_title_enabled())) {
+        append_intro_black_border_mask(&gMainDL);
+    }
     if (sssv_intro_4_3_frame) {
         rc_ensure_rt64_extended_enabled(&gMainDL);
         gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);

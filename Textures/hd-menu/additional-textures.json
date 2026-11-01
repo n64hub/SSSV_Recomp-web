@@ -1,0 +1,34 @@
+[
+  {
+    "path": "copyright/legal-text.png",
+    "hashes": {
+      "rt64": "8830e03fd5d32977"
+    },
+    "operation": "preload",
+    "shift": "none"
+  },
+  {
+    "path": "copyright/background.png",
+    "hashes": {
+      "rt64": "5353535643504247"
+    },
+    "operation": "preload",
+    "shift": "none"
+  },
+  {
+    "path": "transitions/sv-test-card.png",
+    "hashes": {
+      "rt64": "04c20649e7259b49"
+    },
+    "operation": "preload",
+    "shift": "none"
+  },
+  {
+    "path": "transitions/sv-test-card.png",
+    "hashes": {
+      "rt64": "75a899d3f4fc6791"
+    },
+    "operation": "preload",
+    "shift": "none"
+  }
+]

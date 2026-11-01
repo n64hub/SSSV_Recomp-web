@@ -1,19 +1,27 @@
-Original project versus our build. Left: original; right: ours.
+Original project versus current build. Left: original; right: current.
 
-Both builds captured directly from their rendered framebuffers at 2880x1620,
-16:9 Expand aspect, 2x MSAA, 60 FPS presentation and no texture mods.
-Our build has HD Text and HD Hud enabled. The original uses its Upscaled sprite
-setting. Comparisons preserve proportions and only resize each full screenshot
-uniformly to 1920x1080 below an identifying label; no retouching or brightness
-adjustment. Copyright images were captured after fade-in at full brightness.
-Animations, camera timing and moving objects may differ between captures.
-Gameplay and objective text show the same level and collected energy objective.
-The player was moved to the collectible in isolated copies for the text capture.
+Both builds captured directly from rendered framebuffers at 2880x1620,
+16:9 Expand aspect, 2x MSAA and 60 FPS presentation.
+Current captures use HD Text and HD Textures, including the bundled texture pack.
+The original uses its Upscaled sprite setting and no replacement texture pack.
+Comparisons preserve proportions: each complete screenshot is uniformly resized
+ to 1920x1080 below a label. No retouching or brightness adjustment was applied.
+Copyright was captured at full brightness. Current copyright, title, bank and
+zone captures were refreshed on 1 November 2026 after the HD menu changes.
 
-Original capture copy retains upstream game rendering. Instrumentation adds
-background controller input, muted startup, 2880x1620 hidden window, and GPU
-readback; idle VI initialization and a readback null-destination fix are needed
-for automated startup/capture. The normal original executable/source were
-restored. Neither user's original save was modified.
+Original rendering is upstream commit a4dbfe40e205bd804c76db62227e94f6d5858a9b.
+Its capture copy adds background controller input, muted startup, a hidden
+2880x1620 window and GPU readback. Idle VI initialization and a readback
+null-destination fix permit automated startup/capture; these do not change
+upstream scene rendering. Normal original executable/source remain restored.
+The original copyright capture is the earlier full-brightness run3-02 capture;
+original title/bank/zone were captured again on 1 November 2026.
 
-Contains six labelled comparisons plus all twelve raw PNG captures.
+Animation timing and moving objects can differ between captures. Current bank
+and zone use an isolated complete test save (31 secure zones); upstream shows
+its isolated earlier comparison progress (1 secure zone). The differing counts
+are save progress rather than rendering changes. No normal user saves changed.
+Gameplay and objective captures use the first level; background controls and
+player positioning operate only in isolated test copies.
+
+Seven labelled comparisons and their full-resolution raw PNGs are included.
