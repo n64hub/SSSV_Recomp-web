@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Executed directly on macOS; never write a CRLF shebang.
+.github/macos/ld64 text eol=lf
+*.patch text eol=lf
