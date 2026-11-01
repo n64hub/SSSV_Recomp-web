@@ -133,9 +133,10 @@ else()
     else()
       set(SSSV_HOST_ARCH x64)
     endif()
+    get_filename_component(SSSV_ZLIB_DIR "${ZLIB_LIBRARY}" DIRECTORY)
     set(DXC
       ${CMAKE_COMMAND} -E env
-      "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/${SSSV_HOST_ARCH}"
+      "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/${SSSV_HOST_ARCH}:${SSSV_ZLIB_DIR}"
       "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/${SSSV_HOST_ARCH}/dxc-macos"
     )
 
