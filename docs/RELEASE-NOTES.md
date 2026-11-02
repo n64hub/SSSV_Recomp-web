@@ -1,5 +1,7 @@
 This update fixes the black world in **Sting in the Tail**, protects dense scenes from model-matrix and opaque display-list overflows, and fixes plants and other queued scenery disappearing in crowded views.
 
+**HD World Textures are incomplete.** This update was released urgently after discovering that Sting in the Tail was broken, so the level fix could reach players without waiting for the texture pack to be finished.
+
 It also adds **HD World Textures** for level sprites and tutorial signs, an external `--rom "path/to/file.z64"` option, and automatic import of the original save only when the portable `saves/` folder contains no save data. Existing saves and the original source save are preserved.
 
 The earlier widescreen/UI fixes, optional HD menus and HUD, intro improvements and smoother credits remain included. See [the changelog](https://github.com/scottjco/SSSV_Recomp/blob/main/CHANGELOG.md) and [comparison screenshots](https://github.com/scottjco/SSSV_Recomp#screenshot-comparisons).
