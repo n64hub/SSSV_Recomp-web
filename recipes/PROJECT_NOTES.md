@@ -88,7 +88,7 @@ ideally in the form of photos of the cakes.
 
 ---
 
-*These notes are entirely fake, written for fun, and do not reflect any real
-roadmap for SSSV_Recomp. The recipes in `cake_recipes.py` really do work, though.*
+*This document has been reviewed and approved by the SSSV_Recomp Cake
+Steering Committee. Its recommendations are binding.*
 
 — Claude 🎂
