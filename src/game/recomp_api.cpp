@@ -30,6 +30,7 @@ extern "C" void func_803136B0_724D60(uint8_t*, recomp_context*);
 
 extern "C" void func_802DA90C_6EBFBC(uint8_t*, recomp_context*);
 extern "C" void reset_credits_counters(uint8_t*, recomp_context*);
+extern "C" void load_level_text_data(uint8_t*, recomp_context*);
 extern "C" void func_8038FC58_7A1308(uint8_t*, recomp_context*);
 
 extern "C" void sssv_draw_hd_header(uint8_t*, recomp_context*);
@@ -38,13 +39,12 @@ extern "C" void sssv_hd_menu_title_hook(uint8_t*, recomp_context* ctx) {
     if (sssv::get_hd_text_enabled()) ctx->r7 = 30;
 }
 
-extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
-    // Background QA can apply the same live settings changes as the UI while
-    // the Bank/Zone Select screen is active, without controlling the desktop.
+static void sssv_test_hd_options() {
+    // Test-only live settings, never saved to the user's configuration.
     if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
         const std::string path = std::string(control) + ".hd-options";
         std::ifstream command(path);
-        uint32_t text, textures;
+        uint32_t text, textures, world;
         if ((command >> text >> textures) && text <= 1 && textures <= 1) {
             auto& graphics = recompui::config::get_graphics_config();
             if (graphics.has_option("sssv_hd_text") && graphics.has_option("sssv_hd_hud")) {
@@ -52,12 +52,20 @@ extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
                 graphics.set_option_value("sssv_hd_hud", textures);
                 graphics.apply_option_value("sssv_hd_text");
                 graphics.apply_option_value("sssv_hd_hud");
+                if ((command >> world) && world <= 1 && graphics.has_option("sssv_hd_world")) {
+                    graphics.set_option_value("sssv_hd_world", world);
+                    graphics.apply_option_value("sssv_hd_world");
+                }
             }
             command.close();
             std::error_code error;
             std::filesystem::remove(path, error);
         }
     }
+}
+
+extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
+    sssv_test_hd_options();
     const bool menu_textures = sssv::get_hd_hud_enabled() && std::filesystem::exists("Textures/hd-menu/rt64.json");
     if (!sssv::get_hd_text_enabled() && !menu_textures) return;
     const bool available = menu_textures || std::filesystem::exists("Textures/hd-font/header-frame.png");
@@ -68,16 +76,26 @@ extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
 }
 
 static void sssv_test_update(uint8_t* rdram, recomp_context* ctx) {
+    sssv_test_hd_options();
     if (MEM_BU(0, S32(0x803F2D10)) == 0) {
         if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
             const std::string prefix(control);
             std::error_code error;
             // Start the native credits loader atomically on the game thread.
             // This avoids racing a level/menu switch against frame assembly.
+            int requested_level = 0;
             if (std::filesystem::exists(prefix + ".credits", error)) {
                 std::filesystem::remove(prefix + ".credits", error);
-                MEM_H(0, S32(0x803F2D38)) = 35;
-                MEM_B(0, S32(0x803F7DD5)) = 34;
+                requested_level = 35;
+            } else if (std::filesystem::exists(prefix + ".level", error)) {
+                std::ifstream command(prefix + ".level");
+                if (!(command >> requested_level) || requested_level < 1 || requested_level > 34) requested_level = 0;
+                command.close();
+                std::filesystem::remove(prefix + ".level", error);
+            }
+            if (requested_level != 0) {
+                MEM_H(0, S32(0x803F2D38)) = requested_level;
+                MEM_B(0, S32(0x803F7DD5)) = requested_level - 1;
                 MEM_B(0, S32(0x80204288)) = 10;
                 MEM_H(0, S32(0x803E1BC0)) = 0;
                 MEM_H(0, S32(0x803C0426)) = 0;
@@ -88,6 +106,16 @@ static void sssv_test_update(uint8_t* rdram, recomp_context* ctx) {
                 }
                 const recomp_context saved = *ctx;
                 reset_credits_counters(rdram, ctx);
+                if (requested_level <= 34) {
+                    // Match the native level-select loader: each level has its
+                    // own message table, indexed from zero unlike gGameState.level.
+                    ctx->r4 = MEM_B(0, S32(0x8023F2AE));
+                    ctx->r5 = requested_level - 1;
+                    ctx->r6 = S32(0x803F3330);
+                    ctx->r7 = S32(0x803F34C0);
+                    load_level_text_data(rdram, ctx);
+                    MEM_H(0, S32(0x803F63C0)) = static_cast<int16_t>(ctx->r2);
+                }
                 func_8038FC58_7A1308(rdram, ctx);
                 *ctx = saved;
                 return;

@@ -1,0 +1,8 @@
+Sting in the Tail comparison — 2 November 2026
+
+Left: original upstream project, commit a4dbfe40e205bd804c76db62227e94f6d5858a9b, showing the missing-world rendering in this captured run.
+Right: current candidate 268FF9, with HD Text, HD Textures and HD World Textures enabled, showing the level rendered.
+
+Both use 16:9 Expand, 2x MSAA and 60 FPS presentation. Original was captured at 2880x1620 and current at 1280x720; complete frames are uniformly presented at 1280x720. No retouching, crops or brightness changes. Capture timing/camera positions differ. Raw source PNGs are preserved byte-for-byte. This is not a pixel-aligned comparison or a claim about every upstream runtime.
+
+Original capture uses the background-input/readback instrumentation described in CAPTURE-NOTES.txt, not our rendering fixes. See 08-sting-in-the-tail-provenance.json for hashes and evidence.

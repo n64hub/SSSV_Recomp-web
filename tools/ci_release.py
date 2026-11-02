@@ -19,7 +19,7 @@ BAD_SUFFIXES = {'.z64', '.n64', '.v64', '.rom', '.sav', '.srm', '.eep', '.fla'}
 ROM_MAGIC = {b'\x80\x37\x12\x40', b'\x37\x80\x40\x12', b'\x40\x12\x37\x80'}
 ASSET_FILES = ['InterVariable.ttf', 'NotoEmoji-Regular.ttf', 'recomp.rcss']
 ASSET_DIRS = ['icons', 'promptfont']
-TEXTURE_DIRS = ['hd-font', 'hd-hud', 'hd-title', 'hd-menu']
+TEXTURE_DIRS = ['hd-font', 'hd-hud', 'hd-title', 'hd-menu', 'hd-world']
 TEXTURE_FILES = ['name.txt']
 
 
@@ -197,7 +197,7 @@ def package(build, platform, arch):
         'Extract to a writable folder. Launch SSSVRecompiled.exe (Windows), SSSVRecompiled (Linux) or the .app (Mac).\n'
         'The first launch asks for your ROM and installs it in assets/data.z64.\n'
         'Keep the Textures folder beside the executable; it contains the optional HD artwork.\n'
-        'HD Text and HD Textures are enabled by default. Escape opens settings.\n'
+        'HD Text, HD Textures and HD World Textures are enabled by default. Escape opens settings.\n'
         'On Mac, bundled assets, Textures and saves live inside Contents/Resources.\n'
         'The Mac app is ad-hoc signed, not Apple Developer ID signed/notarized.\n'
         'Linux requires SDL2, GTK3, FreeType, X11/XRandR and a Vulkan-capable driver.\n'
@@ -236,7 +236,8 @@ def source_package():
     out.mkdir(exist_ok=True)
     tracked = subprocess.check_output(['git', 'ls-files', '--recurse-submodules', '-z'], cwd=ROOT).decode().split('\0')
     paths = {ROOT / p for p in tracked if p and (ROOT / p).is_file()}
-    for folder in ['RecompiledFuncs', 'RecompiledPatches', 'N64RecompSource']:
+    for folder in ['RecompiledFuncs', 'RecompiledPatches', 'N64RecompSource',
+                   'src', 'include', 'patches', 'tools', 'Textures', 'dependency-patches', 'generated']:
         paths.update(p for p in (ROOT / folder).rglob('*') if p.is_file() and '.git' not in p.parts)
     excluded = BAD_SUFFIXES | {'.bin', '.exe', '.dll', '.lib', '.pdb', '.obj', '.o', '.a', '.so', '.dylib', '.pyc', '.zip', '.7z'}
     archive = out / 'SSSVRecompiled-source.zip'

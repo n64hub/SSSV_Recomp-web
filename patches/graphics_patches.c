@@ -935,7 +935,7 @@ RECOMP_PATCH void setup_intro_perspective_638558(Gfx** dl) {
 
     guScale(&gDisplayListContext->unk37450, gIntroScaleX, gIntroScaleY, gIntroScaleZ);
     guScale(&gDisplayListContext->unk374D0, gIntroScaleX, gIntroScaleY, gIntroScaleZ);
-
+    
     guLookAt(
         &gDisplayListContext->unk37490,
         gIntroCamEyeX,

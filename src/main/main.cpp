@@ -52,6 +52,8 @@
 #include "librecomp/mods.hpp"
 #include "librecomp/helpers.hpp"
 #include "xxhash.h"
+#include "rom_file.h"
+#include "legacy_save_import.h"
 #include "cs_sdk/launcher_model3d.h"
 #include "cs_sdk/launcher_music.h"
 #include "rt64_render_hooks.h"
@@ -636,6 +638,7 @@ public:
     void send_dl(const OSTask* task) override {
         recompui::renderer::set_hd_text_enabled(sssv::get_hd_text_enabled());
         recompui::renderer::set_hd_hud_enabled(sssv::get_hd_hud_enabled());
+        recompui::renderer::set_hd_world_enabled(sssv::get_hd_world_enabled());
         const auto start = std::chrono::steady_clock::now();
         graphics_operation.store(1, std::memory_order_relaxed);
         maybe_apply_unknown_ucode_fallback(task);
@@ -999,8 +1002,13 @@ void on_launcher_init(recompui::LauncherMenu* menu) {
 }
 
 int main(int argc, char** argv) {
-    (void)argc;
-    (void)argv;
+    // Resolve an explicit relative ROM before switching to the application folder.
+    std::optional<std::filesystem::path> external_rom;
+    try { external_rom = sssv::explicit_rom_path(argc, argv); }
+    catch (const std::exception& error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", error.what(), nullptr);
+        return EXIT_FAILURE;
+    }
 
     // Resolve all bundled resources relative to the executable, regardless of
     // the working directory used to start it.
@@ -1033,8 +1041,8 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     const auto rom_path = executable_dir / "assets" / "data.z64";
-    auto source_path = rom_path;
-    const bool import_rom = !std::filesystem::exists(rom_path, path_error);
+    auto source_path = external_rom.value_or(rom_path);
+    const bool import_rom = !external_rom && !std::filesystem::exists(rom_path, path_error);
     if (path_error) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not access assets/data.z64.", nullptr);
         return EXIT_FAILURE;
@@ -1060,16 +1068,13 @@ int main(int argc, char** argv) {
     }
     // Check the complete contents before creating the installed copy. A filename
     // or a valid N64 header alone is not enough to identify the supported game.
-    std::vector<uint8_t> rom_data(8 * 1024 * 1024);
-    {
-        std::ifstream rom_file(source_path, std::ios::binary | std::ios::ate);
-        if (!rom_file || rom_file.tellg() != static_cast<std::streamoff>(rom_data.size()) ||
-            !rom_file.seekg(0) ||
-            !rom_file.read(reinterpret_cast<char*>(rom_data.data()), rom_data.size()) ||
-            XXH3_64bits(rom_data.data(), rom_data.size()) != supported_games[0].rom_hash) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "This file is not the supported Space Station Silicon Valley (USA) 1.0 .z64 ROM.", nullptr);
-            return EXIT_FAILURE;
-        }
+    std::vector<uint8_t> rom_data;
+    if (!sssv::read_supported_rom(source_path, supported_games[0].rom_hash, rom_data)) {
+        const char* message = external_rom
+            ? "The --rom file could not be read or is not the supported Space Station Silicon Valley (USA) 1.0 .z64 ROM. Check the path and file."
+            : "This file is not the supported Space Station Silicon Valley (USA) 1.0 .z64 ROM.";
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", message, nullptr);
+        return EXIT_FAILURE;
     }
     if (import_rom) {
         std::filesystem::create_directories(rom_path.parent_path(), path_error);
@@ -1135,6 +1140,17 @@ int main(int argc, char** argv) {
 
     recompui::programconfig::set_program_name(sssv::program_name);
     recompui::programconfig::set_program_id(sssv::program_id);
+
+    const auto legacy_config_folder = recompui::file::get_legacy_app_folder_path();
+    if (!legacy_config_folder.empty()) {
+        auto save_filename = std::filesystem::path(supported_games[0].game_id);
+        save_filename += ".bin";
+        if (sssv::import_legacy_save(executable_dir / "saves", legacy_config_folder / "saves", save_filename)
+            == sssv::LegacySaveImport::Imported) {
+            std::fprintf(stdout, "Imported the original version's save into the portable saves folder.\n");
+        }
+    }
+
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     if (std::getenv("SSSV_TEST_CONTROL") && !std::getenv("SSSV_TEST_VISIBLE")) {

@@ -31,3 +31,5 @@ __pycache__/
 
 /test-saves/
 /comparison-screenshots/
+/test-builds/
+/RELEASE-NEXT.txt

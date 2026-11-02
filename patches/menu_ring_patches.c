@@ -269,3 +269,4 @@ RECOMP_PATCH void draw_level_rings_segment(u8 red, u8 green, u8 blue, u8 alpha,
     }
     if (mesh) menu_ring_mesh_end();
 }
+

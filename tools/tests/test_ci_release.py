@@ -6,6 +6,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('ci_release', Path(__file__).parents[1] / 'ci_release.py')
@@ -42,6 +43,7 @@ class ReleaseSafety(unittest.TestCase):
                 names = archive.getnames()
                 self.assertTrue(any(n.endswith('Textures/hd-hud/example.png') for n in names))
                 self.assertTrue(any(n.endswith('Textures/hd-font/example.png') for n in names))
+                self.assertTrue(any(n.endswith('Textures/hd-world/example.png') for n in names))
                 self.assertTrue(any(n.endswith('Textures/name.txt') for n in names))
                 self.assertFalse(any('/assets/hd-' in n for n in names))
                 self.assertTrue(any(n.endswith('licenses/extra/Inter-OFL.txt') for n in names))
@@ -49,6 +51,25 @@ class ReleaseSafety(unittest.TestCase):
                 for member in archive.getmembers():
                     if member.isfile():
                         ci.audit_file(member.name, archive.extractfile(member).read())
+
+    def test_source_package_includes_new_local_source_and_hd_world_without_rom(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            files = ['README.md', 'src/main/rom_file.h', 'Textures/hd-world/art/flower.png',
+                     'dependency-patches/lib-rt64.patch', 'generated/manifest.json']
+            for name in files:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'fixture')
+            (root / 'Textures/hd-world/private.z64').write_bytes(next(iter(ci.ROM_MAGIC)))
+            def git_output(*args, **kwargs):
+                return 'pinned revisions\n' if kwargs.get('text') else b'README.md\0'
+            with patch.object(ci, 'ROOT', root), patch.object(ci.subprocess, 'check_output', side_effect=git_output):
+                ci.source_package()
+            with zipfile.ZipFile(root / 'dist/SSSVRecompiled-source.zip') as archive:
+                for name in files:
+                    self.assertEqual(archive.read('SSSVRecompiled-source/' + name), b'fixture')
+                self.assertFalse(any(name.endswith('.z64') for name in archive.namelist()))
 
     def test_reject_rom_extensions_and_renamed_rom_headers(self):
         for name in ['assets/data.z64', 'game.N64', 'game.v64', 'game.rom', 'saves/game.eep']:

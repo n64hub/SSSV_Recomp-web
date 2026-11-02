@@ -10,6 +10,7 @@ namespace sssv {
     void init_config();
     bool get_hd_text_enabled();
     bool get_hd_hud_enabled();
+    bool get_hd_world_enabled();
 }
 
 #endif

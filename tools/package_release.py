@@ -66,7 +66,7 @@ An unsupported file produces an error and the application closes.
 
 Saves are created in saves/ beside the executable. Install to a writable folder.
 Escape opens settings. Alt+Enter toggles fullscreen.
-HD Text and HD Textures are enabled by default and can be switched off in settings.
+HD Text, HD Textures and HD World Textures are enabled by default and can be switched off independently in settings.
 Start/Enter can skip the new-game intro, with a fade into gameplay.
 
 Windows 10/11 x64 and a graphics driver supporting the selected D3D12 or Vulkan
@@ -106,7 +106,7 @@ personal saves, diagnostics and private configuration are excluded.
 source_zip = OUT / 'SSSVRecompiled-source-2026-10-31.zip'
 tracked = subprocess.check_output(['git', 'ls-files', '--recurse-submodules', '-z'], cwd=ROOT).decode().split('\0')
 sources = {ROOT / x for x in tracked if x and (ROOT / x).is_file()}
-for directory in ['RecompiledFuncs', 'RecompiledPatches', 'tools', 'Textures']:
+for directory in ['RecompiledFuncs', 'RecompiledPatches', 'src', 'include', 'patches', 'tools', 'Textures', 'dependency-patches', 'generated']:
     sources.update(x for x in (ROOT / directory).rglob('*') if x.is_file())
 sources.update([ROOT / x for x in ['patches/intro_skip_patches.c', 'patches/pause_preview_patches.c', 'src/game/display_list_buffers.cpp', 'src/main/input_movie.h']])
 forbidden = {'.z64', '.n64', '.v64', '.rom', '.exe', '.dll', '.lib', '.pdb', '.obj', '.o', '.a', '.so', '.dylib', '.pyc', '.zip', '.7z'}

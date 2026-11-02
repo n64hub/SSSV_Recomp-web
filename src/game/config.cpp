@@ -16,6 +16,7 @@ namespace {
     using EnumOptionVector = const std::vector<recomp::config::ConfigOptionEnumOption>;
     constexpr const char* HDHudOptionId = "sssv_hd_hud";
     constexpr const char* HDTextOptionId = "sssv_hd_text";
+    constexpr const char* HDWorldOptionId = "sssv_hd_world";
     enum class HDTextOption { Off, On };
     static EnumOptionVector hd_text_options = {
         { HDTextOption::On, "On" },
@@ -70,6 +71,13 @@ void init_config() {
             hd_text_options,
             HDTextOption::On
         );
+        graphics_config.add_enum_option(
+            HDWorldOptionId,
+            "HD World Textures",
+            "Uses high-resolution world sprites and signs. Off restores the original world textures independently of the menu and HUD artwork.",
+            hd_text_options,
+            HDTextOption::On
+        );
     }
     recompui::config::create_controls_tab();
     recompui::config::create_sound_tab();
@@ -77,6 +85,7 @@ void init_config() {
     recompui::config::finalize();
     recompui::renderer::set_hd_text_enabled(get_hd_text_enabled());
     recompui::renderer::set_hd_hud_enabled(get_hd_hud_enabled());
+    recompui::renderer::set_hd_world_enabled(get_hd_world_enabled());
 }
 
 bool get_hd_text_enabled() {
@@ -95,6 +104,17 @@ bool get_hd_hud_enabled() {
         auto& config = recompui::config::get_graphics_config();
         return !config.has_option(HDHudOptionId) ||
             static_cast<HDTextOption>(std::get<uint32_t>(config.get_option_value(HDHudOptionId))) == HDTextOption::On;
+    } catch (const std::exception&) {
+        return true;
+    }
+}
+
+bool get_hd_world_enabled() {
+    if (!texture_pack_present()) return false;
+    try {
+        auto& config = recompui::config::get_graphics_config();
+        return !config.has_option(HDWorldOptionId) ||
+            static_cast<HDTextOption>(std::get<uint32_t>(config.get_option_value(HDWorldOptionId))) == HDTextOption::On;
     } catch (const std::exception&) {
         return true;
     }

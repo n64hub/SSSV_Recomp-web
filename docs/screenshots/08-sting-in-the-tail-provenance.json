@@ -1,0 +1,49 @@
+{
+  "comparison": "docs/screenshots/08-sting-in-the-tail.png",
+  "date": "2026-11-02",
+  "original_upstream_commit": "a4dbfe40e205bd804c76db62227e94f6d5858a9b",
+  "original_capture_exe_sha256": "b60b2d03f4ecc724242ca56f839f6102447a71540a80312fbde3e3ef1bde8fe2",
+  "current_exe_sha256": "268ff9bdfdb881934ec702e69e4ec4dd4e5f9e2fd33479991008b14083d6e51c",
+  "settings": {
+    "aspect": "16:9 Expand",
+    "MSAA": "2x",
+    "presentation_FPS": 60,
+    "original_sprite_setting": "Upscaled",
+    "current_HD_Text": "On",
+    "current_HD_Textures": "On",
+    "current_HD_World_Textures": "On"
+  },
+  "evidence": {
+    "original": "Same instrumented original executable as earlier gallery; hash matched comparison-captures/original. qa-original26.py enters level26 through bank/zone menus, with zone26.png and brief26.png as supporting evidence. Original checkout HEAD is upstream commit above.",
+    "current": "final-all-levels.json identifies candidate 268ff9 and records requested/actual level 26 for final-level-26-on.png.",
+    "capture_instrumentation": "Background controls, hidden/muted startup, GPU readback, idle VI initialization and readback null-destination fix are documented in CAPTURE-NOTES.txt; upstream scene rendering is retained."
+  },
+  "image_processing": "Complete screenshots uniformly fitted to 1280x720; labels/footer added outside screenshots. No cropping, retouching, selective edits or brightness changes. Raw copies preserve source bytes.",
+  "limitations": [
+    "Original capture is 2880x1620, current 1280x720; panels use equal 16:9 display sizes.",
+    "Different capture timing and camera position; not a pixel-aligned before/after.",
+    "Demonstrates missing-world upstream capture versus rendered current level; does not claim every original runtime or all hardware has identical behavior."
+  ],
+  "captures": [
+    {
+      "side": "left",
+      "image": "docs/screenshots/raw/08-sting-in-the-tail-original.png",
+      "source_capture": "diagnostics/hd-world/runtime-26-original/game26.png",
+      "native_dimensions": [
+        2880,
+        1620
+      ],
+      "sha256": "8ff5882868dce9c1507d09afdef02c28d994a2bebd0d8495110742f0ee6e9fe1"
+    },
+    {
+      "side": "right",
+      "image": "docs/screenshots/raw/08-sting-in-the-tail-current.png",
+      "source_capture": "diagnostics/hd-world/runtime-all-levels/final-level-26-on.png",
+      "native_dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "4e369906b585ea47623e53818d5e16344c6e9f6258d578c89b8e78e9d0a45f0e"
+    }
+  ]
+}

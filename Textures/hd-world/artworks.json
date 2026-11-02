@@ -1,0 +1,2100 @@
+{
+  "particle-05de20-00": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "particle-05de20-01": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.3333333333333333,
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333
+    ]
+  },
+  "particle-05de20-02": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.6666666666666666,
+      0.0,
+      1.0,
+      0.3333333333333333
+    ]
+  },
+  "particle-05de20-03": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666
+    ]
+  },
+  "particle-05de20-04": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666
+    ]
+  },
+  "particle-05de20-05": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0,
+      0.6666666666666666
+    ]
+  },
+  "particle-05de20-06": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0
+    ]
+  },
+  "particle-05de20-07": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0
+    ]
+  },
+  "particle-05de20-08": {
+    "path": "art/particle-animation-05de20.png",
+    "rect": [
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-05f020-00": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "particle-05f020-01": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.3333333333333333,
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333
+    ]
+  },
+  "particle-05f020-02": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.6666666666666666,
+      0.0,
+      1.0,
+      0.3333333333333333
+    ]
+  },
+  "particle-05f020-03": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666
+    ]
+  },
+  "particle-05f020-04": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666
+    ]
+  },
+  "particle-05f020-05": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0,
+      0.6666666666666666
+    ]
+  },
+  "particle-05f020-06": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0
+    ]
+  },
+  "particle-05f020-07": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0
+    ]
+  },
+  "particle-05f020-08": {
+    "path": "art/particle-animation-05f020.png",
+    "rect": [
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-060220-00": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "particle-060220-01": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.3333333333333333,
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333
+    ]
+  },
+  "particle-060220-02": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.6666666666666666,
+      0.0,
+      1.0,
+      0.3333333333333333
+    ]
+  },
+  "particle-060220-03": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666
+    ]
+  },
+  "particle-060220-04": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666
+    ]
+  },
+  "particle-060220-05": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0,
+      0.6666666666666666
+    ]
+  },
+  "particle-060220-06": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0
+    ]
+  },
+  "particle-060220-07": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0
+    ]
+  },
+  "particle-060220-08": {
+    "path": "art/particle-animation-060220.png",
+    "rect": [
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-061420-00": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "particle-061420-01": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.3333333333333333,
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333
+    ]
+  },
+  "particle-061420-02": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.6666666666666666,
+      0.0,
+      1.0,
+      0.3333333333333333
+    ]
+  },
+  "particle-061420-03": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.0,
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666
+    ]
+  },
+  "particle-061420-04": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666
+    ]
+  },
+  "particle-061420-05": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0,
+      0.6666666666666666
+    ]
+  },
+  "particle-061420-06": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.0,
+      0.6666666666666666,
+      0.3333333333333333,
+      1.0
+    ]
+  },
+  "particle-061420-07": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.3333333333333333,
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0
+    ]
+  },
+  "particle-061420-08": {
+    "path": "art/particle-animation-061420.png",
+    "rect": [
+      0.6666666666666666,
+      0.6666666666666666,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-065ae0-frame-00": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-065ae0-frame-01": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-065ae0-frame-02": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-065ae0-frame-03": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-065ae0-frame-04": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-065ae0-frame-05": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-065ae0-frame-06": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-065ae0-frame-07": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-065ae0-frame-08": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-065ae0-frame-09": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-065ae0-frame-10": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-065ae0-frame-11": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-065ae0-frame-12": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-065ae0-frame-13": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-065ae0-frame-14": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-065ae0-frame-15": {
+    "path": "art/particle-atlas-065ae0.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-0662e0-frame-00": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-0662e0-frame-01": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-0662e0-frame-02": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-0662e0-frame-03": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-0662e0-frame-04": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-0662e0-frame-05": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-0662e0-frame-06": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-0662e0-frame-07": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-0662e0-frame-08": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-0662e0-frame-09": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-0662e0-frame-10": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-0662e0-frame-11": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-0662e0-frame-12": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-0662e0-frame-13": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-0662e0-frame-14": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-0662e0-frame-15": {
+    "path": "art/particle-atlas-0662e0.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05bfa0-frame-00": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05bfa0-frame-01": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05bfa0-frame-02": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05bfa0-frame-03": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05bfa0-frame-04": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05bfa0-frame-05": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05bfa0-frame-06": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05bfa0-frame-07": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05bfa0-frame-08": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05bfa0-frame-09": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05bfa0-frame-10": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05bfa0-frame-11": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05bfa0-frame-12": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05bfa0-frame-13": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05bfa0-frame-14": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05bfa0-frame-15": {
+    "path": "art/particle-atlas-05bfa0.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05c7a0-frame-00": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05c7a0-frame-01": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05c7a0-frame-02": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05c7a0-frame-03": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05c7a0-frame-04": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05c7a0-frame-05": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05c7a0-frame-06": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05c7a0-frame-07": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05c7a0-frame-08": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05c7a0-frame-09": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05c7a0-frame-10": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05c7a0-frame-11": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05c7a0-frame-12": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05c7a0-frame-13": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05c7a0-frame-14": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05c7a0-frame-15": {
+    "path": "art/particle-atlas-05c7a0.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05a680-frame-00": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05a680-frame-01": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05a680-frame-02": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05a680-frame-03": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05a680-frame-04": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05a680-frame-05": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05a680-frame-06": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05a680-frame-07": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05a680-frame-08": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05a680-frame-09": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05a680-frame-10": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05a680-frame-11": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05a680-frame-12": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05a680-frame-13": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05a680-frame-14": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05a680-frame-15": {
+    "path": "art/particle-atlas-05a680.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05ae80-frame-00": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05ae80-frame-01": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05ae80-frame-02": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05ae80-frame-03": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05ae80-frame-04": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05ae80-frame-05": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05ae80-frame-06": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05ae80-frame-07": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05ae80-frame-08": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05ae80-frame-09": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05ae80-frame-10": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05ae80-frame-11": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05ae80-frame-12": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05ae80-frame-13": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05ae80-frame-14": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05ae80-frame-15": {
+    "path": "art/particle-atlas-05ae80.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05ce20-frame-00": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05ce20-frame-01": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05ce20-frame-02": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05ce20-frame-03": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05ce20-frame-04": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05ce20-frame-05": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05ce20-frame-06": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05ce20-frame-07": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05ce20-frame-08": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05ce20-frame-09": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05ce20-frame-10": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05ce20-frame-11": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05ce20-frame-12": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05ce20-frame-13": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05ce20-frame-14": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05ce20-frame-15": {
+    "path": "art/particle-atlas-05ce20.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-05d620-frame-00": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-05d620-frame-01": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-05d620-frame-02": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-05d620-frame-03": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-05d620-frame-04": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-05d620-frame-05": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-05d620-frame-06": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-05d620-frame-07": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-05d620-frame-08": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-05d620-frame-09": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-05d620-frame-10": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-05d620-frame-11": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-05d620-frame-12": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-05d620-frame-13": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-05d620-frame-14": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-05d620-frame-15": {
+    "path": "art/particle-atlas-05d620.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-062620-frame-00": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-062620-frame-01": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-062620-frame-02": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-062620-frame-03": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-062620-frame-04": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-062620-frame-05": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-062620-frame-06": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-062620-frame-07": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-062620-frame-08": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-062620-frame-09": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-062620-frame-10": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-062620-frame-11": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-062620-frame-12": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-062620-frame-13": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-062620-frame-14": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-062620-frame-15": {
+    "path": "art/particle-atlas-062620.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "particle-atlas-062e20-frame-00": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.25,
+      0.25
+    ]
+  },
+  "particle-atlas-062e20-frame-01": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.25,
+      0.0,
+      0.5,
+      0.25
+    ]
+  },
+  "particle-atlas-062e20-frame-02": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.5,
+      0.0,
+      0.75,
+      0.25
+    ]
+  },
+  "particle-atlas-062e20-frame-03": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.75,
+      0.0,
+      1.0,
+      0.25
+    ]
+  },
+  "particle-atlas-062e20-frame-04": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.0,
+      0.25,
+      0.25,
+      0.5
+    ]
+  },
+  "particle-atlas-062e20-frame-05": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.25,
+      0.25,
+      0.5,
+      0.5
+    ]
+  },
+  "particle-atlas-062e20-frame-06": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.5,
+      0.25,
+      0.75,
+      0.5
+    ]
+  },
+  "particle-atlas-062e20-frame-07": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.75,
+      0.25,
+      1.0,
+      0.5
+    ]
+  },
+  "particle-atlas-062e20-frame-08": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.25,
+      0.75
+    ]
+  },
+  "particle-atlas-062e20-frame-09": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.25,
+      0.5,
+      0.5,
+      0.75
+    ]
+  },
+  "particle-atlas-062e20-frame-10": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.5,
+      0.5,
+      0.75,
+      0.75
+    ]
+  },
+  "particle-atlas-062e20-frame-11": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.75,
+      0.5,
+      1.0,
+      0.75
+    ]
+  },
+  "particle-atlas-062e20-frame-12": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.0,
+      0.75,
+      0.25,
+      1.0
+    ]
+  },
+  "particle-atlas-062e20-frame-13": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.25,
+      0.75,
+      0.5,
+      1.0
+    ]
+  },
+  "particle-atlas-062e20-frame-14": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.5,
+      0.75,
+      0.75,
+      1.0
+    ]
+  },
+  "particle-atlas-062e20-frame-15": {
+    "path": "art/particle-atlas-062e20.png",
+    "rect": [
+      0.75,
+      0.75,
+      1.0,
+      1.0
+    ]
+  },
+  "star-atlas-frame-00": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+    ]
+  },
+  "star-atlas-frame-01": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.5,
+      0.0,
+      1.0,
+      0.5
+    ]
+  },
+  "star-atlas-frame-02": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.5,
+      1.0
+    ]
+  },
+  "star-atlas-frame-03": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.5,
+      0.5,
+      1.0,
+      1.0
+    ]
+  },
+  "star-frame-00": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+    ]
+  },
+  "star-frame-01": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.5,
+      0.0,
+      1.0,
+      0.5
+    ]
+  },
+  "star-frame-02": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.5,
+      1.0
+    ]
+  },
+  "star-frame-03": {
+    "path": "art/star-atlas.png",
+    "rect": [
+      0.5,
+      0.5,
+      1.0,
+      1.0
+    ]
+  },
+  "effect-i8-07": "art/effect-i8-07.png",
+  "trail-atlas-0-frame-0": {
+    "path": "art/trail-atlas-0.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+    ]
+  },
+  "trail-atlas-0-frame-1": {
+    "path": "art/trail-atlas-0.png",
+    "rect": [
+      0.5,
+      0.0,
+      1.0,
+      0.5
+    ]
+  },
+  "trail-atlas-0-frame-2": {
+    "path": "art/trail-atlas-0.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.5,
+      1.0
+    ]
+  },
+  "trail-atlas-0-frame-3": {
+    "path": "art/trail-atlas-0.png",
+    "rect": [
+      0.5,
+      0.5,
+      1.0,
+      1.0
+    ]
+  },
+  "trail-atlas-1-frame-0": {
+    "path": "art/trail-atlas-1.png",
+    "rect": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+    ]
+  },
+  "trail-atlas-1-frame-1": {
+    "path": "art/trail-atlas-1.png",
+    "rect": [
+      0.5,
+      0.0,
+      1.0,
+      0.5
+    ]
+  },
+  "trail-atlas-1-frame-2": {
+    "path": "art/trail-atlas-1.png",
+    "rect": [
+      0.0,
+      0.5,
+      0.5,
+      1.0
+    ]
+  },
+  "trail-atlas-1-frame-3": {
+    "path": "art/trail-atlas-1.png",
+    "rect": [
+      0.5,
+      0.5,
+      1.0,
+      1.0
+    ]
+  },
+  "trail-atlas-0": {
+    "path": "art/trail-native-0.png",
+    "rect": [
+      0.3827751196172249,
+      0,
+      0.6172248803827751,
+      1
+    ]
+  },
+  "trail-atlas-1": {
+    "path": "art/trail-native-1.png",
+    "rect": [
+      0.38915470494417864,
+      0,
+      0.6100478468899522,
+      1
+    ]
+  },
+  "trail-native-cross": {
+    "path": "art/trail-native-cross.png",
+    "rect": [
+      0.37320574162679426,
+      0,
+      0.6267942583732058,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-0": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-1": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-2": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-3": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-4": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-mip-5": {
+    "path": "art/tutorial-sign-sheep.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-0": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-1": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-2": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-3": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-4": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-dog-mip-5": {
+    "path": "art/tutorial-sign-dog.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-0": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-1": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-2": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-3": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-4": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "tutorial-sign-sheep-jump-mip-5": {
+    "path": "art/tutorial-sign-sheep-jump.png",
+    "rect": [
+      0,
+      0,
+      1,
+      1
+    ]
+  }
+}

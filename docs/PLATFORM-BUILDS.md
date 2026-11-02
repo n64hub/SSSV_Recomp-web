@@ -21,7 +21,7 @@ hash and the generating configuration/symbol hashes before extraction.
 GitHub builds the pinned N64Recomp tool to regenerate **our patch code** from
 the current patch sources. It does not run N64Recomp against a game ROM.
 All four dependency patches are applied before compilation, and current
-HD Text/HD Textures assets from `Textures/` are included in the packages. Runtime assets use an
+HD Text/HD Textures/HD World Textures assets from `Textures/` are included in the packages. Runtime assets use an
 explicit allowlist. Packaging checks both filenames and N64 ROM headers,
 including inside the finished archive, and rejects ROMs and saves.
 

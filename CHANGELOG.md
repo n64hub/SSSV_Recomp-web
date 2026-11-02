@@ -1,6 +1,17 @@
 # Changelog
 
-## Current version — 1 November 2026
+## Current version — 2 November 2026
+
+- Fixed the blank world in **Sting in the Tail**: dynamic tails and chains now use a separate matrix buffer instead of overwriting the camera and projection matrices.
+- Expanded the opaque display-list buffer to prevent dense scenes from overwriting neighbouring graphics data, including the overflow found in level 16.
+- Fixed plants and other scenery disappearing in crowded scenes when animal rendering exhausted the shared matrix pool.
+- Added **HD World Textures**, enabled by default and controlled separately from HD Text and HD Textures.
+- Added HD world sprites, including plants, flowers, butterflies, collectibles and effects, plus HD sheep, jumping-sheep and dog tutorial signs with their mipmapped variants.
+- Preserved native sprite placement, animation frames and paired colour/opacity textures.
+- Added `--rom "path/to/file.z64"` to load a validated ROM from another location without installing a copy into `assets/`.
+- Import the original version's save into `saves/` only when no portable save data exists. Keep the original file and preserve existing saves.
+
+## Previous version — 1 November 2026
 
 Significant changes from the original Cellenseres repository.
 

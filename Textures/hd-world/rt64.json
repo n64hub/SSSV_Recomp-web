@@ -1,0 +1,2562 @@
+{
+  "configuration": {
+    "configurationVersion": 3,
+    "hashVersion": 5,
+    "defaultOperation": "preload",
+    "defaultShift": "none"
+  },
+  "textures": [
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "0026da1fe288d2e8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-PUNCHUP_PYRAMID-01.png",
+      "hashes": {
+        "rt64": "01dba8d978ca9d4b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "01f6839216fdd474"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "04061daf0f01f6cb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SHIFTING_SANDS-00.png",
+      "hashes": {
+        "rt64": "059cc24cbc05eca3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "068edfc09eaf237f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "0726d3ae9ff7f8f6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "08b4bc22e1a0eacd"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WHIRLWIND_TOUR-00.png",
+      "hashes": {
+        "rt64": "0a14e50faa02eb7d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-01.png",
+      "hashes": {
+        "rt64": "0a6a3af0f39aa426"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "0b338bc729316a02"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "0d35650a8faf99c1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "0ddc5a679a0466a2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WEIGHT_FOR_IT-00.png",
+      "hashes": {
+        "rt64": "0ef4dc742b69115b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-04.png",
+      "hashes": {
+        "rt64": "0f5702940980f7ec"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "0fb48c041fa9fcea"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "1094771d67bc486d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/footprint.png",
+      "hashes": {
+        "rt64": "115e646bbd56f4f2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HONEYMOON_LAGOON-01.png",
+      "hashes": {
+        "rt64": "11f196aa74eb45cf"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-00.png",
+      "hashes": {
+        "rt64": "129f128e9041e58a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "1320f7e61ad90c82"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "1323adb2caae64d8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HAVE_A_NICE_DAY-03.png",
+      "hashes": {
+        "rt64": "1336cb1085718c83"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-PUNCHUP_PYRAMID-02.png",
+      "hashes": {
+        "rt64": "137943669a0ea743"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HONEYMOON_LAGOON-02.png",
+      "hashes": {
+        "rt64": "18ecead830af0a25"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-0.png",
+      "hashes": {
+        "rt64": "192d8deb77be233c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "19c148bb1d61c4e0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SHIFTING_SANDS-02.png",
+      "hashes": {
+        "rt64": "1a6fc94222a5c930"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "1aec04dd38920336"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "1af1077187f0c654"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-JUNGLE_JUMPS-02.png",
+      "hashes": {
+        "rt64": "1bb872d015985990"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "1c5df93971d9bef6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "1c99b83a4a807c0d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "1d31cab883f47d22"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-04.png",
+      "hashes": {
+        "rt64": "1de2a15365abe56c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-native-1.png",
+      "hashes": {
+        "rt64": "1f20a74bb91f3598"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "1f6198a434f2405e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-ring.png",
+      "hashes": {
+        "rt64": "1fde2d00fb92d814"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-06.png",
+      "hashes": {
+        "rt64": "202578d265f2ee2e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-THE_BATTERY_FARM-00.png",
+      "hashes": {
+        "rt64": "20d3de64df7a1aec"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "216951297a8871c7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/star-atlas.png",
+      "hashes": {
+        "rt64": "2210bd5f7ace2518"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "2263f80d8b0a89b6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-00.png",
+      "hashes": {
+        "rt64": "22dbca68cba3d85f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-03.png",
+      "hashes": {
+        "rt64": "231a62e2ab472c9c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-1.png",
+      "hashes": {
+        "rt64": "23f0d369dea4b06a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "23f34070fff0529f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-07.png",
+      "hashes": {
+        "rt64": "27701a4eed1a5a25"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FUN_IN_THE_SUN-02.png",
+      "hashes": {
+        "rt64": "27c8a37d7cfb6aa7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "27fb58d3975e93a1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "2928bbc57533bebb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "2980a670f3b29cd4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "2999b66567713729"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "29c09a49ab512570"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "2a085cb6a7ff606b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "2b368cb88bed95af"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SMASHING_START-03.png",
+      "hashes": {
+        "rt64": "2b4154b38d59fd11"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "2b5629628cfb2e9d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "2be7459982fe2b9d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "2c17bccc22742557"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "2cf913fb09ba30be"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "2d0fb15d7c44896d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/shadow-object-0.png",
+      "hashes": {
+        "rt64": "2de9239e639e9197"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FAT_BEAR_MOUNTAIN-02.png",
+      "hashes": {
+        "rt64": "2e86e7316f335acd"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "2eda1fc7c3655ba3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-shadow-2.png",
+      "hashes": {
+        "rt64": "2edfa2476e38bca0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/shadow-object-2.png",
+      "hashes": {
+        "rt64": "2f5733abdc5debe1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "2fa63a7da00df39a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/effect-i8-01.png",
+      "hashes": {
+        "rt64": "3024c921540c6954"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-0.png",
+      "hashes": {
+        "rt64": "31698503dc9ad833"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "31841697dc414f20"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-ice-06.png",
+      "hashes": {
+        "rt64": "32457e1267178b98"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "33bde5b11941a883"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "33ea4d9f35d17869"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "35eb0bddea0f3bde"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "3750bfdee065f614"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "38337ccf95a7da6a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "3a38193eed32507f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "3b08cc9e3a59940d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "3b2464693d3854e5"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "3ba14f645380084f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "3db209fb43514328"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "3e5a37bf94408302"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "40078eb278695f79"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "41532b869f4fa9e2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "41de67454390e859"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WEIGHT_FOR_IT-01.png",
+      "hashes": {
+        "rt64": "42492431241afe30"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "4415010a3f044ee3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FUN_IN_THE_SUN-01.png",
+      "hashes": {
+        "rt64": "44b778f29e8496e4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-06.png",
+      "hashes": {
+        "rt64": "46005705081978df"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "46207e3c1e703b8e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-0.png",
+      "hashes": {
+        "rt64": "4649e633c97d9376"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "47083fc4742afcf1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "47a31c31f7cf77f6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "4811736ff8eef4b0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "4820de691cd2ae61"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "485333d0cb56d383"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WHIRLWIND_TOUR-02.png",
+      "hashes": {
+        "rt64": "48ae306708c34aa6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "48d91ea188be2bfd"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "4975e3433e5838fa"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "49a2fb0091311f88"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-1.png",
+      "hashes": {
+        "rt64": "49ee85e0f9b539da"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "4b0a3277d9da77d0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-1.png",
+      "hashes": {
+        "rt64": "4c8cdfdaa931eb46"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "4d6e35e3aeb22b0d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "4da2696d02ac0097"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "4dca8fdb951e4437"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "515c77f3f665d7ec"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "5284f2af1d383ac0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STING_IN_THE_TAIL-00.png",
+      "hashes": {
+        "rt64": "52c8e08527c9700b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "56a4431787346a07"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/sign-earth.png",
+      "hashes": {
+        "rt64": "56acfd76004b6f46"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "5771c176fd576f47"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-03.png",
+      "hashes": {
+        "rt64": "5785a47428acc1a2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "57c357dc267610cc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-BIG_CELEBRATION_PARADE-01.png",
+      "hashes": {
+        "rt64": "59b2461e9d02156a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HAVE_A_NICE_DAY-01.png",
+      "hashes": {
+        "rt64": "59f6e53aed623872"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "5a06d7f179741e6e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep-jump.png",
+      "hashes": {
+        "rt64": "5a649169c770f65e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "5ae778b50496c136"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "5b3fa5f26fa966b7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "5d049adc9b8c04b9"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "5ea099a89ed6eb63"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "604455862a1623e1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-BIG_CELEBRATION_PARADE-03.png",
+      "hashes": {
+        "rt64": "60903b128c10c19f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "6098740855d16eb0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "615d9dd2be773ec4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-04.png",
+      "hashes": {
+        "rt64": "61e71553362bbea4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "6257f4e02a3a5d57"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-BORASSIC_PARK-00.png",
+      "hashes": {
+        "rt64": "62d473132b4db79f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "635e768d3b257643"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "637fcd1059746549"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-05.png",
+      "hashes": {
+        "rt64": "63ea27f8e9bc04fa"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "658c8b033e00d4ee"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WEIGHT_FOR_IT-03.png",
+      "hashes": {
+        "rt64": "659dfafef7b1b1df"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "6615415bc3ee88fb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-02.png",
+      "hashes": {
+        "rt64": "67ac7dca62fb0ac8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WALRACE_64-03.png",
+      "hashes": {
+        "rt64": "67c51ad579f36fcc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STINKY_SEWERS-00.png",
+      "hashes": {
+        "rt64": "67feb306d069c118"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "68c611a3b94dc81b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "698d119d23a0c4c9"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-PUNCHUP_PYRAMID-00.png",
+      "hashes": {
+        "rt64": "6b237706e06457b0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "6c93367ec8aea296"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "6ca7cc9a73e76a08"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/sign-silicon-valley.png",
+      "hashes": {
+        "rt64": "6d923f0b3cf5195e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "6e333bdb3e82f3bd"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-shadow-3.png",
+      "hashes": {
+        "rt64": "6e77800168a163aa"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "6f5eb3e7fac16f06"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "706a18f2882d51b0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-01.png",
+      "hashes": {
+        "rt64": "714acca8a0046309"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-THE_BATTERY_FARM-03.png",
+      "hashes": {
+        "rt64": "716cfa3b64516e3e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "72262918fe0bce5e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "727ae30cba5b098f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-05.png",
+      "hashes": {
+        "rt64": "72f2b4c2bef60e3e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "74942ebe36e87db9"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "759327d5e92b1505"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-RAT_O_MATIC-03.png",
+      "hashes": {
+        "rt64": "76107ed58b657b79"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/effect-i8-03.png",
+      "hashes": {
+        "rt64": "774927f9b5a73514"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-01.png",
+      "hashes": {
+        "rt64": "7774497af08c1101"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "78a96701e424cb3e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-shadow-4.png",
+      "hashes": {
+        "rt64": "795b0c090abcd9a1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-ROCKY_HARD_PLACE-03.png",
+      "hashes": {
+        "rt64": "7bc9bcc19c370dd1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "7c0c560820cae9e7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "7c30f7e0f6a7881d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "7cb773175a2caba5"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-native-0.png",
+      "hashes": {
+        "rt64": "7d84ffe7bd824ac6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "7e1f4d8280456a7b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-1.png",
+      "hashes": {
+        "rt64": "7ee650feb397e6cf"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-ROCKY_HARD_PLACE-02.png",
+      "hashes": {
+        "rt64": "81716237a5b655e8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "81a9bc656d4124fb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/star-atlas.png",
+      "hashes": {
+        "rt64": "827d90ed0937b6d4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "84074db849a44c60"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "848d360ec3d94e18"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-ICE_N_EASY_DOES_IT-01.png",
+      "hashes": {
+        "rt64": "85b55411f03c93d3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "8806d30f2d46ab5e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "886c9aa9dc3562db"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "8932b793caeed16a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "8a768c7eb4d46822"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "8d4c92024457fbac"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "8ddb4e73b8b3bc7e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "8e70bba151cee665"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "8eac11b5dac425db"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "8f79caa7c76714e5"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "8ff9fce546db2599"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "915a6618356dfafc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STINKY_SEWERS-03.png",
+      "hashes": {
+        "rt64": "920a1b5c86d710cc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-JUNGLE_JUMPS-01.png",
+      "hashes": {
+        "rt64": "9222b4cab29d500e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STINKY_SEWERS-02.png",
+      "hashes": {
+        "rt64": "931d086775cb7cab"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/biome-europe-00.png",
+      "hashes": {
+        "rt64": "93c35d2467d46a78"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "946b5aa4c8997111"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HONEYMOON_LAGOON-03.png",
+      "hashes": {
+        "rt64": "95b86b8a7aa40f7d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STING_IN_THE_TAIL-02.png",
+      "hashes": {
+        "rt64": "95e4b1068ce89a14"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "98106c7634aa073a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "991305fd1d408eb6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-BORASSIC_PARK-03.png",
+      "hashes": {
+        "rt64": "9ac1646578d38f0b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "9b9bee515ebd1f26"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "9c74f1104026237a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "9cfd6715117a90f6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-native-cross.png",
+      "hashes": {
+        "rt64": "9d5bcff0e1812f5c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "9df49ec17ccc4612"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HAVE_A_NICE_DAY-00.png",
+      "hashes": {
+        "rt64": "9e10f569587eef6f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "9e18673271ba852b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "9f128d24770c358c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "9f344ccfece027aa"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-05.png",
+      "hashes": {
+        "rt64": "9f394d4a7d193834"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WEIGHT_FOR_IT-02.png",
+      "hashes": {
+        "rt64": "a3b9e907df9ca55c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "a56d2fce99fbad9c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SMASHING_START-01.png",
+      "hashes": {
+        "rt64": "a58c6b26c6c438a5"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "a6110f1025af57f2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "a79d947d80ef7844"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "a84b823757ebc93c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "a8cb2e431c005fdf"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FUN_IN_THE_SUN-03.png",
+      "hashes": {
+        "rt64": "ad1ee9865acc39cf"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "af1bae7c498c68ac"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "b1c3fef52db66e76"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "b2c39969039e4e9e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "b2db9af38c72ff5d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "b2dce823a0ddd3d7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "b31a2532afc483d9"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "b3300c181e902327"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "b371e54423212a51"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-shadow-0.png",
+      "hashes": {
+        "rt64": "b37f961aceb55c30"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/shadow-generic.png",
+      "hashes": {
+        "rt64": "b3c7a07948929fef"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "b49245c1a263ed25"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/trail-atlas-0.png",
+      "hashes": {
+        "rt64": "b4cc63e222f65e85"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "b5b690e3706a74fd"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "b616392b1c11ce04"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SHIFTING_SANDS-01.png",
+      "hashes": {
+        "rt64": "b618c869af133ec3"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-060220.png",
+      "hashes": {
+        "rt64": "b61a0907acc7fdbf"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "b650c5bb16c3ce4a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "b65aeb438cdf6a21"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-GIVE_A_DOG_A_BONUS-01.png",
+      "hashes": {
+        "rt64": "b65ed0850071f868"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/butterfly-02.png",
+      "hashes": {
+        "rt64": "b7023a20103c9fde"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "b74b06db0091d039"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "b7d795008d9df19f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-03.png",
+      "hashes": {
+        "rt64": "b806f91a13a89eb0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/effect-i8-00.png",
+      "hashes": {
+        "rt64": "b828283eed4a8954"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "b8899454df806957"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "b8e10069af7c1692"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "b92ca039b1158841"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "ba00c0f42299b538"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "ba2c8cab3aa93f83"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FUN_IN_THE_SUN-00.png",
+      "hashes": {
+        "rt64": "ba9276719f16cffb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "bc6f90af14264fd8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-PUNCHUP_PYRAMID-03.png",
+      "hashes": {
+        "rt64": "bcb3bea270cfff04"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05bfa0.png",
+      "hashes": {
+        "rt64": "bddb687e90a83951"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SMASHING_START-00.png",
+      "hashes": {
+        "rt64": "beb259429641406b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "bf0c26d8e4a77296"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "bfaa8b06ea1b967b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HONEYMOON_LAGOON-00.png",
+      "hashes": {
+        "rt64": "c019934d66e35211"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "c032aaa39abd5c31"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WALRACE_64-01.png",
+      "hashes": {
+        "rt64": "c0e754c4898edbe0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-GIVE_A_DOG_A_BONUS-02.png",
+      "hashes": {
+        "rt64": "c0f669a144fab3ba"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "c1403ca1c834dc9d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-HAVE_A_NICE_DAY-02.png",
+      "hashes": {
+        "rt64": "c2528d9ffb9dce24"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "c3d737babbd55aee"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-JUNGLE_JUMPS-03.png",
+      "hashes": {
+        "rt64": "c49d01640fa913c1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "c583a7a0b170a06e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/ground-shadow-1.png",
+      "hashes": {
+        "rt64": "c584b3637e8d888e"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062e20.png",
+      "hashes": {
+        "rt64": "c69ed4c86cd4f31b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WALRACE_64-00.png",
+      "hashes": {
+        "rt64": "c8fe72cf997634de"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "caeac06d9ce677f8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STING_IN_THE_TAIL-03.png",
+      "hashes": {
+        "rt64": "caed8d72aca07fc6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WALRACE_64-02.png",
+      "hashes": {
+        "rt64": "ccaa7239c18164fc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-JUNGLE_JUMPS-00.png",
+      "hashes": {
+        "rt64": "ccf8522b9f86d388"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "d03c7a493b3fdd2a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-GIVE_A_DOG_A_BONUS-00.png",
+      "hashes": {
+        "rt64": "d12449382fbd68c8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "d1501b09c31fd48f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "d2efc44eaa136e5c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STINKY_SEWERS-01.png",
+      "hashes": {
+        "rt64": "d2f606b23cbadb27"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-065ae0.png",
+      "hashes": {
+        "rt64": "d35376ed069ee416"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "d3ca784670d554d8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "d41c92cfede15a14"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "d4df2fa7e3cdd759"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "d5a0b329826b30ff"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "d5cd586594a8b51b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-ROCKY_HARD_PLACE-01.png",
+      "hashes": {
+        "rt64": "d82c4bf8bc002d25"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "d9a3ef8e23b97490"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "da0f246710803927"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "da8c00b5cb16d4d7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-STING_IN_THE_TAIL-01.png",
+      "hashes": {
+        "rt64": "daf628b32784099a"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "dafea45e96afcf31"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WHIRLWIND_TOUR-03.png",
+      "hashes": {
+        "rt64": "db0eaacc39de60da"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "db69d48a28ae73d7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "dbdb8ae87ebeb02f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-FAT_BEAR_MOUNTAIN-01.png",
+      "hashes": {
+        "rt64": "dd9b7fdbc994ccc2"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "de07fa910b0c4ea4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "df68ba2b74e4cea4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05d620.png",
+      "hashes": {
+        "rt64": "dfc431e5771fd946"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "dfc590b38aafcaa1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-SHIFTING_SANDS-03.png",
+      "hashes": {
+        "rt64": "e19a2d2b0f5904d0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-WHIRLWIND_TOUR-01.png",
+      "hashes": {
+        "rt64": "e283e45e4b0d07de"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-GIVE_A_DOG_A_BONUS-03.png",
+      "hashes": {
+        "rt64": "e2bf4943035e3d93"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "e4bc896aa44e79b1"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-BORASSIC_PARK-01.png",
+      "hashes": {
+        "rt64": "e55143f9a0659fb4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05c7a0.png",
+      "hashes": {
+        "rt64": "e92c2508571fbf0b"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "ea1b2dd2654698d7"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/energy-animated-02.png",
+      "hashes": {
+        "rt64": "ea4229fa7f9e0a3f"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "ec2149274138ef41"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "eda31e9517feac6d"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-sheep.png",
+      "hashes": {
+        "rt64": "ef2ba68aebc21900"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ae80.png",
+      "hashes": {
+        "rt64": "efb5f6e26cf84ce0"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-PINBALL_BLIZZARD-00.png",
+      "hashes": {
+        "rt64": "f18910c224920b0c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "f20d15bbafcc91d6"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-THE_BATTERY_FARM-02.png",
+      "hashes": {
+        "rt64": "f2994624f14a086c"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-062620.png",
+      "hashes": {
+        "rt64": "f2d68adf3b6473ca"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05f020.png",
+      "hashes": {
+        "rt64": "f4b13470e4682c97"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "f50bb787eef30481"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "f744656cc568d1cb"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-05de20.png",
+      "hashes": {
+        "rt64": "f748bec7317463cc"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05ce20.png",
+      "hashes": {
+        "rt64": "f7941732c0996345"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-05a680.png",
+      "hashes": {
+        "rt64": "fa2b34ed31c0f2ed"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "fa90b6aec77fbf74"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-atlas-0662e0.png",
+      "hashes": {
+        "rt64": "faa094698bdcdf45"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/star-atlas.png",
+      "hashes": {
+        "rt64": "fb02c78bb7a2f052"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/level-RAT_O_MATIC-01.png",
+      "hashes": {
+        "rt64": "fbdc1ae6aab170b4"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/tutorial-sign-dog.png",
+      "hashes": {
+        "rt64": "fc018a7297822e33"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/particle-animation-061420.png",
+      "hashes": {
+        "rt64": "fecda2491f2e3490"
+      },
+      "operation": "preload",
+      "shift": "none"
+    },
+    {
+      "path": "art/effect-i8-07.png",
+      "hashes": {
+        "rt64": "ffdc63fce587a5f8"
+      },
+      "operation": "preload",
+      "shift": "none"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ This is a fork of Cellenseres's Space Station Silicon Valley Recompilation Proje
 
 ## Screenshot comparisons
 
-Original project on the **left**, this build on the **right**. Both use 16:9 Expand mode; HD Text and the optional HD Textures pack are enabled in the current build. Captures are from the same scenes, with animation and camera timing differences. [Capture details](docs/screenshots/CAPTURE-NOTES.txt).
+Original project on the **left**, this build on the **right**. Both use 16:9 Expand mode; HD Text and the optional HD texture pack are enabled in the current build. Captures are from the same scenes, with animation and camera timing differences. [Capture details](docs/screenshots/CAPTURE-NOTES.txt).
 
 ### Copyright screen
 
@@ -36,9 +36,26 @@ Original project on the **left**, this build on the **right**. Both use 16:9 Exp
 
 ![In-game objective text: original project versus our build](docs/screenshots/06-objective-text.png)
 
+### Sting in the Tail
+
+The original project renders a black world in this scene; the current build renders the level. These are separate captures from the same level, not identical animation frames.
+
+![Sting in the Tail: original project versus current build](docs/screenshots/08-sting-in-the-tail.png)
+
 ## Changelog
 
-### Current version — 1 November 2026
+### Current version — 2 November 2026
+
+- Fixed the blank world in **Sting in the Tail**: dynamic tails and chains now use a separate matrix buffer instead of overwriting the camera and projection matrices.
+- Expanded the opaque display-list buffer to prevent dense scenes from overwriting neighbouring graphics data, including the overflow found in level 16.
+- Fixed plants and other scenery disappearing in crowded scenes when animal rendering exhausted the shared matrix pool.
+- Added **HD World Textures**, enabled by default and controlled separately from HD Text and HD Textures.
+- Added HD world sprites, including plants, flowers, butterflies, collectibles and effects, plus HD sheep, jumping-sheep and dog tutorial signs with their mipmapped variants.
+- Preserved native sprite placement, animation frames and paired colour/opacity textures.
+- Added `--rom "path/to/file.z64"` to load a validated ROM from another location without installing a copy into `assets/`.
+- Import the original version's save into `saves/` only when no portable save data exists. Keep the original file and preserve existing saves.
+
+### Previous version — 1 November 2026
 
 Significant changes from the original Cellenseres repository.
 
@@ -111,12 +128,12 @@ Significant changes from the original Cellenseres repository.
 
 Supply your own supported Space Station Silicon Valley (USA) 1.0 big-endian `.z64` ROM. No ROM or personal saves are included in this repository.
 
-Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` is missing, select your ROM in the file picker; the game validates it and installs it there. Saves are stored in `saves/` beside the executable.
+Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` is missing, select your ROM in the file picker; the game validates it and installs it there. Saves are stored in `saves/` beside the executable. If no portable save data exists, the original version's save is copied from its old per-user location; existing saves and the original file are preserved. You can also launch with `--rom "path/to/file.z64"` to use a ROM elsewhere without copying it.
 
 - **Escape:** settings.
 - **Alt+Enter:** switch fullscreen/windowed.
 - **Start/Enter during the new-game intro:** skip with a transition into gameplay.
-- **HD Text** and **HD Textures** are enabled by default and can be disabled independently. Optional artwork lives in `Textures/`; removing that folder hides the HD settings. The pack heading comes from `Textures/name.txt`.
+- **HD Text**, **HD Textures** and **HD World Textures** are enabled by default and can be disabled independently. Optional artwork lives in `Textures/`; removing that folder hides the HD settings. The pack heading comes from `Textures/name.txt`.
 
 ## Windows, Linux and macOS builds
 
