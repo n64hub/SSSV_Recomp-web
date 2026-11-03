@@ -42,11 +42,11 @@ The original project renders a black world in this scene; the current build rend
 
 ![Sting in the Tail: original project versus current build](docs/screenshots/08-sting-in-the-tail.png)
 
-Wait a minute, this isn't in the game... Begone with your Nonsense!
+### Wait a minute, this isn't in the game... Begone with your Nonsense!
 
 <img src="docs/screenshots/09-not-in-the-game.png" width="52%" alt="Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level">
 
-Wait a minute, thats not even a real Gemini logo
+Is that even a real Gemini logo...?
 
 ## Changelog
 
