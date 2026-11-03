@@ -1022,6 +1022,73 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    }
 +}
 +}
+diff --git a/src/gbi/sssv_mirror.h b/src/gbi/sssv_mirror.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..cad690bba09623e976571d75c2fba1d4d1a876cf
+--- /dev/null
++++ b/src/gbi/sssv_mirror.h
+@@ -0,0 +1,43 @@
++#pragma once
++
++#include <atomic>
++#include <cstdint>
++#include <filesystem>
++#include <fstream>
++#include <sstream>
++#include <string>
++#include <unordered_set>
++
++namespace RT64::SSSVMirror {
++    inline std::atomic_bool enabled{false};
++    // Immutable after startup. These are native RT64 TMEM hashes, so the rule
++    // applies to both original textures and their optional HD replacements.
++    inline std::unordered_set<uint64_t> readableTextures;
++
++    inline void loadRules(const std::filesystem::path& path) {
++        readableTextures.clear();
++        std::ifstream file(path);
++        std::string line;
++        while (std::getline(file, line)) {
++            line.erase(line.find('#') == std::string::npos ? line.size() : line.find('#'));
++            std::istringstream row(line);
++            uint32_t width, height;
++            std::string source, partner;
++            if (!(row >> width >> height >> source >> partner) || width == 0 || height == 0) continue;
++            try {
++                size_t end = 0;
++                const auto hash = std::stoull(source, &end, 16);
++                if (end != source.size() || source != partner) continue;
++                readableTextures.insert(hash);
++            } catch (const std::exception&) { }
++        }
++    }
++
++    inline bool readable(uint64_t hash) { return readableTextures.find(hash) != readableTextures.end(); }
++    inline bool worldProjection(uint32_t id) {
++        return id == 0x1000u || id == 0x1020u || id == 0x1021u;
++    }
++    inline bool worldGroup(uint32_t id) {
++        return id >= 0x01000000u && id < 0x04000000u;
++    }
++}
+diff --git a/src/gbi/sssv_terminal_feedback.h b/src/gbi/sssv_terminal_feedback.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..188330d05e55c8aa6ad70956e619e792411d44e9
+--- /dev/null
++++ b/src/gbi/sssv_terminal_feedback.h
+@@ -0,0 +1,12 @@
++#pragma once
++#include <cmath>
++#include <cstdint>
++
++namespace SSSVTerminalFeedback {
++    // Preserve transmittance over one native frame when the same MSAA target
++    // is faded once for each interpolated display frame.
++    inline float fadeAlpha(float alpha, uint32_t nativeRate, uint32_t displayRate) {
++        if (nativeRate == 0 || displayRate <= nativeRate || alpha <= 0.0f || alpha >= 1.0f) return alpha;
++        return 1.0f - std::pow(1.0f - alpha, float(nativeRate) / float(displayRate));
++    }
++}
 diff --git a/src/hle/rt64_game_frame.cpp b/src/hle/rt64_game_frame.cpp
 index 87392d0a3d8a376c8aa97a13ea7e01c998eab2bd..747ca3ee70014ad97640f11df972f29bc58c52d1 100644
 --- a/src/hle/rt64_game_frame.cpp
@@ -1293,16 +1360,116 @@ index 8ea27d56fe72b556ec96e1b0053a87e8f378b31d..ad3e7d657beca3d5802cf62fa05446a4
 -};
 \ No newline at end of file
 +};
+diff --git a/src/hle/rt64_workload_queue.cpp b/src/hle/rt64_workload_queue.cpp
+index 5a331aaa8c80148ec467f3d3a511a5b1344bb922..3b8d480fd0d34a9de50db2da1c87be9811e978c5 100644
+--- a/src/hle/rt64_workload_queue.cpp
++++ b/src/hle/rt64_workload_queue.cpp
+@@ -5,11 +5,18 @@
+ #include "rt64_workload_queue.h"
+ 
+ #include "common/rt64_thread.h"
++#include "gbi/sssv_terminal_feedback.h"
+ 
+ #include "rt64_present_queue.h"
+ 
+ #define ENABLE_HIGH_RESOLUTION_RENDERER 1
+ 
++std::atomic<uint64_t> sssv_rendered_frames{0};
++std::atomic<uint64_t> sssv_gpu_time_ns{0};
++std::atomic<uint64_t> sssv_render_dimensions{0};
++std::atomic<uint32_t> sssv_render_samples{0};
++std::atomic<uint32_t> sssv_render_target_rate{0};
++
+ namespace RT64 {
+     // WorkloadQueue
+ 
+@@ -645,19 +652,53 @@ namespace RT64 {
+                 gameCallCursor += fbPair.gameCallCount;
+             }
+ 
+-            // Create all GPU tile mappings and upload them.
++            // Terminal feedback is a native-frame fade, not a display-frame
++            // fade. MSAA reuses the same color target for every interpolated
++            // image; applying the original alpha each time erases the trails.
++            // Restrict compensation to the tagged animal terminal and its
++            // full-screen black fade; transitions and other UI stay unchanged.
++            bool terminalFeedback = false;
++            for (const auto &group : workload.drawData.transformGroups) {
++                terminalFeedback = terminalFeedback || (group.matrixId == 0x1012u);
++            }
++            bool uploadFeedback = false;
++            if (terminalFeedback && usingMSAA && workload.viOriginalRate > 0 &&
++                workloadConfig.targetRate > workload.viOriginalRate) {
++                for (uint32_t f = 0; f < workload.fbPairCount; ++f) {
++                    const auto &pair = workload.fbPairs[f];
++                    for (uint32_t pr = 0; pr < pair.projectionCount; ++pr) {
++                        const auto &projection = pair.projections[pr];
++                        if (projection.type != Projection::Type::Rectangle) continue;
++                        for (uint32_t d = 0; d < projection.gameCallCount; ++d) {
++                            const auto &call = projection.gameCalls[d].callDesc;
++                            const auto &color = call.rdpParams.primColor;
++                            const int alpha = int(std::lround(color.w * 255.0f));
++                            if (call.callIndex < workload.drawData.rdpParams.size() &&
++                                color.x == 0.0f && color.y == 0.0f && color.z == 0.0f &&
++                                (alpha == 75 || alpha == 100) &&
++                                call.rect.width(false, true) >= 300 && call.rect.height(false, true) >= 220) {
++                                workload.drawData.rdpParams[call.callIndex].primColor.w =
++                                    SSSVTerminalFeedback::fadeAlpha(color.w, workload.viOriginalRate, workloadConfig.targetRate);
++                                uploadFeedback = true;
++                            }
++                        }
++                    }
++                }
++            }
++
++            std::vector<BufferUploader::Upload> parameterUploads;
+             if (!workload.drawData.gpuTiles.empty()) {
+-                std::pair<size_t, size_t> gpuTileRange;
+-                gpuTileRange.first = 0;
+-                gpuTileRange.second = workload.drawData.gpuTiles.size();
+                 framebufferRenderer->createGPUTiles(workload.drawData.callTiles.data(), uint32_t(workload.drawData.gpuTiles.size()),
+                     workload.drawData.gpuTiles.data(), &fbManager, ext.textureCache, workload.submissionFrame);
+-
+-                // Upload the GPU tiles.
+-                ext.workloadTilesUploader->submit(ext.workloadGraphicsWorker, {
+-                    { workload.drawData.gpuTiles.data(), gpuTileRange, sizeof(interop::GPUTile), RenderBufferFlag::STORAGE, { }, &workload.drawBuffers.gpuTilesBuffer}
+-                });
+-
++                parameterUploads.push_back({workload.drawData.gpuTiles.data(), {0, workload.drawData.gpuTiles.size()},
++                    sizeof(interop::GPUTile), RenderBufferFlag::STORAGE, {}, &workload.drawBuffers.gpuTilesBuffer});
++            }
++            if (uploadFeedback) {
++                parameterUploads.push_back({workload.drawData.rdpParams.data(), {0, workload.drawData.rdpParams.size()},
++                    sizeof(interop::RDPParams), RenderBufferFlag::STORAGE, {}, &workload.drawBuffers.rdpParamsBuffer});
++            }
++            if (!parameterUploads.empty()) {
++                ext.workloadTilesUploader->submit(ext.workloadGraphicsWorker, parameterUploads);
+                 bufferUploaders.emplace_back(ext.workloadTilesUploader);
+             }
+ 
+@@ -848,6 +889,11 @@ namespace RT64 {
+             queryPool->queryResults();
+             const uint64_t *frameTimestamps = queryPool->getResults();
+             rendererGPUProfiler.log(double(frameTimestamps[1] - frameTimestamps[0]) / 1000000.0);
++            sssv_gpu_time_ns.fetch_add(frameTimestamps[1] - frameTimestamps[0], std::memory_order_relaxed);
++            sssv_rendered_frames.fetch_add(1, std::memory_order_relaxed);
++            sssv_render_dimensions.store((uint64_t(rtWidth) << 32) | rtHeight, std::memory_order_relaxed);
++            sssv_render_samples.store(targetManager.multisampling.sampleCount, std::memory_order_relaxed);
++            sssv_render_target_rate.store(workloadConfig.targetRate, std::memory_order_relaxed);
+ 
+             // Indicate to the texture cache it's safe to delete the textures if no locks are active.
+             ext.textureCache->decrementLock();
 diff --git a/src/render/rt64_framebuffer_renderer.cpp b/src/render/rt64_framebuffer_renderer.cpp
-index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d90f807da 100644
+index b9955c4e439fd7d758539cbf47e7810d15550df1..0c235af1670f5da50f5e9c4d1ed81158f1337260 100644
 --- a/src/render/rt64_framebuffer_renderer.cpp
 +++ b/src/render/rt64_framebuffer_renderer.cpp
-@@ -10,11 +10,15 @@
+@@ -10,11 +10,16 @@
  #include "common/rt64_math.h"
  #include "hle/rt64_color_converter.h"
  #include "gbi/rt64_f3d.h"
 +#include "gbi/sssv_hd_menu_uv.h"
 +#include "gbi/sssv_hd_world.h"
++#include "gbi/sssv_mirror.h"
  #include "shared/rt64_framebuffer_params.h"
  #include "shared/rt64_raster_params.h"
  
@@ -1313,17 +1480,18 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
  
  // TODO: Move to shared.
  
-@@ -233,6 +237,9 @@ namespace RT64 {
+@@ -233,6 +238,10 @@ namespace RT64 {
              }
              
              interop::GPUTile &gpuTile = dstGPUTiles[i];
 +            gpuTile.flags.atlas = false;
 +            gpuTile.flags.worldIntensity = false;
++            gpuTile.flags.mirrorReadable = SSSVMirror::readable(callTile.tmemHashOrID);
 +            gpuTile.uvBias = { 0.0f, 0.0f };
              if (callTile.tileCopyUsed) {
                  const auto &it = fbManager->tileCopies.find(callTile.tmemHashOrID);
                  if (it != fbManager->tileCopies.end()) {
-@@ -258,8 +265,46 @@ namespace RT64 {
+@@ -258,8 +267,46 @@ namespace RT64 {
                  bool textureReplaced = false;
                  bool hasMipmaps = false;
                  bool shiftedByHalf = false;
@@ -1370,7 +1538,7 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
                  // Describe the GPU tile for a regular texture.
                  gpuTile.ulScale.x = gpuTile.tcScale.x;
                  gpuTile.ulScale.y = gpuTile.tcScale.y;
-@@ -272,6 +317,64 @@ namespace RT64 {
+@@ -272,6 +319,65 @@ namespace RT64 {
                  gpuTile.flags.rawTMEM = !textureReplaced && callTile.rawTMEM;
                  gpuTile.flags.hasMipmaps = hasMipmaps;
                  gpuTile.flags.shiftedByHalf = shiftedByHalf;
@@ -1381,9 +1549,9 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
 +                        uint32_t(gpuTile.textureDimensions.y));
 +
 +                float scaleS = 1.0f, scaleT = 1.0f, offsetS = 0.0f, offsetT = 0.0f;
-+                const bool worldUV = textureReplaced && !std::getenv("SSSV_TEST_WORLD_NO_UV") && SSSVHDWorld::textureUV(selectedTextureHash,
++                const bool worldUV = textureReplaced && !std::getenv("SSSV_TEST_WORLD_NO_UV") && (SSSVHDWorld::textureUV(selectedTextureHash,
 +                    scaleS, scaleT, offsetS, offsetT, uint32_t(gpuTile.textureDimensions.x),
-+                    uint32_t(gpuTile.textureDimensions.y));
++                    uint32_t(gpuTile.textureDimensions.y)));
 +                if (textureReplaced && (worldUV || GBI_S2D::menuTextureUV(selectedTextureHash,
 +                    scaleS, scaleT, offsetS, offsetT,
 +                    uint32_t(gpuTile.textureDimensions.x), uint32_t(gpuTile.textureDimensions.y)))) {
@@ -1400,6 +1568,7 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
 +                    // the native tile's smaller mask period.
 +                    gpuTile.flags.atlas = worldUV;
 +                }
++                gpuTile.mirrorSum = gpuTile.textureDimensions.x * (2.0f * offsetS + scaleS) - 1.0f;
 +                if (worldUV && std::getenv("SSSV_TEST_WORLD_TRACE")) {
 +                    static uint32_t traceCount = 0;
 +                    if ((traceCount++ < 128) && std::getenv("SSSV_TEST_CONTROL")) {
@@ -1435,7 +1604,15 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
              }
          }
      }
-@@ -1439,7 +1542,7 @@ namespace RT64 {
+@@ -574,6 +680,7 @@ namespace RT64 {
+                 rasterParams.renderIndex = i;
+                 rasterParams.screenScale = triangles.screenScale;
+                 rasterParams.screenOffset = triangles.screenOffset;
++                rasterParams.padding = { triangles.mirrorWorld ? 1u : 0u, 0u, 0u };
+                 worker->commandList->setGraphicsPushConstants(0, &rasterParams);
+ 
+                 drawCallTriangles(drawCall);
+@@ -1439,7 +1546,7 @@ namespace RT64 {
          interop::RenderIndices renderIndices;
          uint32_t globalCallIndex = 0;
          const float wideWidth = p.fbWidth * p.resolutionScale.x;
@@ -1444,7 +1621,16 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
          const float commonHeight = float(p.targetHeight);
          framebuffer.viewport = RenderViewport(0.0f, 0.0f, wideWidth, commonHeight);
          
-@@ -1490,7 +1593,12 @@ namespace RT64 {
+@@ -1460,7 +1567,7 @@ namespace RT64 {
+             // TODO: Move heuristics of RT proj elsewhere?
+             // TODO: Use detected scenes logic instead.
+             const bool perspProj = (proj.type == Projection::Type::Perspective);
+-            bool rtProj = p.rtEnabled && perspProj && fbPair.depthWrite && targetDrawCall.rtScenes.empty(); // TODO: Remove the last condition once multiple heaps per RT scene are supported.
++            bool rtProj = !SSSVMirror::enabled.load(std::memory_order_relaxed) && p.rtEnabled && perspProj && fbPair.depthWrite && targetDrawCall.rtScenes.empty(); // TODO: Remove the last condition once multiple heaps per RT scene are supported.
+ 
+             // Make sure the matrices are compatible if we're switching to a new projection.
+             bool rtProjCompatible = true;
+@@ -1490,7 +1597,12 @@ namespace RT64 {
                  FixedRect intersectionRect = proj.scissorRect.intersection(viewport.rect(viewportClipRatios));
                  bool coversWholeWidth = !intersectionRect.isEmpty() && (intersectionRect.ulx <= fbPair.scissorRect.ulx) && (intersectionRect.lrx >= fbPair.scissorRect.lrx);
                  bool horizontalRatio = !intersectionRect.isEmpty() && (intersectionRect.width(true, true) > intersectionRect.height(true, true));
@@ -1458,7 +1644,27 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
                  if (useWideViewport) {
                      projInvRatioScale = 1.0f;
                  }
-@@ -1535,11 +1643,15 @@ namespace RT64 {
+@@ -1508,6 +1620,19 @@ namespace RT64 {
+ 
+             for (uint32_t d = 0; (d < proj.gameCallCount) && (globalCallIndex < p.maxGameCall); d++) {
+                 const GameCall &call = proj.gameCalls[d];
++                uint32_t projectionId = G_EX_ID_AUTO;
++                if (proj.transformsIndex < drawData.viewProjTransformGroups.size()) {
++                    const auto group = drawData.viewProjTransformGroups[proj.transformsIndex];
++                    if (group < drawData.transformGroups.size()) projectionId = drawData.transformGroups[group].matrixId;
++                }
++                bool worldDraw = SSSVMirror::worldProjection(projectionId) && proj.type == Projection::Type::Perspective;
++                for (uint32_t m = call.callDesc.minWorldMatrix;
++                     m <= call.callDesc.maxWorldMatrix && m < drawData.worldTransformGroups.size(); ++m) {
++                    const auto group = drawData.worldTransformGroups[m];
++                    if (group < drawData.transformGroups.size() && SSSVMirror::worldGroup(drawData.transformGroups[group].matrixId)) worldDraw = true;
++                }
++                const bool mirrorDraw = SSSVMirror::enabled.load(std::memory_order_relaxed) && worldDraw;
++                triangles.mirrorWorld = mirrorDraw;
+                 renderIndices.instanceIndex = call.callDesc.callIndex;
+                 renderIndices.faceIndicesStart = call.meshDesc.faceIndicesStart;
+                 renderIndices.rdpTileIndex = call.callDesc.tileIndex;
+@@ -1535,11 +1660,15 @@ namespace RT64 {
                          }
                      }
  
@@ -1476,7 +1682,16 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
                          invRatioScale = 1.0f;
                      }
                      // A regular rectangle that should correct its misalignment.
-@@ -1645,7 +1757,11 @@ namespace RT64 {
+@@ -1607,7 +1736,7 @@ namespace RT64 {
+                     {
+                         triangles.shaderDesc = call.shaderDesc;
+ 
+-                        RasterShader *gpuShader = p.ubershadersOnly ? nullptr : p.rasterShaderCache->getGPUShader(call.shaderDesc);
++                        RasterShader *gpuShader = (p.ubershadersOnly || mirrorDraw) ? nullptr : p.rasterShaderCache->getGPUShader(call.shaderDesc);
+                         if (gpuShader != nullptr) {
+                             triangles.pipeline = gpuShader->pipeline.get();
+                         }
+@@ -1645,7 +1774,11 @@ namespace RT64 {
                              // The call's scissor spans the whole width of the framebuffer pair scissor. The rect must not be using extended origins.
                              const bool regularOrigins = (call.callDesc.rectLeftOrigin == G_EX_ORIGIN_NONE) && (call.callDesc.rectRightOrigin == G_EX_ORIGIN_NONE);
                              const bool coversScissorWidth = regularOrigins && (call.callDesc.rect.ulx <= fbPair.scissorRect.ulx) && (call.callDesc.rect.lrx >= fbPair.scissorRect.lrx);
@@ -1489,7 +1704,33 @@ index b9955c4e439fd7d758539cbf47e7810d15550df1..0834286612ec222941bd76590ddb359d
                                  invRatioScale = 1.0f;
                              }
                              else {
-@@ -1917,4 +2033,4 @@ namespace RT64 {
+@@ -1690,6 +1823,14 @@ namespace RT64 {
+                     }
+                 }
+ 
++                if (mirrorDraw && instanceDrawCall.type != InstanceDrawCall::Type::FillRect) {
++                    triangles.screenScale.x = -triangles.screenScale.x;
++                    triangles.screenOffset.x = -triangles.screenOffset.x;
++                    const int32_t oldLeft = triangles.scissor.left;
++                    triangles.scissor.left = int32_t(framebuffer.viewport.width) - triangles.scissor.right;
++                    triangles.scissor.right = int32_t(framebuffer.viewport.width) - oldLeft;
++                }
++
+                 // Determine to use the draw call either in the RT scene or the raster scene.
+                 const uint32_t instanceIndex = static_cast<uint32_t>(instanceDrawCallVector.size());
+ #           if RT_ENABLED
+@@ -1750,6 +1891,10 @@ namespace RT64 {
+                 }
+ 
+                 instanceDrawCallVector.push_back(instanceDrawCall);
++                if (mirrorDraw && instanceDrawCall.type != InstanceDrawCall::Type::FillRect) {
++                    triangles.screenScale.x = -triangles.screenScale.x;
++                    triangles.screenOffset.x = -triangles.screenOffset.x;
++                }
+                 globalCallIndex++;
+             }
+         }
+@@ -1917,4 +2062,4 @@ namespace RT64 {
          unsigned int im3dVertexCount;
      };
  };
@@ -1516,6 +1757,25 @@ index 3add9c320070c2b200cdf0681c72b67d19404b52..add4d460168d14bc3c245c71f799d054
 -};
 \ No newline at end of file
 +};
+diff --git a/src/render/rt64_framebuffer_renderer_call.h b/src/render/rt64_framebuffer_renderer_call.h
+index f2eee7070d68c40822643985b6a85b8bb67f1993..fea59bcd3156ba8908ccfe5647f32df6e41ebf9d 100644
+--- a/src/render/rt64_framebuffer_renderer_call.h
++++ b/src/render/rt64_framebuffer_renderer_call.h
+@@ -41,6 +41,7 @@ namespace RT64 {
+                 bool vertexTestZ : 1;
+                 bool postBlendDitherNoise : 1;
+                 bool postBlendDitherNoiseNegative : 1;
++                bool mirrorWorld : 1;
+             } triangles;
+ 
+             struct {
+@@ -61,4 +62,4 @@ namespace RT64 {
+ 
+         ~InstanceDrawCall() { }
+     };
+-};
+\ No newline at end of file
++};
 diff --git a/src/render/rt64_texture_cache.cpp b/src/render/rt64_texture_cache.cpp
 index 9fe681e6a80b6a7a04bf0e2950ccf4f6fc9ca49b..744d63a7f38ebb1dac0e5f36a7b8ce9121118815 100644
 --- a/src/render/rt64_texture_cache.cpp
@@ -1532,8 +1792,49 @@ index 9fe681e6a80b6a7a04bf0e2950ccf4f6fc9ca49b..744d63a7f38ebb1dac0e5f36a7b8ce91
                          continue;
                      }
  
+diff --git a/src/shaders/RasterPS.hlsl b/src/shaders/RasterPS.hlsl
+index f5beee92f49f9cd05386795be67fff1d1c914c05..a064c203c2ee1eac9fc9125faa1e270079caf775 100644
+--- a/src/shaders/RasterPS.hlsl
++++ b/src/shaders/RasterPS.hlsl
+@@ -50,7 +50,8 @@ LIBRARY_EXPORT bool RasterPS(const RenderParams rp, float4 vertexPosition, float
+ {
+     const OtherMode otherMode = { rp.omL, rp.omH };
+ #if defined(DYNAMIC_RENDER_PARAMS)
+-    if ((otherMode.cycleType() != G_CYC_COPY) && renderFlagCulling(rp.flags) && isFrontFace) {
++    if ((otherMode.cycleType() != G_CYC_COPY) && renderFlagCulling(rp.flags) &&
++        (isFrontFace != ((gConstants.padding.x & 1) != 0))) {
+         return false;
+     }
+ #endif
+@@ -133,7 +134,8 @@ LIBRARY_EXPORT bool RasterPS(const RenderParams rp, float4 vertexPosition, float
+             rdpTile.nativeSampler = renderFlagNativeSampler0(rp.flags);
+         }
+         
+-        const GPUTile gpuTile = GPUTiles[globalTileIndex];
++        GPUTile gpuTile = GPUTiles[globalTileIndex];
++        if ((gConstants.padding.x & 1) == 0) gpuTile.flags &= ~0x100u;
+         const float2 textureUV = gpuTileFlagHighRes(gpuTile.flags) ? vertexUV : lowResUV;
+         texVal0 = sampleTexture(otherMode, rp.flags, textureUV, ddx(vertexUV), ddy(vertexUV), rdpTile, gpuTile, false);
+     }
+@@ -148,7 +150,8 @@ LIBRARY_EXPORT bool RasterPS(const RenderParams rp, float4 vertexPosition, float
+             rdpTile.nativeSampler = oneCycleHardwareBug ? renderFlagNativeSampler0(rp.flags) : renderFlagNativeSampler1(rp.flags);
+         }
+         
+-        const GPUTile gpuTile = GPUTiles[globalTileIndex];
++        GPUTile gpuTile = GPUTiles[globalTileIndex];
++        if ((gConstants.padding.x & 1) == 0) gpuTile.flags &= ~0x100u;
+         const float2 textureUV = gpuTileFlagHighRes(gpuTile.flags) ? vertexUV : lowResUV;
+         const uint nativeSampler = renderFlagNativeSampler1(rp.flags);
+         texVal1 = sampleTexture(otherMode, rp.flags, textureUV, ddx(vertexUV), ddy(vertexUV), rdpTile, gpuTile, oneCycleHardwareBug);
+@@ -302,4 +305,4 @@ void PSMain(
+     pixelColor = resultColor;
+     pixelAlpha = resultAlpha;
+ }
+-#endif
+\ No newline at end of file
++#endif
 diff --git a/src/shaders/TextureSampler.hlsli b/src/shaders/TextureSampler.hlsli
-index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..b8811c096bcfd106aa5b23648de0c4607640d58a 100644
+index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..f90b69dbaa95709ece1ffc8f374a996486c18c3c 100644
 --- a/src/shaders/TextureSampler.hlsli
 +++ b/src/shaders/TextureSampler.hlsli
 @@ -71,16 +71,19 @@ void computeLOD(OtherMode otherMode, uint rdpTileCount, float2 primLOD, float re
@@ -1609,15 +1910,20 @@ index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..b8811c096bcfd106aa5b23648de0c460
  float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputUV, float2 ddxUVx, float2 ddyUVy, const RDPTile rdpTile, const GPUTile gpuTile, bool nextPixelBug) {
      const bool texturePerspective = (otherMode.textPersp() == G_TP_PERSP);
      const bool applyCorrection = (!texturePerspective && !renderFlagRect(renderFlags));
-@@ -242,6 +261,7 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
+@@ -242,6 +261,12 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
      
      uvCoord *= gpuTile.tcScale;
      uvCoord -= (float2(rdpTile.uls, rdpTile.ult) * gpuTile.ulScale) / 4.0f;
 +    uvCoord += gpuTile.uvBias;
++    // Counter-reflect only the explicitly listed world lettering. Applying
++    // this before filtering preserves bilinear sampling and HD replacements.
++    if (gpuTileFlagMirrorReadable(gpuTile.flags)) {
++        uvCoord.x = gpuTile.mirrorSum - uvCoord.x;
++    }
      
      const uint filter = otherMode.textFilt();
      const uint cycleType = otherMode.cycleType();
-@@ -261,7 +281,7 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
+@@ -261,7 +286,7 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
      const uint tlut = otherMode.textLUT();
      const bool canDecodeTMEM = renderFlagCanDecodeTMEM(renderFlags);
      const bool usesHDR = renderFlagUsesHDR(renderFlags);
@@ -1626,7 +1932,7 @@ index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..b8811c096bcfd106aa5b23648de0c460
      const bool flagHasMipmaps = gpuTileFlagHasMipmaps(gpuTile.flags);
      uint numRDPSamples = 0;
      uint RDPMipLevels[2];
-@@ -294,24 +314,24 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
+@@ -294,24 +319,24 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
              // Choose the native sampler that was determined to be compatible.
              switch (nativeSampler) {
                  case NATIVE_SAMPLER_WRAP_WRAP:
@@ -1660,7 +1966,7 @@ index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..b8811c096bcfd106aa5b23648de0c460
              }
          }
      }
-@@ -354,5 +374,5 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
+@@ -354,5 +379,5 @@ float4 sampleTexture(OtherMode otherMode, RenderFlags renderFlags, float2 inputU
          textureColor.a = (cvgModulo & 0x4) ? 1.0f : 0.0f;
      }
      
@@ -1670,19 +1976,20 @@ index 5164e1665f9d5a6270e80a6d1721ce1347a68a88..b8811c096bcfd106aa5b23648de0c460
 +    return worldIntensitySample(textureColor, gpuTile);
 +}
 diff --git a/src/shared/rt64_gpu_tile.h b/src/shared/rt64_gpu_tile.h
-index 4548f1552d7524e42a854f8faccefb3238c09e90..b9564d8b4a7c1445fdf027fdaff70950c7d6b3ba 100644
+index 4548f1552d7524e42a854f8faccefb3238c09e90..3341350d3a3d11116ee3207ce7db622f2643090b 100644
 --- a/src/shared/rt64_gpu_tile.h
 +++ b/src/shared/rt64_gpu_tile.h
-@@ -18,6 +18,8 @@ namespace interop {
+@@ -18,6 +18,9 @@ namespace interop {
              uint rawTMEM : 1;
              uint hasMipmaps : 1;
              uint shiftedByHalf : 1;
 +            uint atlas : 1;
 +            uint worldIntensity : 1;
++            uint mirrorReadable : 1;
          };
  
          uint value;
-@@ -49,6 +51,13 @@ namespace interop {
+@@ -49,6 +52,16 @@ namespace interop {
      bool gpuTileFlagShiftedByHalf(GPUTileFlags flags) {
          return flags & 0x20;
      }
@@ -1693,15 +2000,19 @@ index 4548f1552d7524e42a854f8faccefb3238c09e90..b9564d8b4a7c1445fdf027fdaff70950
 +    bool gpuTileFlagWorldIntensity(GPUTileFlags flags) {
 +        return flags & 0x80;
 +    }
++    bool gpuTileFlagMirrorReadable(GPUTileFlags flags) {
++        return flags & 0x100;
++    }
  #endif
      struct GPUTile {
          float2 ulScale;
-@@ -57,8 +66,9 @@ namespace interop {
+@@ -57,8 +70,10 @@ namespace interop {
          uint2 texelMask;
          uint textureIndex;
          float3 textureDimensions;
 +        float2 uvBias;
          GPUTileFlags flags;
++        float mirrorSum;
      };
  #ifdef HLSL_CPU
  };

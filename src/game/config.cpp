@@ -1,4 +1,5 @@
 #include "sssv_config.h"
+#include "sssv_mirror_input.h"
 #include "sssv_game.h"
 #include "recompui/config.h"
 #include "recompui/renderer.h"
@@ -53,7 +54,12 @@ void init_config() {
     general_options.has_gyro_sensitivity = false;
     general_options.has_mouse_sensitivity = false;
 
-    recompui::config::create_general_tab(general_options);
+    recomp::config::Config& general_config = recompui::config::create_general_tab(general_options);
+    general_config.add_enum_option(
+        "sssv_mirror_mode", "Mirror Mode (Experimental)",
+        "Mirrors the world horizontally while keeping HUD and text readable. Player movement and camera left/right are reversed automatically.",
+        hd_text_options, HDTextOption::Off
+    );
     recomp::config::Config& graphics_config = recompui::config::create_graphics_tab();
     if (texture_pack_present()) {
         recompui::config::set_option_section_heading(recompui::config::graphics::id, HDTextOptionId, texture_pack_heading());
@@ -98,6 +104,13 @@ bool get_hd_text_enabled() {
         return true;
     }
 }
+bool get_mirror_mode_enabled() {
+    try {
+        auto& config = recompui::config::get_general_config();
+        return config.has_option("sssv_mirror_mode") &&
+            static_cast<HDTextOption>(std::get<uint32_t>(config.get_option_value("sssv_mirror_mode"))) == HDTextOption::On;
+    } catch (const std::exception&) { return false; }
+}
 bool get_hd_hud_enabled() {
     if (!texture_pack_present()) return false;
     try {
@@ -121,7 +134,7 @@ bool get_hd_world_enabled() {
 }
 
 void on_init(uint8_t* rdram, recomp_context* ctx) {
-    (void)rdram;
+    sssv::mirror::gameMemory.store(rdram, std::memory_order_relaxed);
     (void)ctx;
 
     // librecomp clears func_map during init_overlays(), so absolute 0x8Fxxxxxx patch

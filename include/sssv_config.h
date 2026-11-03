@@ -11,6 +11,7 @@ namespace sssv {
     bool get_hd_text_enabled();
     bool get_hd_hud_enabled();
     bool get_hd_world_enabled();
+    bool get_mirror_mode_enabled();
 }
 
 #endif

@@ -1,3 +1,16 @@
+## 3 November 2026 — v2026.11.03
+
+- Added Herobrine.
+- Added **Mirror Mode (Experimental)** in the **General** tab, with readable HUD/text and automatic left/right movement and camera reversal.
+- Added `Mirror.tex` rules for world textures that need readable lettering in Mirror Mode.
+- Restored animated static on animal-preview television monitors.
+- Restored animal reflections on the glass dome.
+- Restored motion-blur trails in the animal stats screen, including trails following the HD text.
+- Restored intermittent television interference in the menus.
+- Kept the animal stats foreground at 4:3 proportions, expanding the background up to 16:9 with black sides on wider displays.
+- Renamed the optional artwork pack to **Scotts Somewhat Ok Texture Pack**.
+- Removed Herobrine.
+
 This update fixes the black world in **Sting in the Tail**, protects dense scenes from model-matrix and opaque display-list overflows, and fixes plants and other queued scenery disappearing in crowded views.
 
 **HD World Textures are incomplete.** This update was released urgently after discovering that Sting in the Tail was broken, so the level fix could reach players without waiting for the texture pack to be finished.
@@ -17,3 +30,5 @@ Packages: Windows x64, Linux x64, macOS Apple Silicon and macOS Intel, with SHA-
 The Windows candidate was exercised locally, including all 32 initial-level scenes, focused pickup tests and repeated same-angle plant approaches. This is not a claim of exhaustive objective testing. Linux and macOS gameplay/graphics still need testing on actual systems; these packages are compiled by GitHub Actions.
 
 Based on Cellenseres/SSSV_Recomp, N64: Recompiled, RT64, and the work of their contributors. Third-party licenses and notices are included.
+
+Character eye and body texture replacements are deferred and are not included in this release.

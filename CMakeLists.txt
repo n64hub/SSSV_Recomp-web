@@ -560,3 +560,6 @@ if(Python3_Interpreter_FOUND)
     COMMENT "Analyzing SSSV hook clusters for root patch migration"
   )
 endif()
+
+# User-editable mirror texture corrections live alongside the executable.
+configure_file("${CMAKE_SOURCE_DIR}/Mirror.tex" "${CMAKE_BINARY_DIR}/Mirror.tex" COPYONLY)

@@ -50,6 +50,19 @@ Wait a minute, thats not even a real Gemini logo
 
 ## Changelog
 
+### 3 November 2026 — v2026.11.03
+
+- Added Herobrine.
+- Added **Mirror Mode (Experimental)** in the **General** tab, with readable HUD/text and automatic left/right movement and camera reversal.
+- Added `Mirror.tex` rules for world textures that need readable lettering in Mirror Mode.
+- Restored animated static on animal-preview television monitors.
+- Restored animal reflections on the glass dome.
+- Restored motion-blur trails in the animal stats screen, including trails following the HD text.
+- Restored intermittent television interference in the menus.
+- Kept the animal stats foreground at 4:3 proportions, expanding the background up to 16:9 with black sides on wider displays.
+- Renamed the optional artwork pack to **Scotts Somewhat Ok Texture Pack**.
+- Removed Herobrine.
+
 ### Current version — 2 November 2026
 
 - Fixed the blank world in **Sting in the Tail**: dynamic tails and chains now use a separate matrix buffer instead of overwriting the camera and projection matrices.

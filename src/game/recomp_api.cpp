@@ -16,6 +16,7 @@
 #include "recompui/recompui.h"
 #include "recompui/config.h"
 #include "sssv_config.h"
+#include "gbi/sssv_mirror.h"
 #include "ultramodern/ultra64.h"
 #include "ultramodern/ultramodern.hpp"
 
@@ -42,6 +43,19 @@ extern "C" void sssv_hd_menu_title_hook(uint8_t*, recomp_context* ctx) {
 static void sssv_test_hd_options() {
     // Test-only live settings, never saved to the user's configuration.
     if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
+        {
+            const auto mirrorPath = std::string(control) + ".mirror";
+            std::ifstream mirrorCommand(mirrorPath);
+            uint32_t mirror;
+            if ((mirrorCommand >> mirror) && mirror <= 1) {
+                auto& graphics = recompui::config::get_general_config();
+                graphics.set_option_value("sssv_mirror_mode", mirror);
+                graphics.apply_option_value("sssv_mirror_mode");
+                mirrorCommand.close();
+                std::error_code error;
+                std::filesystem::remove(mirrorPath, error);
+            }
+        }
         const std::string path = std::string(control) + ".hd-options";
         std::ifstream command(path);
         uint32_t text, textures, world;

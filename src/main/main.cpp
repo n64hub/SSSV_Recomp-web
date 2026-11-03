@@ -44,6 +44,8 @@
 #include "recompinput/recompinput.h"
 #include "recompinput/profiles.h"
 #include "sssv_config.h"
+#include "gbi/sssv_mirror.h"
+#include "sssv_mirror_input.h"
 #include "sssv_game.h"
 #include "sssv_launcher.h"
 #include "theme.h"
@@ -120,6 +122,11 @@ ultramodern::input::connected_device_info_t get_connected_device_info(int contro
 
 SDL_Window* window;
 extern std::atomic<uint64_t> sssv_presented_frames;
+extern std::atomic<uint64_t> sssv_rendered_frames;
+extern std::atomic<uint64_t> sssv_gpu_time_ns;
+extern std::atomic<uint64_t> sssv_render_dimensions;
+extern std::atomic<uint32_t> sssv_render_samples;
+extern std::atomic<uint32_t> sssv_render_target_rate;
 extern std::atomic<int> sssv_present_stage;
 static std::ofstream frame_diagnostics;
 static sssv::InputMovie input_movie;
@@ -199,6 +206,8 @@ void update_gfx(void*) {
     static uint64_t last_frames = 0;
     static uint64_t last_display_lists = 0;
     static uint64_t last_screen_updates = 0;
+    static uint64_t last_rendered = 0;
+    static uint64_t last_gpu_ns = 0;
     static uint64_t observed_frames = 0;
     static auto last_present = clock::now();
     static auto last_report = clock::time_point{};
@@ -239,7 +248,20 @@ void update_gfx(void*) {
             frame_diagnostics << "interval_ms=" << static_cast<uint64_t>(elapsed * 1000)
                 << "; presents=" << frames - last_frames
                 << "; display_lists=" << display_lists - last_display_lists
-                << "; screen_updates=" << screen_updates - last_screen_updates << std::endl;
+                << "; screen_updates=" << screen_updates - last_screen_updates;
+            const uint64_t rendered = sssv_rendered_frames.load(std::memory_order_relaxed);
+            const uint64_t gpu_ns = sssv_gpu_time_ns.load(std::memory_order_relaxed);
+            const uint64_t dimensions = sssv_render_dimensions.load(std::memory_order_relaxed);
+            const uint64_t render_delta = rendered - last_rendered;
+            frame_diagnostics << "; rendered=" << render_delta
+                << "; gpu_total_us=" << (gpu_ns - last_gpu_ns) / 1000
+                << "; gpu_frame_us=" << (render_delta ? (gpu_ns - last_gpu_ns) / render_delta / 1000 : 0)
+                << "; target_fps=" << sssv_render_target_rate.load(std::memory_order_relaxed)
+                << "; render_size=" << (dimensions >> 32) << 'x' << uint32_t(dimensions)
+                << "; samples=" << sssv_render_samples.load(std::memory_order_relaxed)
+                << "; focused=" << ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) ? "yes" : "no") << std::endl;
+            last_rendered = rendered;
+            last_gpu_ns = gpu_ns;
         }
         last_display_lists = display_lists;
         last_screen_updates = screen_updates;
@@ -639,6 +661,7 @@ public:
         recompui::renderer::set_hd_text_enabled(sssv::get_hd_text_enabled());
         recompui::renderer::set_hd_hud_enabled(sssv::get_hd_hud_enabled());
         recompui::renderer::set_hd_world_enabled(sssv::get_hd_world_enabled());
+        RT64::SSSVMirror::enabled.store(sssv::get_mirror_mode_enabled(), std::memory_order_relaxed);
         const auto start = std::chrono::steady_clock::now();
         graphics_operation.store(1, std::memory_order_relaxed);
         maybe_apply_unknown_ucode_fallback(task);
@@ -1040,6 +1063,7 @@ int main(int argc, char** argv) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game data error", "Could not open the application folder.", nullptr);
         return EXIT_FAILURE;
     }
+    RT64::SSSVMirror::loadRules(executable_dir / "Mirror.tex");
     const auto rom_path = executable_dir / "assets" / "data.z64";
     auto source_path = external_rom.value_or(rom_path);
     const bool import_rom = !external_rom && !std::filesystem::exists(rom_path, path_error);
@@ -1251,7 +1275,12 @@ int main(int argc, char** argv) {
     ultramodern::input::callbacks_t input_callbacks{
         .poll_input = recompinput::poll_inputs,
         .get_input = [](int controller, uint16_t* buttons, float* x, float* y) {
-            return input_movie.get(controller, buttons, x, y, recompinput::profiles::get_n64_input);
+            const bool result = input_movie.get(controller, buttons, x, y, recompinput::profiles::get_n64_input);
+            if (result && RT64::SSSVMirror::enabled.load(std::memory_order_relaxed) &&
+                sssv::mirror::gameplay_input(sssv::mirror::gameMemory.load(std::memory_order_relaxed))) {
+                sssv::mirror::reflect_input(*buttons, *x);
+            }
+            return result;
         },
         .set_rumble = recompinput::set_rumble,
         .get_connected_device_info = get_connected_device_info,

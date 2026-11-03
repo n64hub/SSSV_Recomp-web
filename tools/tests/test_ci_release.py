@@ -19,7 +19,7 @@ class ReleaseSafety(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             build = root / 'build-release'
-            for name in ['build-release/SSSVRecompiled', 'recompcontrollerdb.txt',
+            for name in ['Mirror.tex', 'build-release/SSSVRecompiled', 'recompcontrollerdb.txt',
                          'README.md', 'README.upstream.md', 'CHANGELOG.md',
                          'lib/N64ModernRuntime/COPYING', 'release-notices/Inter-OFL.txt']:
                 p = root / name

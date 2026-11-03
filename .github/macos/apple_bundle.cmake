@@ -90,6 +90,8 @@ add_custom_command(TARGET SSSVRecompiled POST_BUILD
     # Copy controller database
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/
 
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/Mirror.tex $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/
+
     # Set RPATH
     COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/MacOS/SSSVRecompiled
 
@@ -99,3 +101,4 @@ add_custom_command(TARGET SSSVRecompiled POST_BUILD
     COMMENT "Performing post-build steps for macOS bundle"
     VERBATIM
 )
+

@@ -187,6 +187,8 @@ def package(build, platform, arch):
                     target = stage / 'licenses/Homebrew' / formula / path.relative_to(prefix)
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(path, target)
+    mirror_destination = (app / 'Contents/Resources/Mirror.tex') if platform == 'macOS' else (stage / 'Mirror.tex')
+    shutil.copy2(ROOT / 'Mirror.tex', mirror_destination)
     shutil.copy2(ROOT / 'lib/N64ModernRuntime/COPYING', stage / 'COPYING.txt')
     for name in ['README.md', 'CHANGELOG.md', 'README.upstream.md']:
         shutil.copy2(ROOT / name, stage / name)

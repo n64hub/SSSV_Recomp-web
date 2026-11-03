@@ -395,7 +395,28 @@ static inline void trace_proj_view_snapshot_once(RenderContext ctx) {
     );
 }
 
+static void fix_tv_static_alpha(void) {
+    if (gSegment1Base == NULL) return;
+
+    // Both native TV models use PASS2 in the first combiner cycle, then
+    // PRIMITIVE in the second. Alpha compare reads the first cycle's alpha;
+    // its undefined COMBINED input starts at zero in RT64, discarding every
+    // white static pixel. Supply primitive alpha there explicitly while
+    // preserving the final color, dither, geometry and material restoration.
+    // Only touch the known white-screen commands, not other PASS2 materials.
+    const u32 offsets[] = { 0x17AA0u + 27u * sizeof(Gfx), 0xC120u + 33u * sizeof(Gfx) };
+    s32 i;
+    for (i = 0; i < 2; ++i) {
+        Gfx* combine = (Gfx*)((u8*)gSegment1Base + offsets[i]);
+        if (combine->words.w0 == 0xFCFFFFFFu && combine->words.w1 == 0xFFFC70FBu) {
+            // Cycle-zero alpha D: COMBINED (0) -> PRIMITIVE (3).
+            combine->words.w1 |= 3u << 9;
+        }
+    }
+}
+
 RECOMP_PATCH void load_segments(Gfx **arg0, DisplayList *ddl) {
+    fix_tv_static_alpha();
     rc_invalidate_rt64_extended_state();
     rc_ensure_rt64_extended_enabled(arg0);
     // The world chunk LOD setup DL is only valid after the world projection path

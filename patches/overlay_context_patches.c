@@ -45,6 +45,35 @@ static inline void patch_apply_safe_scissor(Gfx** dl) {
     gDPSetScissor((*dl)++, G_SC_NON_INTERLACE, scissor_ulx, scissor_uly, scissor_lrx, scissor_lry);
 }
 
+// The original repeated its glyph strip by changing framebuffer addresses.
+// Keep those rows on the same high-resolution target instead: aliasing the
+// color image forces native-resolution readbacks, including old stat text.
+#define TERMINAL_GLYPH_COMMAND_CAPACITY 1500
+static Gfx s_terminal_glyph_rows[3][6][TERMINAL_GLYPH_COMMAND_CAPACITY] __attribute__((aligned(8)));
+
+static Gfx* terminal_glyph_row(s16 row, s16 offset, Gfx* first, Gfx* end) {
+    const s32 count = (s32)(end - first);
+    Gfx* target = s_terminal_glyph_rows[rc_frame_index() % 3][row];
+    s32 i;
+    if (count <= 0 || count > TERMINAL_GLYPH_COMMAND_CAPACITY) return NULL;
+    for (i = 0; i < count; ++i) {
+        const u32 op = first[i].words.w0 >> 24;
+        target[i] = first[i];
+        if (op == G_TEXRECT || op == 0xE5u || op == G_SETSCISSOR) {
+            target[i].words.w0 = (first[i].words.w0 & ~0xFFFu) |
+                (((first[i].words.w0 & 0xFFFu) + offset * 4) & 0xFFFu);
+            target[i].words.w1 = (first[i].words.w1 & ~0xFFFu) |
+                (((first[i].words.w1 & 0xFFFu) + offset * 4) & 0xFFFu);
+            if (op != G_SETSCISSOR && i + 2 < count) {
+                target[i + 1] = first[i + 1];
+                target[i + 2] = first[i + 2];
+                i += 2;
+            }
+        }
+    }
+    return target;
+}
+
 static inline s32 patch_terminal_slice_scissor(s16 slice_y, s32* ulx, s32* uly, s32* lrx, s32* lry) {
     const s16 inset = display_policy_safe_inset();
 
@@ -164,7 +193,7 @@ RECOMP_PATCH void setup_pause_menu_perspective_b_7A6F04(void) {
 
 RECOMP_PATCH void render_terminal_background_scene(void) {
     const s16 target_vp_h = get_safe_screen_height();
-    const s16 target_vp_w = compute_target_width_for_height_patch(target_vp_h);
+    const s16 target_vp_w = SSSV_BASE_WIDTH;
     s32 scissor_ulx, scissor_uly, scissor_lrx, scissor_lry;
 
     rc_set(RC_OVERLAY);
@@ -179,7 +208,7 @@ RECOMP_PATCH void render_terminal_background_scene(void) {
         &gDisplayListContext->unk37410,
         &gWorldPerspNorm,
         gLevelConfig.fovY,
-        get_target_aspect(),
+        SSSV_BASE_ASPECT,
         gLevelConfig.unkC,
         gLevelConfig.unkE,
         1.0f
@@ -188,6 +217,8 @@ RECOMP_PATCH void render_terminal_background_scene(void) {
     guScale(&gDisplayListContext->unk374D0, 1.0f, 1.0f, 1.0f);
     update_world_camera_transform();
 
+    rc_ensure_rt64_extended_enabled(&gMainDL);
+    gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_CENTER, -160 * 4, 0);
     gSPViewport(gMainDL++, &gMainViewport);
     setup_frame_render_state(gDisplayListContext, &gMainDL);
 
@@ -216,7 +247,7 @@ RECOMP_PATCH void render_terminal_background_dna_79FBB4(u16 arg0) {
     cur_perspective_projection_transform_id = SSSV_PROJECTION_OVERLAY_TERMINAL_ID;
     cur_ortho_projection_transform_id = SSSV_PROJECTION_OVERLAY_TERMINAL_ID;
 
-    guPerspective(&model_mtx[gDisplayListContext->usedModelViewMtxs], &norm, 33.0f, get_target_aspect(), 100.0f, 25000.0f, 1.0f);
+    guPerspective(&model_mtx[gDisplayListContext->usedModelViewMtxs], &norm, 33.0f, SSSV_BASE_ASPECT, 100.0f, 25000.0f, 1.0f);
     gSPMatrix(gOpaqueDL++, &model_mtx[gDisplayListContext->usedModelViewMtxs++], G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
     gSPPerspNormalize(gOpaqueDL++, norm);
 
@@ -452,45 +483,43 @@ RECOMP_PATCH void render_terminal_background_frame(void) {
 
         case 1:
         {
-            const s16 terminal_frame_width = terminal_ui_width();
+            const s16 terminal_frame_width = SSSV_BASE_WIDTH;
 
             gScreenWidth = terminal_frame_width;
             load_default_display_list(&gMainDL);
-            patch_clear_overlay_color(&gMainDL);
+            // The native translucent black fade above preserves decaying
+            // previous-frame images for the rotating animal/DNA trails.
+            // An opaque clear here erased that motion-blur history.
             set_menu_text_color(0xFF, 0xFF, 0xFF, 0xFF);
             select_font(0, FONT_COMIC_SANS_PATCH, 1, 0);
             update_terminal_scene_lighting(0xFF);
 
+            // The glyph backdrop fills at most a centred 16:9 canvas.
+            const s16 backdrop_width = MIN(terminal_ui_width(), 426);
+            gScreenWidth = backdrop_width;
+            rc_ensure_rt64_extended_enabled(&gMainDL);
+            gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+                -backdrop_width * 2, 0, -backdrop_width * 2, 0);
             random_offset = SSSV_RAND_PATCH(8);
-            for (i = 0; i < 6; i++) {
-                slice_y = (s16)(i * 40 + random_offset);
-
-                gDPSetColorImage(
-                    gMainDL++,
-                    G_IM_FMT_RGBA,
-                    G_IM_SIZ_16b,
-                    320,
-                    (const void*)(uintptr_t)osVirtualToPhysical(
-                        gFrameContextPtr->framebuffer + ((((s32)slice_y) * 10) << 6)
-                    )
-                );
-
-                if (patch_terminal_slice_scissor(slice_y, &scissor_ulx, &scissor_uly, &scissor_lrx, &scissor_lry)) {
-                    gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, scissor_ulx, scissor_uly, scissor_lrx, scissor_lry);
-                    gSPDisplayList(gMainDL++, gLayer0DL);
+            {
+                Gfx* first = gLayer0DL;
+                render_terminal_background_glyphs(&gLayer0DL, gTerminalFrameCounter);
+                for (i = 0; i < 6; i++) {
+                    Gfx* row;
+                    slice_y = (s16)(i * 40 + random_offset);
+                    row = terminal_glyph_row(i, slice_y, first, gLayer0DL);
+                    if (row && patch_terminal_slice_scissor(slice_y, &scissor_ulx, &scissor_uly, &scissor_lrx, &scissor_lry)) {
+                        gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, scissor_ulx, scissor_uly + slice_y,
+                            scissor_lrx, scissor_lry + slice_y);
+                        gSPDisplayList(gMainDL++, row);
+                    }
                 }
             }
-
-            gDPSetColorImage(
-                gMainDL++,
-                G_IM_FMT_RGBA,
-                G_IM_SIZ_16b,
-                320,
-                (const void*)(uintptr_t)osVirtualToPhysical(gFrameContextPtr->framebuffer)
-            );
             patch_apply_safe_scissor(&gMainDL);
 
-            render_terminal_background_glyphs(&gLayer0DL, gTerminalFrameCounter);
+            gScreenWidth = SSSV_BASE_WIDTH;
+            gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_CENTER,
+                -160 * 4, 0, -160 * 4, 0);
             render_terminal_background_scene();
             render_terminal_background_dna_79FBB4(gTerminalFrameCounter);
             load_default_display_list(&gMainDL);
@@ -547,6 +576,29 @@ RECOMP_PATCH void render_terminal_background_frame(void) {
             break;
     }
 
+    // Opaque wings also remove old feedback history when resizing ultrawide.
+    if (recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT) > 16.0f / 9.0f) {
+        rc_ensure_rt64_extended_enabled(&gMainDL);
+        gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT,
+            0, 0, -320, 0, 0, 0, 320, 240);
+        gDPSetScissor(gMainDL++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
+        gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_CENTER,
+            0, 0, -213 * 4, 0);
+        gDPPipeSync(gMainDL++);
+        gDPSetCycleType(gMainDL++, G_CYC_FILL);
+        gDPSetRenderMode(gMainDL++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gMainDL++, 0x00010001);
+        gDPFillRectangle(gMainDL++, 0, 0, 0, 239);
+        gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_CENTER, G_EX_ORIGIN_RIGHT,
+            213 * 4, 0, -320 * 4, 0);
+        gDPFillRectangle(gMainDL++, 0, 0, 320, 239);
+        gDPPipeSync(gMainDL++);
+    }
+    gEXSetRectAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+    gEXSetViewportAlign(gMainDL++, G_EX_ORIGIN_NONE, 0, 0);
+    gEXSetScissorAlign(gMainDL++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE,
+        0, 0, 0, 0, 0, 0, 4095, 4095);
+
     if (gTerminalTransitionCounter != 0) {
         transition_mask = gTerminalTransitionCounter ^ 7;
         gTerminalTransitionCounter = gTerminalTransitionCounter + 1;
@@ -555,3 +607,4 @@ RECOMP_PATCH void render_terminal_background_frame(void) {
         }
     }
 }
+
