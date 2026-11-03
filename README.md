@@ -42,6 +42,12 @@ The original project renders a black world in this scene; the current build rend
 
 ![Sting in the Tail: original project versus current build](docs/screenshots/08-sting-in-the-tail.png)
 
+Wait a minute, this isn't in the game... Begone with your Nonsense!
+
+![Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level](docs/screenshots/09-not-in-the-game.png)
+
+Wait a minute, thats not even a real Gemini logo
+
 ## Changelog
 
 ### Current version — 2 November 2026
