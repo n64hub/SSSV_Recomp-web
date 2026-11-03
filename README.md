@@ -44,7 +44,7 @@ The original project renders a black world in this scene; the current build rend
 
 Wait a minute, this isn't in the game... Begone with your Nonsense!
 
-![Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level](docs/screenshots/09-not-in-the-game.png)
+<img src="docs/screenshots/09-not-in-the-game.png" width="52%" alt="Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level">
 
 Wait a minute, thats not even a real Gemini logo
 
