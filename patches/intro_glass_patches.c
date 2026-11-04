@@ -12,8 +12,8 @@ typedef struct {
 } IntroGlassInstance;
 _Static_assert(sizeof(IntroGlassInstance) == 28, "Native sorted instance layout");
 extern f32 sqrtf(f32);
-extern f32 sinf(f32);
-extern f32 cosf(f32);
+extern f32 __sinf(f32);
+extern f32 __cosf(f32);
 extern u32 gGeometryMode;
 #define ABS(v) ((v)<0?-(v):(v))
 #define ABSF(v) ABS(v)
@@ -54,7 +54,7 @@ RECOMP_EXPORT void sssv_extend_intro_glass(void) {
         /* Orthogonalize screen-up, including the cutscene's camera roll. */
         ux = rz*fy - ry*fz; uz = ry*fx - rx*fy; uy = rx*fz - rz*fx;
         f32 angle = gLevelConfig.fovY * 0.00872664626f;
-        f32 tangent = sinf(angle) / cosf(angle);
+        f32 tangent = __sinf(angle) / __cosf(angle);
         f32 minx = cx - 512, maxx = cx + 512, minz = cz - 512, maxz = cz + 512;
         for (i = 0; i < 4; ++i) {
             f32 sx = (i & 1) ? 1.0f : -1.0f, sy = (i & 2) ? 1.0f : -1.0f;
