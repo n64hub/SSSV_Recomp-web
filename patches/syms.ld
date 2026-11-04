@@ -13,6 +13,3 @@ D_801D9EB8 = 0x801D9EB8;
 recomp_get_hd_title_enabled = 0x8F000010;
 
 recomp_get_near_reflection_dl = 0x8F000014;
-/* Use the game's named math entry points on every host platform. */
-__cosf = 0x8013FD70;
-__sinf = 0x8013FEE0;

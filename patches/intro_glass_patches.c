@@ -12,8 +12,6 @@ typedef struct {
 } IntroGlassInstance;
 _Static_assert(sizeof(IntroGlassInstance) == 28, "Native sorted instance layout");
 extern f32 sqrtf(f32);
-extern f32 __sinf(f32);
-extern f32 __cosf(f32);
 extern u32 gGeometryMode;
 #define ABS(v) ((v)<0?-(v):(v))
 #define ABSF(v) ABS(v)
@@ -25,6 +23,17 @@ static void glass_tile_sync(Gfx* p) { p->words.w0=0xE8000000u; p->words.w1=0; }
 #define GLASS_TILE_CAPACITY 1024
 static Mtx s_glass_matrices[2][GLASS_TILE_CAPACITY] __attribute__((aligned(8)));
 static s32 glass_floor(f32 v) { s32 n = (s32)v; return n - (v < n); }
+/* Half-FOV is in [0, pi/2). Evaluate sine/cosine locally: these math
+ * routines are omitted from the ROM-free patch recompiler's symbol list.
+ * The Taylor remainder is below float precision at ordinary camera FOVs. */
+static f32 glass_half_fov_tangent(f32 x) {
+    f32 q = x*x;
+    f32 sine = x * (1.0f + q * (-1.0f/6.0f + q * (1.0f/120.0f + q *
+        (-1.0f/5040.0f + q * (1.0f/362880.0f + q * (-1.0f/39916800.0f + q/6227020800.0f))))));
+    f32 cosine = 1.0f + q * (-1.0f/2.0f + q * (1.0f/24.0f + q *
+        (-1.0f/720.0f + q * (1.0f/40320.0f + q * (-1.0f/3628800.0f + q/479001600.0f)))));
+    return sine / cosine;
+}
 
 RECOMP_EXPORT void sssv_extend_intro_glass(void) {
     IntroGlassInstance* queue = (IntroGlassInstance*)0x803D5188;
@@ -54,7 +63,7 @@ RECOMP_EXPORT void sssv_extend_intro_glass(void) {
         /* Orthogonalize screen-up, including the cutscene's camera roll. */
         ux = rz*fy - ry*fz; uz = ry*fx - rx*fy; uy = rx*fz - rz*fx;
         f32 angle = gLevelConfig.fovY * 0.00872664626f;
-        f32 tangent = __sinf(angle) / __cosf(angle);
+        f32 tangent = glass_half_fov_tangent(angle);
         f32 minx = cx - 512, maxx = cx + 512, minz = cz - 512, maxz = cz + 512;
         for (i = 0; i < 4; ++i) {
             f32 sx = (i & 1) ? 1.0f : -1.0f, sy = (i & 2) ? 1.0f : -1.0f;
