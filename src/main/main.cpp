@@ -44,6 +44,9 @@
 #include "recompinput/recompinput.h"
 #include "recompinput/profiles.h"
 #include "sssv_config.h"
+#include "sssv_fast_forward.h"
+#include "recompinput/input_binding.h"
+extern std::atomic<uint32_t> sssv_simulation_speed;
 #include "gbi/sssv_mirror.h"
 #include "sssv_mirror_input.h"
 #include "sssv_game.h"
@@ -197,6 +200,53 @@ static constexpr float LAUNCHER_MUSIC_VOLUME_SCALE = 0.1f;
 
 void update_gfx(void*) {
     recompinput::handle_events();
+    static sssv::FastForwardState fast_forward;
+    bool ff_pressed = false;
+    for (auto device : {recompinput::InputDevice::Keyboard, recompinput::InputDevice::Controller}) {
+        const int profile = recompinput::profiles::get_input_profile_for_player(0, device);
+        if (profile >= 0) for (size_t binding = 0; binding < recompinput::num_bindings_per_input; ++binding) {
+            ff_pressed |= recompinput::get_input_digital(0, recompinput::profiles::get_input_binding(profile, recompinput::GameInput::FAST_FORWARD, binding));
+        }
+    }
+    uint32_t requested_ff_rate = sssv::get_fast_forward_rate();
+    bool toggle_ff = sssv::get_fast_forward_toggle();
+    bool focused = window && (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS);
+    // The background test hook exercises the same input state without physical keys.
+    if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
+        std::ifstream test(std::string(control) + ".fast-forward");
+        int held; if (test >> held) {
+            ff_pressed = held != 0; focused = true;
+            unsigned rate; int toggle;
+            if (test >> rate && (rate == 1 || rate == 2 || rate == 4 || rate == 8 || rate == 16)) requested_ff_rate = rate;
+            if (test >> toggle) toggle_ff = toggle != 0;
+        }
+    }
+    const bool ff_enabled = focused && ultramodern::is_game_started() && !recompinput::binding::is_binding() && !recompui::is_context_capturing_input();
+    const uint32_t ff_rate = fast_forward.update(ff_pressed, toggle_ff, requested_ff_rate, ff_enabled,
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+    ultramodern::set_speed_multiplier(ff_rate);
+    sssv_simulation_speed.store(ff_rate, std::memory_order_relaxed);
+    if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
+        static auto report_at = std::chrono::steady_clock::now();
+        if (std::chrono::steady_clock::now() >= report_at) {
+            report_at = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+            std::ofstream report(std::string(control) + ".fast-forward-status");
+            report << ff_rate << " " << osGetTime();
+            static bool checked_defaults = false;
+            if (!checked_defaults) {
+                checked_defaults = true;
+                std::ofstream defaults(std::string(control) + ".fast-forward-defaults");
+                defaults << "Rate=" << sssv::get_fast_forward_rate() << " Toggle=" << sssv::get_fast_forward_toggle();
+                for (auto device : {recompinput::InputDevice::Keyboard, recompinput::InputDevice::Controller}) {
+                    const int profile = recompinput::profiles::get_input_profile_for_player(0, device);
+                    for (size_t i = 0; profile >= 0 && i < recompinput::num_bindings_per_input; ++i) {
+                        const auto field = recompinput::profiles::get_input_binding(profile, recompinput::GameInput::FAST_FORWARD, i);
+                        defaults << "\nDevice=" << static_cast<int>(device) << " Binding=" << i << " Type=" << static_cast<int>(field.input_type) << " Id=" << field.input_id;
+                    }
+                }
+            }
+        }
+    }
     if (input_movie.finished()) {
         ultramodern::quit();
         return;
@@ -289,8 +339,17 @@ static uint32_t discarded_output_frames;
 
 constexpr uint32_t bytes_per_frame = input_channels * sizeof(float);
 
+void update_audio_converter();
+
 void queue_samples(int16_t* audio_data, size_t sample_count) {
     static std::vector<float> swap_buffer;
+    static uint32_t previous_speed = 1;
+    const uint32_t speed = ultramodern::get_speed_multiplier();
+    if (speed != previous_speed) {
+        SDL_ClearQueuedAudio(audio_device);
+        update_audio_converter();
+        previous_speed = speed;
+    }
     static std::array<float, duplicated_input_frames * input_channels> duplicated_sample_buffer;
 
     size_t resampled_sample_count = sample_count + duplicated_input_frames * input_channels;
@@ -346,7 +405,7 @@ size_t get_frames_remaining() {
     constexpr float buffer_offset_frames = 1.0f;
     uint64_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
 
-    buffered_byte_count = buffered_byte_count * 2 * sample_rate / output_sample_rate / output_channels;
+    buffered_byte_count = buffered_byte_count * 2 * sample_rate * ultramodern::get_speed_multiplier() / output_sample_rate / output_channels;
 
     uint32_t frames_per_vi = (sample_rate / 60);
     if (buffered_byte_count > (buffer_offset_frames * bytes_per_frame * frames_per_vi)) {
@@ -359,14 +418,15 @@ size_t get_frames_remaining() {
 }
 
 void update_audio_converter() {
-    int ret = SDL_BuildAudioCVT(&audio_convert, AUDIO_F32, input_channels, sample_rate, AUDIO_F32, output_channels, output_sample_rate);
+    const uint32_t playback_rate = sample_rate * ultramodern::get_speed_multiplier();
+    int ret = SDL_BuildAudioCVT(&audio_convert, AUDIO_F32, input_channels, playback_rate, AUDIO_F32, output_channels, output_sample_rate);
 
     if (ret < 0) {
         printf("Error creating SDL audio converter: %s\n", SDL_GetError());
         throw std::runtime_error("Error creating SDL audio converter");
     }
 
-    discarded_output_frames = duplicated_input_frames * output_sample_rate / sample_rate;
+    discarded_output_frames = duplicated_input_frames * output_sample_rate / playback_rate;
 }
 
 void set_frequency(uint32_t freq) {

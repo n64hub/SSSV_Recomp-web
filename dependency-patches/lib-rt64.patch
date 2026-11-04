@@ -326,7 +326,7 @@ index 0000000000000000000000000000000000000000..e99a46df2c2edaeb2ab5f2593f984328
 +}
 diff --git a/src/gbi/sssv_hd_world.h b/src/gbi/sssv_hd_world.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e438525817c08d
+index 0000000000000000000000000000000000000000..1673c8a42e32cf5ab95179610548b79b5c3b9251
 --- /dev/null
 +++ b/src/gbi/sssv_hd_world.h
 @@ -0,0 +1,692 @@
@@ -728,29 +728,29 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x01dba8d978ca9d4bULL: if (width != 1254 || height != 1254) return false; sx = 0.935672515f; sy = 0.944178628f; tx = 0.031366295f; ty = -0.034290271f; return true;
 +    case 0x01f6839216fdd474ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.333333333f; return true;
 +    case 0x04061daf0f01f6cbULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.333333333f; return true;
-+    case 0x059cc24cbc05eca3ULL: if (width != 1254 || height != 1254) return false; sx = 0.749086793f; sy = 0.968899522f; tx = 0.110562330f; ty = 0.012759171f; return true;
++    case 0x059cc24cbc05eca3ULL: if (width != 1254 || height != 1254) return false; sx = 0.774056353f; sy = 1.000154345f; tx = 0.109782031f; ty = 0.012759171f; return true;
 +    case 0x068edfc09eaf237fULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.666666667f; return true;
 +    case 0x0726d3ae9ff7f8f6ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x08b4bc22e1a0eacdULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
-+    case 0x0a14e50faa02eb7dULL: if (width != 1254 || height != 1254) return false; sx = 0.967995747f; sy = 0.954056696f; tx = 0.008027645f; ty = 0.008463240f; return true;
++    case 0x0a14e50faa02eb7dULL: if (width != 1254 || height != 1254) return false; sx = 0.967995747f; sy = 0.985858586f; tx = 0.008027645f; ty = 0.007469431f; return true;
 +    case 0x0a6a3af0f39aa426ULL: if (width != 1254 || height != 1254) return false; sx = 0.961722488f; sy = 0.765550239f; tx = 0.021531100f; ty = 0.096491228f; return true;
 +    case 0x0b338bc729316a02ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x0d35650a8faf99c1ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0x0ddc5a679a0466a2ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.250000000f; return true;
-+    case 0x0ef4dc742b69115bULL: if (width != 1254 || height != 1254) return false; sx = 0.904306220f; sy = 0.933782267f; tx = 0.043859649f; ty = 0.020910863f; return true;
++    case 0x0ef4dc742b69115bULL: if (width != 1254 || height != 1254) return false; sx = 0.933477388f; sy = 0.933782267f; tx = 0.043859649f; ty = 0.020910863f; return true;
 +    case 0x0f5702940980f7ecULL: if (width != 1254 || height != 1254) return false; sx = 0.928229665f; sy = 0.642743222f; tx = 0.035885167f; ty = 0.178628389f; return true;
 +    case 0x0fb48c041fa9fceaULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.000000000f; return true;
 +    case 0x1094771d67bc486dULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.250000000f; return true;
-+    case 0x11f196aa74eb45cfULL: if (width != 1254 || height != 1254) return false; sx = 0.863636364f; sy = 0.990430622f; tx = 0.059011164f; ty = 0.002392344f; return true;
++    case 0x11f196aa74eb45cfULL: if (width != 1254 || height != 1254) return false; sx = 0.891495601f; sy = 1.022379997f; tx = 0.059011164f; ty = 0.002392344f; return true;
 +    case 0x129f128e9041e58aULL: if (width != 1254 || height != 1254) return false; sx = 0.683233009f; sy = 0.680763492f; tx = 0.166666667f; ty = 0.109250399f; return true;
 +    case 0x1320f7e61ad90c82ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0x1323adb2caae64d8ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
-+    case 0x1336cb1085718c83ULL: if (width != 1254 || height != 1254) return false; sx = 0.726861141f; sy = 0.960925040f; tx = 0.120028811f; ty = 0.021531100f; return true;
-+    case 0x137943669a0ea743ULL: if (width != 1254 || height != 1254) return false; sx = 0.940191388f; sy = 0.850877193f; tx = 0.031897927f; ty = 0.075757576f; return true;
-+    case 0x18ecead830af0a25ULL: if (width != 1254 || height != 1254) return false; sx = 0.872408293f; sy = 0.976076555f; tx = 0.051834131f; ty = 0.011961722f; return true;
++    case 0x1336cb1085718c83ULL: if (width != 1254 || height != 1254) return false; sx = 0.751089846f; sy = 0.991922622f; tx = 0.119271664f; ty = 0.021531100f; return true;
++    case 0x137943669a0ea743ULL: if (width != 1254 || height != 1254) return false; sx = 0.970520142f; sy = 0.878324844f; tx = 0.031897927f; ty = 0.075757576f; return true;
++    case 0x18ecead830af0a25ULL: if (width != 1254 || height != 1254) return false; sx = 0.900550496f; sy = 1.007562896f; tx = 0.051834131f; ty = 0.011961722f; return true;
 +    case 0x192d8deb77be233cULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
 +    case 0x19c148bb1d61c4e0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
-+    case 0x1a6fc94222a5c930ULL: if (width != 1254 || height != 1254) return false; sx = 0.957788410f; sy = 0.938416422f; tx = 0.008346624f; ty = 0.015331584f; return true;
++    case 0x1a6fc94222a5c930ULL: if (width != 1254 || height != 1254) return false; sx = 0.957788410f; sy = 0.969696970f; tx = 0.008346624f; ty = 0.014354067f; return true;
 +    case 0x1aec04dd38920336ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0x1af1077187f0c654ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.333333333f; return true;
 +    case 0x1bb872d015985990ULL: if (width != 1254 || height != 1254) return false; sx = 0.956087188f; sy = 1.019390582f; tx = 0.017171717f; ty = 0.013808445f; return true;
@@ -761,7 +761,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x1f20a74bb91f3598ULL: if (width != 1254 || height != 1254) return false; sx = 0.220893142f; sy = 1.000000000f; tx = 0.389154705f; ty = 0.000000000f; return true;
 +    case 0x1f6198a434f2405eULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x202578d265f2ee2eULL: if (width != 1254 || height != 1254) return false; sx = 0.692185008f; sy = 0.643540670f; tx = 0.128389155f; ty = 0.118022329f; return true;
-+    case 0x20d3de64df7a1aecULL: if (width != 1254 || height != 1254) return false; sx = 0.920361510f; sy = 0.890672429f; tx = 0.039819245f; ty = 0.041544477f; return true;
++    case 0x20d3de64df7a1aecULL: if (width != 1254 || height != 1254) return false; sx = 0.920361510f; sy = 0.920361510f; tx = 0.039819245f; ty = 0.040616693f; return true;
 +    case 0x216951297a8871c7ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.750000000f; return true;
 +    case 0x2210bd5f7ace2518ULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0x2263f80d8b0a89b6ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
@@ -770,7 +770,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x23f0d369dea4b06aULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0x23f34070fff0529fULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
 +    case 0x27701a4eed1a5a25ULL: if (width != 1254 || height != 1254) return false; sx = 0.718500797f; sy = 0.729665072f; tx = 0.110047847f; ty = 0.090111643f; return true;
-+    case 0x27c8a37d7cfb6aa7ULL: if (width != 1254 || height != 1254) return false; sx = 0.893141946f; sy = 0.976874003f; tx = 0.044657097f; ty = 0.010366826f; return true;
++    case 0x27c8a37d7cfb6aa7ULL: if (width != 1254 || height != 1254) return false; sx = 0.921952976f; sy = 1.008386068f; tx = 0.044657097f; ty = 0.010366826f; return true;
 +    case 0x27fb58d3975e93a1ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.333333333f; return true;
 +    case 0x2928bbc57533bebbULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x2980a670f3b29cd4ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.750000000f; return true;
@@ -784,7 +784,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x2c17bccc22742557ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x2cf913fb09ba30beULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x2d0fb15d7c44896dULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
-+    case 0x2e86e7316f335acdULL: if (width != 1254 || height != 1254) return false; sx = 0.894736842f; sy = 0.964912281f; tx = 0.053429027f; ty = 0.019936204f; return true;
++    case 0x2e86e7316f335acdULL: if (width != 1254 || height != 1254) return false; sx = 0.923599321f; sy = 0.996038483f; tx = 0.053429027f; ty = 0.019936204f; return true;
 +    case 0x2eda1fc7c3655ba3ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
 +    case 0x2fa63a7da00df39aULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0x31698503dc9ad833ULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
@@ -803,9 +803,9 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x40078eb278695f79ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0x41532b869f4fa9e2ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0x41de67454390e859ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
-+    case 0x42492431241afe30ULL: if (width != 1254 || height != 1254) return false; sx = 0.876129718f; sy = 0.977671451f; tx = 0.067517278f; ty = 0.011164274f; return true;
++    case 0x42492431241afe30ULL: if (width != 1254 || height != 1254) return false; sx = 0.876129718f; sy = 1.009209240f; tx = 0.067517278f; ty = 0.011164274f; return true;
 +    case 0x4415010a3f044ee3ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.000000000f; return true;
-+    case 0x44b778f29e8496e4ULL: if (width != 1254 || height != 1254) return false; sx = 0.917065391f; sy = 0.951355662f; tx = 0.040669856f; ty = 0.024720893f; return true;
++    case 0x44b778f29e8496e4ULL: if (width != 1254 || height != 1254) return false; sx = 0.946648145f; sy = 0.982044554f; tx = 0.040669856f; ty = 0.024720893f; return true;
 +    case 0x46005705081978dfULL: if (width != 1254 || height != 1254) return false; sx = 0.990489692f; sy = 0.861007738f; tx = 0.040669856f; ty = -0.014324532f; return true;
 +    case 0x46207e3c1e703b8eULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x4649e633c97d9376ULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
@@ -814,7 +814,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x4811736ff8eef4b0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
 +    case 0x4820de691cd2ae61ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
 +    case 0x485333d0cb56d383ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.750000000f; return true;
-+    case 0x48ae306708c34aa6ULL: if (width != 1254 || height != 1254) return false; sx = 0.884370016f; sy = 0.885964912f; tx = 0.057416268f; ty = 0.059011164f; return true;
++    case 0x48ae306708c34aa6ULL: if (width != 1254 || height != 1254) return false; sx = 0.912898081f; sy = 0.914544426f; tx = 0.057416268f; ty = 0.059011164f; return true;
 +    case 0x48d91ea188be2bfdULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.500000000f; return true;
 +    case 0x4975e3433e5838faULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x49a2fb0091311f88ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
@@ -826,26 +826,26 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x4dca8fdb951e4437ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
 +    case 0x515c77f3f665d7ecULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
 +    case 0x5284f2af1d383ac0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.750000000f; return true;
-+    case 0x52c8e08527c9700bULL: if (width != 1254 || height != 1254) return false; sx = 0.951355662f; sy = 0.930622010f; tx = 0.031100478f; ty = 0.034290271f; return true;
++    case 0x52c8e08527c9700bULL: if (width != 1254 || height != 1254) return false; sx = 0.982044554f; sy = 0.960642074f; tx = 0.031100478f; ty = 0.034290271f; return true;
 +    case 0x56a4431787346a07ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.500000000f; return true;
 +    case 0x56acfd76004b6f46ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x5771c176fd576f47ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.000000000f; return true;
 +    case 0x5785a47428acc1a2ULL: if (width != 1254 || height != 1254) return false; sx = 0.864221159f; sy = 0.872727273f; tx = 0.059117491f; ty = 0.074003190f; return true;
 +    case 0x57c357dc267610ccULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
-+    case 0x59b2461e9d02156aULL: if (width != 1254 || height != 1254) return false; sx = 0.726037969f; sy = 0.948963317f; tx = 0.110485157f; ty = 0.023923445f; return true;
-+    case 0x59f6e53aed623872ULL: if (width != 1254 || height != 1254) return false; sx = 0.853629675f; sy = 0.935406699f; tx = 0.059448475f; ty = 0.031897927f; return true;
++    case 0x59b2461e9d02156aULL: if (width != 1254 || height != 1254) return false; sx = 0.750239234f; sy = 0.979575037f; tx = 0.109728868f; ty = 0.023923445f; return true;
++    case 0x59f6e53aed623872ULL: if (width != 1254 || height != 1254) return false; sx = 0.882083998f; sy = 0.965581108f; tx = 0.058559277f; ty = 0.031897927f; return true;
 +    case 0x5a06d7f179741e6eULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.750000000f; return true;
 +    case 0x5a649169c770f65eULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x5ae778b50496c136ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x5d049adc9b8c04b9ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x5ea099a89ed6eb63ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.666666667f; return true;
 +    case 0x604455862a1623e1ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
-+    case 0x60903b128c10c19fULL: if (width != 1254 || height != 1254) return false; sx = 0.707105006f; sy = 0.918660287f; tx = 0.119051294f; ty = 0.011164274f; return true;
++    case 0x60903b128c10c19fULL: if (width != 1254 || height != 1254) return false; sx = 0.730675173f; sy = 0.948294490f; tx = 0.118314726f; ty = 0.011164274f; return true;
 +    case 0x6098740855d16eb0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.500000000f; return true;
 +    case 0x615d9dd2be773ec4ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.333333333f; return true;
 +    case 0x61e71553362bbea4ULL: if (width != 1254 || height != 1254) return false; sx = 0.802126528f; sy = 0.805528974f; tx = 0.089766082f; ty = 0.105608719f; return true;
 +    case 0x6257f4e02a3a5d57ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.000000000f; return true;
-+    case 0x62d473132b4db79fULL: if (width != 1254 || height != 1254) return false; sx = 0.966294524f; sy = 0.875855327f; tx = 0.016852738f; ty = 0.049184545f; return true;
++    case 0x62d473132b4db79fULL: if (width != 1254 || height != 1254) return false; sx = 0.966294524f; sy = 0.905050505f; tx = 0.016852738f; ty = 0.048272196f; return true;
 +    case 0x637fcd1059746549ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.000000000f; return true;
 +    case 0x63ea27f8e9bc04faULL: if (width != 1254 || height != 1254) return false; sx = 0.519723551f; sy = 0.524827220f; tx = 0.238144604f; ty = 0.238782562f; return true;
 +    case 0x658c8b033e00d4eeULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
@@ -853,10 +853,10 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x6615415bc3ee88fbULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.000000000f; return true;
 +    case 0x67ac7dca62fb0ac8ULL: if (width != 1254 || height != 1254) return false; sx = 1.005422648f; sy = 0.939925572f; tx = -0.002711324f; ty = 0.032828283f; return true;
 +    case 0x67c51ad579f36fccULL: if (width != 1254 || height != 1254) return false; sx = 0.991812865f; sy = 1.018181818f; tx = -0.003083466f; ty = -0.007097289f; return true;
-+    case 0x67feb306d069c118ULL: if (width != 1254 || height != 1254) return false; sx = 0.808612440f; sy = 0.806220096f; tx = 0.082934609f; ty = 0.116427432f; return true;
++    case 0x67feb306d069c118ULL: if (width != 1254 || height != 1254) return false; sx = 0.834696712f; sy = 0.832227196f; tx = 0.082934609f; ty = 0.116427432f; return true;
 +    case 0x68c611a3b94dc81bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
 +    case 0x698d119d23a0c4c9ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.500000000f; return true;
-+    case 0x6b237706e06457b0ULL: if (width != 1254 || height != 1254) return false; sx = 0.928867624f; sy = 0.941709111f; tx = 0.010047847f; ty = 0.020013377f; return true;
++    case 0x6b237706e06457b0ULL: if (width != 1254 || height != 1254) return false; sx = 0.928867624f; sy = 0.973099415f; tx = 0.010047847f; ty = 0.019032430f; return true;
 +    case 0x6c93367ec8aea296ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
 +    case 0x6ca7cc9a73e76a08ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0x6d923f0b3cf5195eULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
@@ -864,23 +864,23 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x6f5eb3e7fac16f06ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0x706a18f2882d51b0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
 +    case 0x714acca8a0046309ULL: if (width != 1254 || height != 1254) return false; sx = 0.667729931f; sy = 0.617224880f; tx = 0.155502392f; ty = 0.113237640f; return true;
-+    case 0x716cfa3b64516e3eULL: if (width != 1254 || height != 1254) return false; sx = 0.979053695f; sy = 0.949760766f; tx = 0.008479532f; ty = 0.027910686f; return true;
++    case 0x716cfa3b64516e3eULL: if (width != 1254 || height != 1254) return false; sx = 0.979053695f; sy = 0.980398210f; tx = 0.008479532f; ty = 0.027910686f; return true;
 +    case 0x72262918fe0bce5eULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.250000000f; return true;
 +    case 0x727ae30cba5b098fULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
 +    case 0x72f2b4c2bef60e3eULL: if (width != 1254 || height != 1254) return false; sx = 0.783777626f; sy = 0.870458976f; tx = 0.084187742f; ty = -0.027556264f; return true;
 +    case 0x74942ebe36e87db9ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
 +    case 0x759327d5e92b1505ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.750000000f; return true;
-+    case 0x76107ed58b657b79ULL: if (width != 1254 || height != 1254) return false; sx = 0.763080722f; sy = 0.952153110f; tx = 0.104542882f; ty = 0.024720893f; return true;
++    case 0x76107ed58b657b79ULL: if (width != 1254 || height != 1254) return false; sx = 0.788516746f; sy = 0.982867727f; tx = 0.103748006f; ty = 0.024720893f; return true;
 +    case 0x7774497af08c1101ULL: if (width != 1254 || height != 1254) return false; sx = 1.004572036f; sy = 0.939925572f; tx = -0.002684742f; ty = 0.032030835f; return true;
 +    case 0x78a96701e424cb3eULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
-+    case 0x7bc9bcc19c370dd1ULL: if (width != 1254 || height != 1254) return false; sx = 0.786283892f; sy = 0.832535885f; tx = 0.106060606f; ty = 0.094896332f; return true;
++    case 0x7bc9bcc19c370dd1ULL: if (width != 1254 || height != 1254) return false; sx = 0.811647888f; sy = 0.859391881f; tx = 0.106060606f; ty = 0.094896332f; return true;
 +    case 0x7c0c560820cae9e7ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
 +    case 0x7c30f7e0f6a7881dULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x7cb773175a2caba5ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0x7d84ffe7bd824ac6ULL: if (width != 1254 || height != 1254) return false; sx = 0.234449761f; sy = 1.000000000f; tx = 0.382775120f; ty = 0.000000000f; return true;
 +    case 0x7e1f4d8280456a7bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0x7ee650feb397e6cfULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
-+    case 0x81716237a5b655e8ULL: if (width != 1254 || height != 1254) return false; sx = 0.864433812f; sy = 0.974481659f; tx = 0.067783094f; ty = 0.011164274f; return true;
++    case 0x81716237a5b655e8ULL: if (width != 1254 || height != 1254) return false; sx = 0.892318773f; sy = 1.005916551f; tx = 0.067783094f; ty = 0.011164274f; return true;
 +    case 0x81a9bc656d4124fbULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x848d360ec3d94e18ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x85b55411f03c93d3ULL: if (width != 1254 || height != 1254) return false; sx = 0.762147794f; sy = 0.812333865f; tx = 0.114938862f; ty = 0.093434343f; return true;
@@ -893,13 +893,13 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x8eac11b5dac425dbULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
 +    case 0x8f79caa7c76714e5ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
 +    case 0x915a6618356dfafcULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
-+    case 0x920a1b5c86d710ccULL: if (width != 1254 || height != 1254) return false; sx = 0.602870813f; sy = 0.625199362f; tx = 0.197767145f; ty = 0.177830941f; return true;
++    case 0x920a1b5c86d710ccULL: if (width != 1254 || height != 1254) return false; sx = 0.622318259f; sy = 0.645367083f; tx = 0.197767145f; ty = 0.177830941f; return true;
 +    case 0x9222b4cab29d500eULL: if (width != 1254 || height != 1254) return false; sx = 0.864221159f; sy = 0.879401300f; tx = 0.066294524f; ty = 0.039811066f; return true;
-+    case 0x931d086775cb7cabULL: if (width != 1254 || height != 1254) return false; sx = 0.937799043f; sy = 0.936204147f; tx = 0.030303030f; ty = 0.025518341f; return true;
++    case 0x931d086775cb7cabULL: if (width != 1254 || height != 1254) return false; sx = 0.968050625f; sy = 0.966404280f; tx = 0.030303030f; ty = 0.025518341f; return true;
 +    case 0x93c35d2467d46a78ULL: if (width != 1254 || height != 1254) return false; sx = 1.000318979f; sy = 0.938224349f; tx = -0.000159490f; ty = 0.034476342f; return true;
 +    case 0x946b5aa4c8997111ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
-+    case 0x95b86b8a7aa40f7dULL: if (width != 1254 || height != 1254) return false; sx = 0.754385965f; sy = 0.861244019f; tx = 0.120414673f; ty = 0.068580542f; return true;
-+    case 0x95e4b1068ce89a14ULL: if (width != 1254 || height != 1254) return false; sx = 0.843700159f; sy = 0.872408293f; tx = 0.073365231f; ty = 0.065390750f; return true;
++    case 0x95b86b8a7aa40f7dULL: if (width != 1254 || height != 1254) return false; sx = 0.778720996f; sy = 0.889026084f; tx = 0.120414673f; ty = 0.068580542f; return true;
++    case 0x95e4b1068ce89a14ULL: if (width != 1254 || height != 1254) return false; sx = 0.870916294f; sy = 0.900550496f; tx = 0.073365231f; ty = 0.065390750f; return true;
 +    case 0x98106c7634aa073aULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x991305fd1d408eb6ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
 +    case 0x9ac1646578d38f0bULL: if (width != 1254 || height != 1254) return false; sx = 0.719617225f; sy = 1.051355662f; tx = 0.140191388f; ty = -0.025677831f; return true;
@@ -908,18 +908,18 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0x9cfd6715117a90f6ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
 +    case 0x9d5bcff0e1812f5cULL: if (width != 1254 || height != 1254) return false; sx = 0.253588517f; sy = 1.000000000f; tx = 0.373205742f; ty = 0.000000000f; return true;
 +    case 0x9df49ec17ccc4612ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
-+    case 0x9e10f569587eef6fULL: if (width != 1254 || height != 1254) return false; sx = 0.956087188f; sy = 0.931007872f; tx = 0.019564062f; ty = 0.024335031f; return true;
++    case 0x9e10f569587eef6fULL: if (width != 1254 || height != 1254) return false; sx = 0.956087188f; sy = 0.962041467f; tx = 0.019564062f; ty = 0.023365231f; return true;
 +    case 0x9e18673271ba852bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0x9f344ccfece027aaULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0x9f394d4a7d193834ULL: if (width != 1254 || height != 1254) return false; sx = 0.740829346f; sy = 0.748006380f; tx = 0.127591707f; ty = 0.090909091f; return true;
-+    case 0xa3b9e907df9ca55cULL: if (width != 1254 || height != 1254) return false; sx = 0.792663477f; sy = 0.937799043f; tx = 0.104465710f; ty = 0.027113238f; return true;
++    case 0xa3b9e907df9ca55cULL: if (width != 1254 || height != 1254) return false; sx = 0.818233266f; sy = 0.968050625f; tx = 0.104465710f; ty = 0.027113238f; return true;
 +    case 0xa56d2fce99fbad9cULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.333333333f; return true;
-+    case 0xa58c6b26c6c438a5ULL: if (width != 1254 || height != 1254) return false; sx = 0.754848999f; sy = 0.972886762f; tx = 0.110382261f; ty = 0.012759171f; return true;
++    case 0xa58c6b26c6c438a5ULL: if (width != 1254 || height != 1254) return false; sx = 0.780010633f; sy = 1.004270206f; tx = 0.109595960f; ty = 0.012759171f; return true;
 +    case 0xa6110f1025af57f2ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.250000000f; return true;
 +    case 0xa79d947d80ef7844ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.000000000f; return true;
 +    case 0xa84b823757ebc93cULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0xa8cb2e431c005fdfULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
-+    case 0xad1ee9865acc39cfULL: if (width != 1254 || height != 1254) return false; sx = 0.926634769f; sy = 0.944976077f; tx = 0.035885167f; ty = 0.028708134f; return true;
++    case 0xad1ee9865acc39cfULL: if (width != 1254 || height != 1254) return false; sx = 0.956526213f; sy = 0.975459176f; tx = 0.035885167f; ty = 0.028708134f; return true;
 +    case 0xaf1bae7c498c68acULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0xb1c3fef52db66e76ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0xb2c39969039e4e9eULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
@@ -931,11 +931,11 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0xb4cc63e222f65e85ULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
 +    case 0xb5b690e3706a74fdULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xb616392b1c11ce04ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
-+    case 0xb618c869af133ec3ULL: if (width != 1254 || height != 1254) return false; sx = 0.963934764f; sy = 0.955342903f; tx = 0.030303030f; ty = 0.022328549f; return true;
++    case 0xb618c869af133ec3ULL: if (width != 1254 || height != 1254) return false; sx = 0.963934764f; sy = 0.986160416f; tx = 0.030303030f; ty = 0.022328549f; return true;
 +    case 0xb61a0907acc7fdbfULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.666666667f; return true;
 +    case 0xb650c5bb16c3ce4aULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
 +    case 0xb65aeb438cdf6a21ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.666666667f; return true;
-+    case 0xb65ed0850071f868ULL: if (width != 1254 || height != 1254) return false; sx = 0.810207337f; sy = 0.811802233f; tx = 0.090111643f; ty = 0.094896332f; return true;
++    case 0xb65ed0850071f868ULL: if (width != 1254 || height != 1254) return false; sx = 0.836343057f; sy = 0.837989402f; tx = 0.090111643f; ty = 0.094896332f; return true;
 +    case 0xb7023a20103c9fdeULL: if (width != 1254 || height != 1254) return false; sx = 0.905103668f; sy = 0.762360447f; tx = 0.047049442f; ty = 0.098086124f; return true;
 +    case 0xb74b06db0091d039ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
 +    case 0xb7d795008d9df19fULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.666666667f; return true;
@@ -944,30 +944,30 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0xb92ca039b1158841ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
 +    case 0xba00c0f42299b538ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.500000000f; return true;
 +    case 0xba2c8cab3aa93f83ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
-+    case 0xba9276719f16cffbULL: if (width != 1254 || height != 1254) return false; sx = 0.913721253f; sy = 0.950558214f; tx = 0.026470134f; ty = 0.030303030f; return true;
++    case 0xba9276719f16cffbULL: if (width != 1254 || height != 1254) return false; sx = 0.944178628f; sy = 0.981221382f; tx = 0.025518341f; ty = 0.030303030f; return true;
 +    case 0xbc6f90af14264fd8ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
-+    case 0xbcb3bea270cfff04ULL: if (width != 1254 || height != 1254) return false; sx = 0.828934506f; sy = 0.946570973f; tx = 0.072181921f; ty = 0.027910686f; return true;
++    case 0xbcb3bea270cfff04ULL: if (width != 1254 || height != 1254) return false; sx = 0.856565657f; sy = 0.977105520f; tx = 0.071318448f; ty = 0.027910686f; return true;
 +    case 0xbddb687e90a83951ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
 +    case 0xbeb259429641406bULL: if (width != 1254 || height != 1254) return false; sx = 0.756099002f; sy = 0.736842105f; tx = 0.076938980f; ty = 0.158991228f; return true;
 +    case 0xbf0c26d8e4a77296ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.750000000f; return true;
 +    case 0xbfaa8b06ea1b967bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.500000000f; return true;
-+    case 0xc019934d66e35211ULL: if (width != 1254 || height != 1254) return false; sx = 0.909303562f; sy = 0.863507743f; tx = 0.040962254f; ty = 0.052760200f; return true;
++    case 0xc019934d66e35211ULL: if (width != 1254 || height != 1254) return false; sx = 0.909303562f; sy = 0.892291334f; tx = 0.040962254f; ty = 0.051860712f; return true;
 +    case 0xc032aaa39abd5c31ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
-+    case 0xc0e754c4898edbe0ULL: if (width != 1254 || height != 1254) return false; sx = 0.686050791f; sy = 0.929824561f; tx = 0.154980984f; ty = 0.031100478f; return true;
-+    case 0xc0f669a144fab3baULL: if (width != 1254 || height != 1254) return false; sx = 0.899521531f; sy = 0.907496013f; tx = 0.043859649f; ty = 0.043859649f; return true;
++    case 0xc0e754c4898edbe0ULL: if (width != 1254 || height != 1254) return false; sx = 0.686050791f; sy = 0.959818902f; tx = 0.154980984f; ty = 0.031100478f; return true;
++    case 0xc0f669a144fab3baULL: if (width != 1254 || height != 1254) return false; sx = 0.928538355f; sy = 0.936770078f; tx = 0.043859649f; ty = 0.043859649f; return true;
 +    case 0xc1403ca1c834dc9dULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.750000000f; return true;
-+    case 0xc2528d9ffb9dce24ULL: if (width != 1254 || height != 1254) return false; sx = 0.795853270f; sy = 0.988629933f; tx = 0.101275917f; ty = -0.008566137f; return true;
++    case 0xc2528d9ffb9dce24ULL: if (width != 1254 || height != 1254) return false; sx = 0.821525956f; sy = 1.021584264f; tx = 0.101275917f; ty = -0.009595960f; return true;
 +    case 0xc3d737babbd55aeeULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xc49d01640fa913c1ULL: if (width != 1254 || height != 1254) return false; sx = 0.969696970f; sy = 0.826401669f; tx = 0.011961722f; ty = 0.070788860f; return true;
 +    case 0xc583a7a0b170a06eULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.666666667f; ty = 0.666666667f; return true;
 +    case 0xc69ed4c86cd4f31bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
-+    case 0xc8fe72cf997634deULL: if (width != 1254 || height != 1254) return false; sx = 0.732265446f; sy = 0.939393939f; tx = 0.116046044f; ty = 0.031897927f; return true;
++    case 0xc8fe72cf997634deULL: if (width != 1254 || height != 1254) return false; sx = 0.732265446f; sy = 0.969696970f; tx = 0.116046044f; ty = 0.031897927f; return true;
 +    case 0xcaeac06d9ce677f8ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.750000000f; return true;
 +    case 0xcaed8d72aca07fc6ULL: if (width != 1254 || height != 1254) return false; sx = 1.004616805f; sy = 1.037745880f; tx = -0.025980022f; ty = -0.018872940f; return true;
-+    case 0xccaa7239c18164fcULL: if (width != 1254 || height != 1254) return false; sx = 0.717065391f; sy = 0.917862839f; tx = 0.164752791f; ty = 0.041467305f; return true;
++    case 0xccaa7239c18164fcULL: if (width != 1254 || height != 1254) return false; sx = 0.717065391f; sy = 0.947471318f; tx = 0.164752791f; ty = 0.041467305f; return true;
 +    case 0xccf8522b9f86d388ULL: if (width != 1254 || height != 1254) return false; sx = 0.992663477f; sy = 0.894964684f; tx = 0.002472089f; ty = 0.044884940f; return true;
 +    case 0xd03c7a493b3fdd2aULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.333333333f; return true;
-+    case 0xd12449382fbd68c8ULL: if (width != 1254 || height != 1254) return false; sx = 0.722488038f; sy = 0.791068581f; tx = 0.132376396f; ty = 0.098086124f; return true;
++    case 0xd12449382fbd68c8ULL: if (width != 1254 || height != 1254) return false; sx = 0.745794104f; sy = 0.816586922f; tx = 0.132376396f; ty = 0.098086124f; return true;
 +    case 0xd1501b09c31fd48fULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
 +    case 0xd2efc44eaa136e5cULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.500000000f; return true;
 +    case 0xd2f606b23cbadb27ULL: if (width != 1254 || height != 1254) return false; sx = 0.823626464f; sy = 0.864221159f; tx = 0.062558434f; ty = 0.063104732f; return true;
@@ -977,25 +977,25 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0xd4df2fa7e3cdd759ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0xd5a0b329826b30ffULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0xd5cd586594a8b51bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.250000000f; return true;
-+    case 0xd82c4bf8bc002d25ULL: if (width != 1254 || height != 1254) return false; sx = 0.866028708f; sy = 0.942583732f; tx = 0.067783094f; ty = 0.027113238f; return true;
++    case 0xd82c4bf8bc002d25ULL: if (width != 1254 || height != 1254) return false; sx = 0.893965118f; sy = 0.972989659f; tx = 0.067783094f; ty = 0.027113238f; return true;
 +    case 0xd9a3ef8e23b97490ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.000000000f; return true;
 +    case 0xda0f246710803927ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.250000000f; return true;
 +    case 0xda8c00b5cb16d4d7ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
-+    case 0xdaf628b32784099aULL: if (width != 1254 || height != 1254) return false; sx = 0.808612440f; sy = 0.914544426f; tx = 0.079744817f; ty = 0.027241858f; return true;
++    case 0xdaf628b32784099aULL: if (width != 1254 || height != 1254) return false; sx = 0.834696712f; sy = 0.945029240f; tx = 0.079744817f; ty = 0.026289208f; return true;
 +    case 0xdafea45e96afcf31ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
-+    case 0xdb0eaacc39de60daULL: if (width != 1254 || height != 1254) return false; sx = 0.735916036f; sy = 0.976076555f; tx = 0.112568812f; ty = 0.013556619f; return true;
++    case 0xdb0eaacc39de60daULL: if (width != 1254 || height != 1254) return false; sx = 0.760446571f; sy = 1.007562896f; tx = 0.111802233f; ty = 0.013556619f; return true;
 +    case 0xdb69d48a28ae73d7ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.500000000f; return true;
 +    case 0xdbdb8ae87ebeb02fULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
-+    case 0xdd9b7fdbc994ccc2ULL: if (width != 1254 || height != 1254) return false; sx = 0.739208726f; sy = 0.966507177f; tx = 0.115655708f; ty = 0.015151515f; return true;
++    case 0xdd9b7fdbc994ccc2ULL: if (width != 1254 || height != 1254) return false; sx = 0.763849016f; sy = 0.997684828f; tx = 0.114885699f; ty = 0.015151515f; return true;
 +    case 0xde07fa910b0c4ea4ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xdf68ba2b74e4cea4ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xdfc431e5771fd946ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.500000000f; return true;
 +    case 0xdfc590b38aafcaa1ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.500000000f; ty = 0.500000000f; return true;
 +    case 0xe19a2d2b0f5904d0ULL: if (width != 1254 || height != 1254) return false; sx = 0.977352472f; sy = 1.048142241f; tx = 0.008532695f; ty = -0.064032134f; return true;
-+    case 0xe283e45e4b0d07deULL: if (width != 1254 || height != 1254) return false; sx = 0.928017012f; sy = 1.005093379f; tx = 0.046757044f; ty = -0.022637238f; return true;
-+    case 0xe2bf4943035e3d93ULL: if (width != 1254 || height != 1254) return false; sx = 0.858851675f; sy = 0.867623604f; tx = 0.062998405f; ty = 0.073365231f; return true;
++    case 0xe283e45e4b0d07deULL: if (width != 1254 || height != 1254) return false; sx = 0.928017012f; sy = 1.038596491f; tx = 0.046757044f; ty = -0.023684211f; return true;
++    case 0xe2bf4943035e3d93ULL: if (width != 1254 || height != 1254) return false; sx = 0.886556567f; sy = 0.895611463f; tx = 0.062998405f; ty = 0.073365231f; return true;
 +    case 0xe4bc896aa44e79b1ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
-+    case 0xe55143f9a0659fb4ULL: if (width != 1254 || height != 1254) return false; sx = 0.861244019f; sy = 0.917065391f; tx = 0.059808612f; ty = 0.040669856f; return true;
++    case 0xe55143f9a0659fb4ULL: if (width != 1254 || height != 1254) return false; sx = 0.889026084f; sy = 0.946648145f; tx = 0.059808612f; ty = 0.040669856f; return true;
 +    case 0xe92c2508571fbf0bULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.000000000f; return true;
 +    case 0xea1b2dd2654698d7ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.500000000f; return true;
 +    case 0xea4229fa7f9e0a3fULL: if (width != 1254 || height != 1254) return false; sx = 0.747208931f; sy = 0.665071770f; tx = 0.104465710f; ty = 0.130781499f; return true;
@@ -1005,7 +1005,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0xefb5f6e26cf84ce0ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0xf18910c224920b0cULL: if (width != 1254 || height != 1254) return false; sx = 1.056884636f; sy = 1.028389155f; tx = 0.005382775f; ty = -0.012200957f; return true;
 +    case 0xf20d15bbafcc91d6ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.666666667f; return true;
-+    case 0xf2994624f14a086cULL: if (width != 1254 || height != 1254) return false; sx = 0.935123733f; sy = 0.967304625f; tx = 0.012244688f; ty = 0.018341308f; return true;
++    case 0xf2994624f14a086cULL: if (width != 1254 || height != 1254) return false; sx = 0.966294524f; sy = 0.998508000f; tx = 0.011270601f; ty = 0.018341308f; return true;
 +    case 0xf2d68adf3b6473caULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xf4b13470e4682c97ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.333333333f; ty = 0.000000000f; return true;
 +    case 0xf50bb787eef30481ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.500000000f; return true;
@@ -1015,7 +1015,7 @@ index 0000000000000000000000000000000000000000..f6a40db3362cde53bed7457c12e43852
 +    case 0xfa90b6aec77fbf74ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.750000000f; ty = 0.750000000f; return true;
 +    case 0xfaa094698bdcdf45ULL: if (width != 1254 || height != 1254) return false; sx = 0.250000000f; sy = 0.250000000f; tx = 0.250000000f; ty = 0.250000000f; return true;
 +    case 0xfb02c78bb7a2f052ULL: if (width != 1254 || height != 1254) return false; sx = 0.500000000f; sy = 0.500000000f; tx = 0.500000000f; ty = 0.000000000f; return true;
-+    case 0xfbdc1ae6aab170b4ULL: if (width != 1254 || height != 1254) return false; sx = 0.789473684f; sy = 0.961722488f; tx = 0.091706539f; ty = 0.019138756f; return true;
++    case 0xfbdc1ae6aab170b4ULL: if (width != 1254 || height != 1254) return false; sx = 0.814940577f; sy = 0.992745794f; tx = 0.091706539f; ty = 0.019138756f; return true;
 +    case 0xfc018a7297822e33ULL: if (width != 1254 || height != 1254) return false; sx = 1.000000000f; sy = 1.000000000f; tx = 0.000000000f; ty = 0.000000000f; return true;
 +    case 0xfecda2491f2e3490ULL: if (width != 1254 || height != 1254) return false; sx = 0.333333333f; sy = 0.333333333f; tx = 0.000000000f; ty = 0.333333333f; return true;
 +    default: return false;
@@ -1299,10 +1299,19 @@ index 569e845019970924c92bb4a838df675e38be69e7..6b04e7152eb5050d64a0f501b6c990c4
              hashSet.insert(hash);
              textureCache->queueGPUUploadTMEM(hash, creationFrame, TMEM, RDP_TMEM_BYTES, width, height, tlut, loadTile, true);
 diff --git a/src/hle/rt64_state.cpp b/src/hle/rt64_state.cpp
-index a951c5607cbe22a9185c6084e5552f04fd6b52d8..cebceda81b47d73832ef99d17b25cdcc0a083af6 100644
+index a951c5607cbe22a9185c6084e5552f04fd6b52d8..2d8c79723520989985cce8644b8a7802a82e057c 100644
 --- a/src/hle/rt64_state.cpp
 +++ b/src/hle/rt64_state.cpp
-@@ -781,6 +781,7 @@ namespace RT64 {
+@@ -27,6 +27,8 @@
+ #define MI_INTR_DP          0x00000020
+ #define MI_INTR_SP          0x00000001
+ 
++std::atomic<uint32_t> sssv_simulation_speed{1};
++
+ namespace RT64 {
+     const float ShiftScaleMap[] = {
+         1.0f,
+@@ -781,6 +783,7 @@ namespace RT64 {
          // Copy the current state's extended parameters into the workload.
          workload.extended.ditherNoiseStrength = extended.ditherNoiseStrength;
          workload.extended.texcoordWrapPoint = extended.texcoordWrapPoint;
@@ -1310,7 +1319,7 @@ index a951c5607cbe22a9185c6084e5552f04fd6b52d8..cebceda81b47d73832ef99d17b25cdcc
  
          auto emitTileWarning = [&](CommandWarning warning, size_t tileIndex) {
              warning.indexType = CommandWarning::IndexType::TileIndex;
-@@ -1265,8 +1266,9 @@ namespace RT64 {
+@@ -1265,8 +1268,9 @@ namespace RT64 {
                          drawParams.rasterShaderCache = ext.rasterShaderCache;
                          drawParams.resolutionScale = resolutionScale;
                          drawParams.aspectRatioSource = 1.0f;
@@ -1322,6 +1331,14 @@ index a951c5607cbe22a9185c6084e5552f04fd6b52d8..cebceda81b47d73832ef99d17b25cdcc
                          drawParams.horizontalMisalignment = 0.0f;
                          drawParams.rtEnabled = false;
                          drawParams.submissionFrame = workload.submissionFrame;
+@@ -1590,6 +1594,7 @@ namespace RT64 {
+         else {
+             workload.viOriginalRate = viHistory.logicalRateFromFactors();
+         }
++        workload.viOriginalRate *= sssv_simulation_speed.load(std::memory_order_relaxed);
+ 
+         if (viHistory.top().vi.visible()) {
+             workload.viFbSize = viHistory.top().vi.fbSize();
 diff --git a/src/hle/rt64_state.h b/src/hle/rt64_state.h
 index 7a8c13b1e0ea0c2986274f6f7d9a5e2d85de1492..c84e395b0a4c37a4c614dde24667865b13dd0aba 100644
 --- a/src/hle/rt64_state.h
@@ -1793,7 +1810,7 @@ index 9fe681e6a80b6a7a04bf0e2950ccf4f6fc9ca49b..744d63a7f38ebb1dac0e5f36a7b8ce91
                      }
  
 diff --git a/src/shaders/RasterPS.hlsl b/src/shaders/RasterPS.hlsl
-index f5beee92f49f9cd05386795be67fff1d1c914c05..a064c203c2ee1eac9fc9125faa1e270079caf775 100644
+index f5beee92f49f9cd05386795be67fff1d1c914c05..0edfe42dd500a7f18ba44718542578e48572ad76 100644
 --- a/src/shaders/RasterPS.hlsl
 +++ b/src/shaders/RasterPS.hlsl
 @@ -50,7 +50,8 @@ LIBRARY_EXPORT bool RasterPS(const RenderParams rp, float4 vertexPosition, float
@@ -1826,7 +1843,41 @@ index f5beee92f49f9cd05386795be67fff1d1c914c05..a064c203c2ee1eac9fc9125faa1e2700
          const float2 textureUV = gpuTileFlagHighRes(gpuTile.flags) ? vertexUV : lowResUV;
          const uint nativeSampler = renderFlagNativeSampler1(rp.flags);
          texVal1 = sampleTexture(otherMode, rp.flags, textureUV, ddx(vertexUV), ddy(vertexUV), rdpTile, gpuTile, oneCycleHardwareBug);
-@@ -302,4 +305,4 @@ void PSMain(
+@@ -192,9 +195,32 @@ LIBRARY_EXPORT bool RasterPS(const RenderParams rp, float4 vertexPosition, float
+     }
+ #endif
+     
++    // Distance-faded SSSV glass replay only. Use coverage rather than changing
++    // the animal's native opaque/alpha-tested materials or exposing back faces.
++    const float4 reflectionMarker = instanceRDPParams[instanceIndex].blendColor;
++    if (all(uint3(round(reflectionMarker.rgb * 255.0f)) == uint3(83, 86, 82))) {
++        uint2 pixel = uint2(floor(vertexPosition.xy));
++        uint hash = pixel.x * 1973u + pixel.y * 9277u + 89173u;
++        hash = (hash ^ (hash >> 16)) * 2246822519u;
++        hash = (hash ^ (hash >> 13)) * 3266489917u;
++        float coverage = float((hash ^ (hash >> 16)) & 65535u) / 65536.0f;
++        if (coverage >= reflectionMarker.a) return false;
++    }
++
+     // Alpha compare.
+     if (otherMode.alphaCompare() == G_AC_DITHER) {
+-        if (alphaCompareValue < nextRand(randomSeed)) {
++        // The two SSSV TV screens need visible, spaced native-pixel specks,
++        // rather than subpixel snow that disappears at modern resolutions.
++        const uint4 tvMarker = uint4(round(ccInputs.primColor * 255.0f));
++        if (all(tvMarker.rgb == uint3(255, 254, 255))) {
++            // Surface UVs span 32 texels: 64 cells per monitor side. The
++            // pattern follows perspective and distance with no texture fetch.
++            uint2 cell = uint2(floor(vertexUV * 2.0f));
++            uint tvSeed = initRand(tvMarker.a, cell.x * 1973u + cell.y * 9277u, 16);
++            if (nextRand(tvSeed) >= 0.035f) return false;
++            combinerColor = 1.0f;
++        }
++        else if (alphaCompareValue < nextRand(randomSeed)) {
+             return false;
+         }
+     }
+@@ -302,4 +328,4 @@ void PSMain(
      pixelColor = resultColor;
      pixelAlpha = resultAlpha;
  }

@@ -1,9 +1,12 @@
 #include <array>
 #include <cstdint>
 #include <fstream>
+#include <vector>
+#include <algorithm>
 #include <stdexcept>
 
 #include "recomp.h"
+#include "sssv_reflection_fade.h"
 #include "funcs.h"
 #include "librecomp/addresses.hpp"
 #include "../../lib/rt64/include/rt64_extended_gbi.h"
@@ -50,6 +53,8 @@ gpr vram(uint32_t address) {
 }
 }
 
+void sssv_reset_reflection_ranges();
+
 // Runs after thread7 initializes the original display-list heads. Preserve the
 // original frame/segment layout, but give each buffered frame its own larger
 // main list. Widescreen subtitle drawing can exceed the original 4000 commands
@@ -58,6 +63,7 @@ extern "C" void sssv_begin_main_display_list(uint8_t* rdram, recomp_context* ctx
     const auto index = frame_index(static_cast<uint32_t>(ctx->r4));
     auto& buffer = buffers[index];
     tailBuffers[index].used = 0;
+    sssv_reset_reflection_ranges();
     if (buffer == 0) {
         auto* allocation = static_cast<uint8_t*>(recomp::alloc(rdram, BufferBytes));
         if (!allocation) throw std::runtime_error("Could not allocate the main display-list buffer.");
@@ -217,4 +223,91 @@ extern "C" void sssv_submit_main_display_list(uint8_t* rdram, recomp_context* ct
             log << "main_display_list_commands=" << highWater << "; capacity=" << CommandCapacity << std::endl;
         }
     }
+}
+
+namespace {
+struct ReflectionAnimalRange { uint32_t begin[2], end[2]; int32_t coordinate; uint8_t opacity; };
+std::vector<ReflectionAnimalRange> reflectionRanges;
+ReflectionAnimalRange pendingReflection{};
+std::array<std::array<uint32_t, 2>, 2> reflectionCopies{};
+constexpr int32_t XluDisplayListHead = static_cast<int32_t>(0x801D9E8C);
+constexpr int32_t ReflectionVisibilityMask = static_cast<int32_t>(0x803F28DC);
+}
+void sssv_reset_reflection_ranges() { reflectionRanges.clear(); }
+
+// Hooks surround just the native animal draw dispatch. Normal lists are never modified.
+extern "C" void sssv_reflection_animal_range(uint8_t* rdram, recomp_context*, int phase) {
+    const uint16_t mask = MEM_HU(0, ReflectionVisibilityMask);
+    if (!(mask & 3)) return;
+    if (phase == 0) {
+        pendingReflection.begin[0] = static_cast<uint32_t>(MEM_W(0, OpaqueDisplayListHead));
+        pendingReflection.begin[1] = static_cast<uint32_t>(MEM_W(0, XluDisplayListHead));
+        const gpr animal = MEM_W(0, static_cast<int32_t>(0x803D5530));
+        pendingReflection.coordinate = MEM_H((mask & 1) ? 12 : 4, animal);
+    } else {
+        pendingReflection.end[0] = static_cast<uint32_t>(MEM_W(0, OpaqueDisplayListHead));
+        pendingReflection.end[1] = static_cast<uint32_t>(MEM_W(0, XluDisplayListHead));
+        const int32_t plane = (mask & 0xFFC) * 2;
+        pendingReflection.opacity = sssv::reflection_opacity(std::abs(pendingReflection.coordinate - plane));
+        reflectionRanges.push_back(pendingReflection);
+    }
+}
+
+extern "C" void recomp_get_near_reflection_dl(uint8_t* rdram, recomp_context* ctx) {
+    const auto frame = static_cast<uint32_t>(MEM_W(0, DisplayListContextPointer));
+    const auto index = frame_index(frame - DisplayListOffset);
+    const unsigned list = ctx->r5 ? 1 : 0;
+    const uint32_t original = static_cast<uint32_t>(ctx->r4);
+    uint32_t source = list ? original : opaqueBuffers[index];
+    const uint32_t end = static_cast<uint32_t>(MEM_W(0, list ? XluDisplayListHead : OpaqueDisplayListHead));
+    const uint32_t capacity = list ? 1000 : CommandCapacity;
+    if (source > end || (end-source) % 8 || (end-source)/8 > capacity)
+        throw std::runtime_error("Invalid reflection display-list bounds.");
+    auto& copy = reflectionCopies[index][list];
+    if (!copy) {
+        auto* allocation = static_cast<uint8_t*>(recomp::alloc(rdram, (capacity+4096)*8));
+        if (!allocation) throw std::runtime_error("Could not allocate reflection list.");
+        copy = static_cast<uint32_t>(allocation-rdram) | 0x80000000u;
+    }
+    uint32_t output = copy + (list ? 0 : 40);
+    auto emit = [&](uint32_t w0, uint32_t w1) {
+        if (output+8 > copy+(capacity+4096)*8) throw std::runtime_error("Reflection list capacity exceeded.");
+        MEM_W(0,vram(output))=w0; MEM_W(4,vram(output))=w1; output+=8;
+    };
+    for (uint32_t at=source; at<end; at+=8) {
+        const ReflectionAnimalRange* animal = nullptr;
+        for (const auto& range : reflectionRanges)
+            if (at>=range.begin[list] && at<range.end[list]) { animal=&range; break; }
+        if (animal && at==animal->begin[list]) {
+            // Private reflection marker: native animal materials do not use blend colour.
+            // Preserves all native material combiners while fading the complete animal.
+            emit(0xF9000000u, 0x53565200u | animal->opacity);
+        }
+        const uint32_t w0=static_cast<uint32_t>(MEM_W(0,vram(at)));
+        const uint32_t w1=static_cast<uint32_t>(MEM_W(4,vram(at)));
+        // Separately queued tails use absolute world-space matrices in their
+        // own arena. Apply the same fade so detached tails cannot reflect alone.
+        if (!animal && (w0>>24)==0x01) {
+            const auto& tails=tailBuffers[index];
+            const uint32_t address=w1 & 0x03FFFFFFu;
+            const uint32_t tailStart=tails.address & 0x03FFFFFFu;
+            if(tails.address && address>=tailStart && address+64<=tailStart+tails.used*64) {
+                const uint16_t mask=MEM_HU(0,ReflectionVisibilityMask);
+                const int position=MEM_H((mask&1)?28:24,vram(address|0x80000000u));
+                emit(0xF9000000u,0x53565200u | sssv::reflection_opacity(std::abs(position-(mask&0xFFC)*2)));
+            }
+        }
+        emit(w0,w1);
+        if(!animal && (w0>>24)==0xBD) emit(0xF9000000u,0);
+        if (animal && at+8==animal->end[list]) emit(0xF9000000u,0);
+    }
+    emit(0xF9000000u,0);
+    emit(0xB8000000u,0);
+    if (!list) {
+        // Preserve the expanded-address wrapper around the new opaque copy.
+        for(unsigned offset=0;offset<40;offset+=4)
+            MEM_W(offset,vram(copy))=MEM_W(offset,vram(original));
+        MEM_W(20,vram(copy))=vram(copy+40);
+    }
+    ctx->r2=vram(copy);
 }

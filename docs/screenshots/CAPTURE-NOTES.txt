@@ -28,3 +28,5 @@ Both show the first level; background controls and
 player positioning operate only in isolated test copies.
 
 Seven labelled comparisons and their full-resolution raw PNGs are included.
+
+4 November 2026: images 10–13 are local captures of the current Windows build, showing sparse TV static, a nearby dome reflection, ultrawide intro glass and the fast-forward indicator. Image 14 is a deliberately AI-generated joke, not gameplay footage.

@@ -60,6 +60,21 @@ void init_config() {
         "Mirrors the world horizontally while keeping HUD and text readable. Player movement and camera left/right are reversed automatically.",
         hd_text_options, HDTextOption::Off
     );
+    enum class FastForwardRate { Disabled = 1, X2 = 2, X4 = 4, X8 = 8, X16 = 16 };
+    static EnumOptionVector fast_forward_rates = {
+        {FastForwardRate::Disabled, "Disabled"}, {FastForwardRate::X2, "2X"},
+        {FastForwardRate::X4, "4X"}, {FastForwardRate::X8, "8X"}, {FastForwardRate::X16, "16X"}
+    };
+    enum class FastForwardMode { Held, Toggle };
+    static EnumOptionVector fast_forward_modes = {
+        {FastForwardMode::Held, "Held"}, {FastForwardMode::Toggle, "Toggle"}
+    };
+    general_config.add_enum_option("sssv_fast_forward", "Fast Forward",
+        "Speeds up gameplay, menus, cutscenes and audio. Configure the button in Controls (keyboard: Tab by default). Your system may not be able to sustain some of these speeds.",
+        fast_forward_rates, FastForwardRate::X4);
+    general_config.add_enum_option("sssv_fast_forward_mode", "Fast Forward Button Mode",
+        "Held requires holding the button. Toggle switches fast-forward on or off each time you press it. Holding for more than 2 seconds or pressing more than 50 times in 2 seconds turns Toggle fast-forward off.",
+        fast_forward_modes, FastForwardMode::Held);
     recomp::config::Config& graphics_config = recompui::config::create_graphics_tab();
     if (texture_pack_present()) {
         recompui::config::set_option_section_heading(recompui::config::graphics::id, HDTextOptionId, texture_pack_heading());
@@ -103,6 +118,18 @@ bool get_hd_text_enabled() {
     } catch (const std::exception&) {
         return true;
     }
+}
+unsigned get_fast_forward_rate() {
+    try {
+        auto& config = recompui::config::get_general_config();
+        return std::get<uint32_t>(config.get_option_value("sssv_fast_forward"));
+    } catch (const std::exception&) { return 4; }
+}
+bool get_fast_forward_toggle() {
+    try {
+        auto& config = recompui::config::get_general_config();
+        return std::get<uint32_t>(config.get_option_value("sssv_fast_forward_mode")) == 1;
+    } catch (const std::exception&) { return false; }
 }
 bool get_mirror_mode_enabled() {
     try {

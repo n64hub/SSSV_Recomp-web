@@ -8,6 +8,8 @@ namespace sssv {
     inline const std::string program_name = "Space Station Silicon Valley: Recompiled";
 
     void init_config();
+    unsigned get_fast_forward_rate();
+    bool get_fast_forward_toggle();
     bool get_hd_text_enabled();
     bool get_hd_hud_enabled();
     bool get_hd_world_enabled();

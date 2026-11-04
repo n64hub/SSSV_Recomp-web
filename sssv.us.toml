@@ -237,3 +237,23 @@ extern void sssv_render_grouped_object_queue(uint8_t*, recomp_context*);
 sssv_render_grouped_object_queue(rdram, ctx);
 return;
 """
+
+# Record each animal's draw-list ranges for the distance-limited glass replay.
+[[patches.hook]]
+func = "func_802C8878_6D9F28"
+before_vram = 0x802C8C04
+text = "sssv_reflection_animal_range(rdram, ctx, 0);"
+
+[[patches.hook]]
+func = "func_802C8878_6D9F28"
+before_vram = 0x802C8F3C
+text = "sssv_reflection_animal_range(rdram, ctx, 1);"
+
+# Repeat the intro glass plane beyond the native 3x3 grid; preserve native panes.
+[[patches.hook]]
+func = "render_distance_sorted_textured_display_list_instances"
+before_vram = 0x8029DD84
+text = """
+extern void sssv_extend_intro_glass(uint8_t*, recomp_context*);
+sssv_extend_intro_glass(rdram, ctx);
+"""

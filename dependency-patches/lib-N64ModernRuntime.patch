@@ -35,8 +35,31 @@ index 1200f7702e4d34e55e62cf209521639553d311b2..7c1d6d4765dfa56193df4290d3eddf47
                      ultramodern::error_handling::message_box("Error opening stored ROM! Please restart this program.");
                  }
  
+diff --git a/ultramodern/include/ultramodern/speed_clock.hpp b/ultramodern/include/ultramodern/speed_clock.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..2be581d588e557470e963b9a65c5527796b1e1f4
+--- /dev/null
++++ b/ultramodern/include/ultramodern/speed_clock.hpp
+@@ -0,0 +1,17 @@
++#pragma once
++#include <cstdint>
++namespace ultramodern {
++class SpeedClock {
++    int64_t anchor_real = 0;
++    int64_t anchor_game = 0;
++    uint32_t rate = 1;
++public:
++    int64_t now(int64_t real_ns) const { return anchor_game + (real_ns - anchor_real) * rate; }
++    void set(int64_t real_ns, uint32_t new_rate) {
++        anchor_game = now(real_ns);
++        anchor_real = real_ns;
++        rate = new_rate == 2 || new_rate == 4 || new_rate == 8 || new_rate == 16 ? new_rate : 1;
++    }
++    uint32_t speed() const { return rate; }
++};
++}
 diff --git a/ultramodern/include/ultramodern/ultramodern.hpp b/ultramodern/include/ultramodern/ultramodern.hpp
-index 3b28af3c3354a4676bd36e9afcfa3daab85259d3..074612ae2f046d563a365fee9a9dc65a85aad027 100644
+index 3b28af3c3354a4676bd36e9afcfa3daab85259d3..9cf3168b7162811194fd616957683df5ff6128f2 100644
 --- a/ultramodern/include/ultramodern/ultramodern.hpp
 +++ b/ultramodern/include/ultramodern/ultramodern.hpp
 @@ -41,6 +41,7 @@ void init_thread_cleanup();
@@ -47,11 +70,54 @@ index 3b28af3c3354a4676bd36e9afcfa3daab85259d3..074612ae2f046d563a365fee9a9dc65a
  
  // Thread queues.
  constexpr PTR(PTR(OSThread)) running_queue = (PTR(PTR(OSThread)))-1;
+@@ -80,6 +81,7 @@ bool is_game_thread();
+ void submit_rsp_task(RDRAM_ARG PTR(OSTask) task);
+ void send_si_message();
+ uint32_t get_speed_multiplier();
++void set_speed_multiplier(uint32_t speed);
+ 
+ // Time
+ std::chrono::high_resolution_clock::time_point get_start();
 diff --git a/ultramodern/src/events.cpp b/ultramodern/src/events.cpp
-index 090cc426b28ef4f113444717e6898fa2c43a0587..d77b4c95b0da93354579165bab6e5114540f16b6 100644
+index 090cc426b28ef4f113444717e6898fa2c43a0587..f94add64659a11c5e69f3da4f3b3e15e14ab3157 100644
 --- a/ultramodern/src/events.cpp
 +++ b/ultramodern/src/events.cpp
-@@ -614,6 +614,9 @@ void ultramodern::init_events(RDRAM_ARG ultramodern::renderer::WindowHandle wind
+@@ -189,25 +189,16 @@ void vi_thread_func() {
+     int remaining_retraces = 1;
+ 
+     while (!exited) {
+-        // Determine the next VI time (more accurate than adding 16ms each VI interrupt)
+-        auto next = ultramodern::get_start() + (total_vis * 1000000us) / (60 * ultramodern::get_speed_multiplier());
+-        //if (next > std::chrono::high_resolution_clock::now()) {
+-        //    printf("Sleeping for %" PRIu64 " us to get from %" PRIu64 " us to %" PRIu64 " us \n",
+-        //        (next - std::chrono::high_resolution_clock::now()) / 1us,
+-        //        (std::chrono::high_resolution_clock::now() - events_context.start) / 1us,
+-        //        (next - events_context.start) / 1us);
+-        //} else {
+-        //    printf("No need to sleep\n");
+-        //}
+-        // Detect if there's more than a second to wait and wait a fixed amount instead for the next VI if so, as that usually means the system clock went back in time.
+-        if (std::chrono::floor<std::chrono::seconds>(next - std::chrono::high_resolution_clock::now()) > 1s) {
+-            // printf("Skipping the next VI wait\n");
+-            next = std::chrono::high_resolution_clock::now();
+-        }
+-        ultramodern::sleep_until(next);
++        // Schedule against continuous virtual time, not elapsed wall time times
++        // the current multiplier (which would jump on every press/release).
+         auto time_now = ultramodern::time_since_start();
+-        // Calculate how many VIs have passed
+-        uint64_t new_total_vis = (time_now * (60 * ultramodern::get_speed_multiplier()) / 1000ms) + 1;
++        const auto target = (total_vis * 1000000us) / 60;
++        if (time_now < target) {
++            auto wait = std::chrono::duration_cast<std::chrono::microseconds>(target - time_now) / ultramodern::get_speed_multiplier();
++            std::this_thread::sleep_for(std::min(wait, 1000us));
++            continue;
++        }
++        uint64_t new_total_vis = (time_now * 60 / 1000ms) + 1;
+         if (new_total_vis > total_vis + 1) {
+             //printf("Skipped % " PRId64 " frames in VI interupt thread!\n", new_total_vis - total_vis - 1);
+         }
+@@ -614,6 +605,9 @@ void ultramodern::init_events(RDRAM_ARG ultramodern::renderer::WindowHandle wind
          throw std::runtime_error("Failed to initialize the renderer");
      }
  
@@ -61,3 +127,98 @@ index 090cc426b28ef4f113444717e6898fa2c43a0587..d77b4c95b0da93354579165bab6e5114
      events_context.vi.thread = std::thread{ vi_thread_func };
  }
  
+diff --git a/ultramodern/src/timer.cpp b/ultramodern/src/timer.cpp
+index 276301b889f5eed14762ccadd403217dca608734..414bb6ef8e5536489e0beb6564ed30f8fddc9c73 100644
+--- a/ultramodern/src/timer.cpp
++++ b/ultramodern/src/timer.cpp
+@@ -1,6 +1,9 @@
+ #include <thread>
+ #include <variant>
+ #include <set>
++#include <mutex>
++#include <algorithm>
++#include "ultramodern/speed_clock.hpp"
+ #include "blockingconcurrentqueue.h"
+ 
+ #include "ultramodern/ultra64.h"
+@@ -15,10 +18,14 @@
+ static std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
+ // Offset of the duration since program start used to calculate the value for osGetTime. 
+ static int64_t ostime_offset = 0;
+-// Game speed multiplier (1 means no speedup)
+-constexpr uint32_t speed_multiplier = 1;
+-// N64 CPU counter ticks per millisecond
+-constexpr uint32_t counter_per_ms = 46'875 * speed_multiplier;
++// Keep game time continuous when entering/leaving fast-forward.
++static const auto speed_clock_start = std::chrono::steady_clock::now();
++static std::mutex speed_clock_mutex;
++static ultramodern::SpeedClock speed_clock;
++static int64_t real_nanoseconds() {
++    return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - speed_clock_start).count();
++}
++constexpr uint32_t counter_per_ms = 46'875;
+ 
+ struct OSTimer {
+     PTR(OSTimer) unused1;
+@@ -59,11 +66,13 @@ std::chrono::microseconds ticks_to_duration(uint64_t ticks) {
+ }
+ 
+ std::chrono::high_resolution_clock::time_point ticks_to_timepoint(uint64_t ticks) {
+-    return start_time + ticks_to_duration(ticks);
++    const uint64_t current = duration_to_ticks(ultramodern::time_since_start());
++    const auto remaining = ticks > current ? ticks_to_duration(ticks - current) / ultramodern::get_speed_multiplier() : std::chrono::microseconds(0);
++    return std::chrono::high_resolution_clock::now() + remaining;
+ }
+ 
+ uint64_t time_now() {
+-    return duration_to_ticks(std::chrono::high_resolution_clock::now() - start_time);
++    return duration_to_ticks(ultramodern::time_since_start());
+ }
+ 
+ void timer_thread(RDRAM_ARG1) {
+@@ -121,13 +130,18 @@ void timer_thread(RDRAM_ARG1) {
+         auto wait_duration = ticks_to_timepoint(cur_timer->timestamp) - std::chrono::high_resolution_clock::now();
+ 
+         // Wait for either the duration to complete or a new action to come through
+-        if (wait_duration.count() >= 0 && timer_context.action_queue.wait_dequeue_timed(cur_action, wait_duration)) {
++        if (wait_duration.count() >= 0 && timer_context.action_queue.wait_dequeue_timed(cur_action,
++            std::min(wait_duration, std::chrono::duration_cast<decltype(wait_duration)>(std::chrono::milliseconds(1))))) {
+             // Timer was interrupted by a new action 
+             // Add the current timer back to the queue (done first in case the action is to remove this timer)
+             active_timers.insert(cur_timer_);
+             // Process the new action
+             process_timer_action(cur_action);
+         }
++        else if (cur_timer->timestamp > time_now()) {
++            // Recheck after a short wait so rate changes take effect promptly.
++            active_timers.insert(cur_timer_);
++        }
+         else {
+             // Waiting for the timer completed, so send the timer's message to its message queue
+             ultramodern::enqueue_external_message(cur_timer->mq, cur_timer->msg, false, true);
+@@ -146,7 +160,13 @@ void ultramodern::init_timers(RDRAM_ARG1) {
+ }
+ 
+ uint32_t ultramodern::get_speed_multiplier() {
+-    return speed_multiplier;
++    std::lock_guard lock{speed_clock_mutex};
++    return speed_clock.speed();
++}
++
++void ultramodern::set_speed_multiplier(uint32_t speed) {
++    std::lock_guard lock{speed_clock_mutex};
++    if (speed_clock.speed() != speed) speed_clock.set(real_nanoseconds(), speed);
+ }
+ 
+ std::chrono::high_resolution_clock::time_point ultramodern::get_start() {
+@@ -154,7 +174,9 @@ std::chrono::high_resolution_clock::time_point ultramodern::get_start() {
+ }
+ 
+ std::chrono::high_resolution_clock::duration ultramodern::time_since_start() {
+-    return std::chrono::high_resolution_clock::now() - start_time;
++    std::lock_guard lock{speed_clock_mutex};
++    return std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
++        std::chrono::nanoseconds(speed_clock.now(real_nanoseconds())));
+ }
+ 
+ extern "C" u32 osGetCount() {

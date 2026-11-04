@@ -42,13 +42,45 @@ The original project renders a black world in this scene; the current build rend
 
 ![Sting in the Tail: original project versus current build](docs/screenshots/08-sting-in-the-tail.png)
 
+### Television monitor static
+
+![Clearer sparse television static](docs/screenshots/10-monitor-static.png)
+
+### Nearby animal reflections
+
+![A nearby animal reflected in the dome](docs/screenshots/11-dome-reflection.png)
+
+### Extended introductory glass
+
+![Glass pattern extended across an ultrawide view](docs/screenshots/12-extended-glass.png)
+
+### Fast Forward
+
+![White fast-forward indicator during gameplay](docs/screenshots/13-fast-forward.png)
+
 ### Wait a minute, this isn't in the game... Begone with your Nonsense!
 
 <img src="docs/screenshots/09-not-in-the-game.png" width="52%" alt="Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level">
 
 Is that even a real Gemini logo...?
 
+<img src="docs/screenshots/14-claude-not-used.png" height="360" alt="Deliberately generated joke: disgusted woman points at a plate marked claude while Dan looks shocked">
+
+Claude wasn’t even used in this project.
+
 ## Changelog
+
+### 4 November 2026 — v2026.11.04
+
+- Added **Fast Forward** with Disabled / 2X / 4X / 8X / 16X speeds, defaulting to 4X. Tab is the default keyboard binding; the controller binding is initially empty.
+- Added Held (default) and Toggle activation, with safeguards to turn toggle mode off after a two-second hold or excessive repeated presses. Fast forward works in gameplay, menus and cutscenes, keeps accelerated audio playing, and displays a white FF indicator at the top left. Higher speeds depend on system performance.
+- Corrected television static to use clearer, spaced white dots and native-rate animation, with more consistent visibility at different viewing distances.
+- Restored the glass dome's reflection visibility checks and limited animal reflections to nearby animals. Reflections fade between four and five terrain tiles, reaching half visibility at 4.5 tiles.
+- Extended the distance at which animals retain their proper models, reducing the coloured stand-ins seen at a distance.
+- Fixed the temporary black rectangle over the title background when skipping startup screens quickly.
+- Stabilised flower and other scenery sprite interpolation as objects enter view, and corrected the clipped edge of HD flowers.
+- Extended the introductory glass pattern across widescreen and ultrawide views in both glass-breaking sequences, preserving the original breakable panes and shattering effects.
+- Removed Herobrine.
 
 ### 3 November 2026 — v2026.11.03
 

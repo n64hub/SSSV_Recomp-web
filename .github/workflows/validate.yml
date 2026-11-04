@@ -5,7 +5,7 @@ on:
       release_tag:
         description: 'New release tag (leave blank to build artifacts only)'
         type: string
-        default: 'v2026.11.03'
+        default: 'v2026.11.04'
   push:
     tags: ['v*']
 permissions:

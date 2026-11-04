@@ -71,6 +71,11 @@ def uv_transform(item, replacement):
         new = image.convert('RGBA').getchannel('A').point(lambda a: 255 if a >= 32 else 0).getbbox()
     if not old or not new:
         raise ValueError(f'Empty RGBA world artwork: {item["name"]}')
+    # These native quads run from texel 0 through texel 31, not the outer
+    # edge at 32. Fit edge-touching authored sprites into that sampled domain,
+    # otherwise the final native texel's width cuts off the HD petal/stem.
+    if item['group'] == 'dynamic-billboard' and item.get('paired_alpha_path'):
+        old = (old[0], old[1], min(old[2], width - 1), min(old[3], height - 1))
     sx = ((new[2] - new[0]) / rw) / ((old[2] - old[0]) / width)
     sy = ((new[3] - new[1]) / rh) / ((old[3] - old[1]) / height)
     return sx, sy, new[0] / rw - old[0] / width * sx, new[1] / rh - old[1] / height * sy, rw, rh

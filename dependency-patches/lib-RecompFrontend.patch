@@ -1,3 +1,41 @@
+diff --git a/recompinput/include/recompinput/input_types.h b/recompinput/include/recompinput/input_types.h
+index f5ed6c078000851abbabafa6e1581160c3bf6cca..6a7a082e5acf6671961001d5970512ae04aaf212 100644
+--- a/recompinput/include/recompinput/input_types.h
++++ b/recompinput/include/recompinput/input_types.h
+@@ -40,7 +40,8 @@ namespace recompinput {
+     #define DEFINE_ALL_INPUTS() \
+         DEFINE_N64_AXIS_INPUTS() \
+         DEFINE_N64_BUTTON_INPUTS() \
+-        DEFINE_RECOMP_UI_INPUTS()
++        DEFINE_RECOMP_UI_INPUTS() \
++        DEFINE_INPUT(FAST_FORWARD, 0, "Fast Forward")
+ 
+     #define DEFINE_INPUT(name, value, readable) name,
+     // - Enum containing every recomp input.
+diff --git a/recompinput/src/input_mapping.cpp b/recompinput/src/input_mapping.cpp
+index bfcfef452cd56026175c971d03b7f34b57963671..843b494fbb2fc453dc8e07439a6984caf8deb8b9 100644
+--- a/recompinput/src/input_mapping.cpp
++++ b/recompinput/src/input_mapping.cpp
+@@ -26,6 +26,7 @@ namespace recompinput {
+         { GameInput::Y_AXIS_POS,     { InputField::keyboard(SDL_SCANCODE_W) } },
+         { GameInput::Y_AXIS_NEG,     { InputField::keyboard(SDL_SCANCODE_S) } },
+ 
++        { GameInput::FAST_FORWARD,   { InputField::keyboard(SDL_SCANCODE_TAB) } },
+         { GameInput::TOGGLE_MENU,    { InputField::keyboard(SDL_SCANCODE_ESCAPE) } },
+         { GameInput::ACCEPT_MENU,    { InputField::keyboard(SDL_SCANCODE_RETURN) } },
+         { GameInput::BACK_MENU,      { InputField::keyboard(SDL_SCANCODE_F15) } },
+diff --git a/recompinput/src/input_types.cpp b/recompinput/src/input_types.cpp
+index c6786e64047050a062ab95812ad4a23292ee1cc8..177877e454396d089600656fa12c76278f915415 100644
+--- a/recompinput/src/input_types.cpp
++++ b/recompinput/src/input_types.cpp
+@@ -17,6 +17,7 @@ constexpr std::array<std::string, num_game_inputs> get_default_game_input_descri
+     std::array<std::string, num_game_inputs> descriptions = {
+         DEFINE_ALL_INPUTS()
+     };
++    descriptions[static_cast<size_t>(GameInput::FAST_FORWARD)] = "Fast-forward at the speed and button mode selected in General. Works in gameplay, menus and cutscenes.";
+     descriptions[static_cast<size_t>(GameInput::TOGGLE_MENU)] = "Open or close this configuration menu from in game.";
+     descriptions[static_cast<size_t>(GameInput::ACCEPT_MENU)] = "In the recomp interface, performs the action for the currently highlighted item. Like pressing a button, or toggling a switch.";
+     descriptions[static_cast<size_t>(GameInput::BACK_MENU)] = "In the recomp interface, returns to the header or backs out to a previous menu.";
 diff --git a/recompui/include/recompui/config.h b/recompui/include/recompui/config.h
 index 38b84f569d4454477cd6247bc7a8c170ecc9851b..1c08ae94354dbbc56a28fc4cd327cbe8f1444d41 100644
 --- a/recompui/include/recompui/config.h
@@ -28,6 +66,50 @@ index 33f79ab10a092f52d0c0e10014916ea7c05837ad..a2791440dcff4de3baa62ec4d1dbedbc
          void enable_texture_pack(const recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod);
          void disable_texture_pack(const recomp::mods::ModHandle& mod);
          void secondary_enable_texture_pack(const std::string& mod_id);
+diff --git a/recompui/src/base/ui_state.cpp b/recompui/src/base/ui_state.cpp
+index 277a421caccc25cb2a4506626080b895d2c90f9b..76af23d7e8a9a2c570dbc773caae199ecfae067f 100644
+--- a/recompui/src/base/ui_state.cpp
++++ b/recompui/src/base/ui_state.cpp
+@@ -5,6 +5,7 @@
+ #include <SDL2/SDL_video.h>
+ #endif
+ #include <chrono>
++#include "ultramodern/ultramodern.hpp"
+ 
+ #include "rt64_render_hooks.h"
+ 
+@@ -215,6 +216,8 @@ public:
+     std::unique_ptr<SystemInterface_SDL> system_interface;
+     recompui::RmlRenderInterface_RT64 render_interface;
+     Rml::Context* context;
++    Rml::ElementDocument* fast_forward_status = nullptr;
++    uint32_t displayed_fast_forward_speed = 0;
+     recompui::UiEventListenerInstancer event_listener_instancer;
+ 
+     UIState(const UIState& rhs) = delete;
+@@ -859,7 +862,21 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+     ui_state->update_primary_input(mouse_moved, non_mouse_interacted);
+     ui_state->update_focus(mouse_moved, non_mouse_interacted);
+ 
+-    if (recompui::is_any_context_shown()) {
++    const uint32_t fast_forward_speed = ultramodern::get_speed_multiplier();
++    if (fast_forward_speed != ui_state->displayed_fast_forward_speed) {
++        if (fast_forward_speed > 1) {
++            if (!ui_state->fast_forward_status) {
++                ui_state->fast_forward_status = ui_state->context->CreateDocument();
++                ui_state->fast_forward_status->SetProperty("pointer-events", "none");
++                ui_state->fast_forward_status->SetProperty("font-family", primary_font_family);
++            }
++            // Half-HUD-height indicator; solid triangles use the existing font.
++            ui_state->fast_forward_status->SetInnerRML("<div style='position: absolute; left: 24dp; top: 12dp; color: white; font-size: 99dp; line-height: 99dp; font-weight: bold;'>FF &#9654;&#9654;</div>");
++            ui_state->fast_forward_status->Show(Rml::ModalFlag::None, Rml::FocusFlag::None);
++        } else if (ui_state->fast_forward_status) ui_state->fast_forward_status->Hide();
++        ui_state->displayed_fast_forward_speed = fast_forward_speed;
++    }
++    if (recompui::is_any_context_shown() || fast_forward_speed > 1) {
+         if (recompui::is_context_shown(recompui::get_launcher_context_id())) {
+             recompui::update_launcher_menu();
+         }
 diff --git a/recompui/src/config/ui_config.cpp b/recompui/src/config/ui_config.cpp
 index 6c84c0531464f211705d094afabbf7414b6ac504..31774e1f9c41f3cad713be8053e48fcdeadbdc87 100644
 --- a/recompui/src/config/ui_config.cpp

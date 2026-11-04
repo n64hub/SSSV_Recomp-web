@@ -1,6 +1,7 @@
 #include "sssv_patch_common.h"
 #include "sssv_render_context.h"
 #include "sssv_rt64_tagging.h"
+#include "sssv_billboard_identity.h"
 
 #define MTX_INTPART_PACK(w1, w2)  (((w1) & 0xFFFF0000) | (((w2) & 0xFFFF0000) >> 16))
 #define MTX_FRACPART_PACK(w1, w2) (((w1) << 16) | ((w2) & 0xFFFF))
@@ -420,6 +421,9 @@ static inline s32 billboard_acquire_stable_id(const BillboardGeometryDesc* desc,
             continue;
         }
 
+        const s32 stationary = desc->family_id == BILLBOARD_FAMILY_COLLECTIBLE &&
+            s_billboard_signature_override_active && sig0 > 0 && sig0 < 32;
+        if (!sssv_billboard_position_matches(stationary, dx, dz, dy)) continue;
         distance = dx + dz + dy;
         if (distance < best_distance) {
             best_distance = distance;
@@ -1376,7 +1380,7 @@ RECOMP_PATCH void render_dynamic_texture_billboards_6AE758(void) {
 
             billboard_signature_override_begin(
                 tex->category,
-                ((s32)(u8)tex->unk10 << 16) | (u16)(s_collectible_anim_counter / 3),
+                ((s32)(u8)tex->unk10 << 16) | (u16)sssv_billboard_animation_signature(tex->category, s_collectible_anim_counter / 3),
                 tex->size
             );
             if (tex->unk10 == 127) {

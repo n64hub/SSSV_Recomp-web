@@ -11,3 +11,5 @@ D_801D9E90 = 0x801D9E90;
 D_801D9EB8 = 0x801D9EB8;
 
 recomp_get_hd_title_enabled = 0x8F000010;
+
+recomp_get_near_reflection_dl = 0x8F000014;

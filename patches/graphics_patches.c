@@ -38,6 +38,7 @@ static u32 g_dbg_world_depth_failsafe_calls = 0;
 
 s32 sssv_intro_4_3_frame = 0;
 static s32 s_title_layout_frame = 0;
+static s32 s_title_background_drawn = 0;
 static s32 s_file_select_layout = 0;
 static s16 s_file_select_saved_width;
 extern u8 gIntroSceneState;
@@ -395,8 +396,13 @@ static inline void trace_proj_view_snapshot_once(RenderContext ctx) {
     );
 }
 
+Gfx* gXluStateBarrierEnd = NULL;
+
 static void fix_tv_static_alpha(void) {
+    static u32 tv_static_frame = 0;
     if (gSegment1Base == NULL) return;
+    // Advance only when the game submits a native frame, never per interpolated frame.
+    const u32 static_seed = (++tv_static_frame) & 0xFFu;
 
     // Both native TV models use PASS2 in the first combiner cycle, then
     // PRIMITIVE in the second. Alpha compare reads the first cycle's alpha;
@@ -404,10 +410,29 @@ static void fix_tv_static_alpha(void) {
     // white static pixel. Supply primitive alpha there explicitly while
     // preserving the final color, dither, geometry and material restoration.
     // Only touch the known white-screen commands, not other PASS2 materials.
+    // Give the untextured screen quads their own surface coordinates. This
+    // keeps noise density fixed on the monitor instead of in display pixels.
+    const u32 screen_vertices[] = { 0x17A20u, 0xC0E0u };
+    const s16 uv[2][4][2] = {
+        {{0, 1024}, {1024, 1024}, {1024, 0}, {0, 0}},
+        {{1024, 1024}, {0, 1024}, {1024, 0}, {0, 0}}
+    };
+    for (s32 model = 0; model < 2; ++model) {
+        Vtx* vertices = (Vtx*)((u8*)gSegment1Base + screen_vertices[model]);
+        for (s32 vertex = 0; vertex < 4; ++vertex) {
+            vertices[vertex].v.tc[0] = uv[model][vertex][0];
+            vertices[vertex].v.tc[1] = uv[model][vertex][1];
+        }
+    }
     const u32 offsets[] = { 0x17AA0u + 27u * sizeof(Gfx), 0xC120u + 33u * sizeof(Gfx) };
     s32 i;
     for (i = 0; i < 2; ++i) {
         Gfx* combine = (Gfx*)((u8*)gSegment1Base + offsets[i]);
+        Gfx* prim = combine - 2;
+        if (prim->words.w0 == 0xFA000000u && ((prim->words.w1 & 0xFFFFFF00u) == 0xFFFFFF00u || (prim->words.w1 & 0xFFFFFF00u) == 0xFFFEFF00u)) {
+            // Identify the two TV static surfaces for native-resolution noise cells.
+            prim->words.w1 = 0xFFFEFF00u | static_seed;
+        }
         if (combine->words.w0 == 0xFCFFFFFFu && combine->words.w1 == 0xFFFC70FBu) {
             // Cycle-zero alpha D: COMBINED (0) -> PRIMITIVE (3).
             combine->words.w1 |= 3u << 9;
@@ -612,10 +637,11 @@ static inline void append_intro_depth_clear_fallback(Gfx** dl) {
 
 RECOMP_PATCH void draw_sprite_with_prim_depth(Gfx** dl, uSprite* image, u16 width, u16 height,
     u16 scale_x, u16 scale_y, u8 flip_x, u8 flip_y, u16 screen_x, u16 screen_y, u16 depth) {
-    const s32 title_background = s_title_layout_frame && (depth == 0xFFFF) &&
+    const s32 title_background = (image == (uSprite*)(D_80302E88 + 0x28000)) && (depth == 0xFFFF) &&
         (width == 160) && (height == 128);
     s32 draw_x = screen_x;
     if (title_background) {
+        s_title_background_drawn = 1;
         // Expand only the starfield. Keep a native-width scissor with explicit
         // edge origins so RT64 still corrects the foreground's aspect ratio.
         const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
@@ -646,6 +672,7 @@ RECOMP_PATCH void draw_sprite_with_prim_depth(Gfx** dl, uSprite* image, u16 widt
 }
 
 RECOMP_PATCH void func_80295EB0_639550(s32 x) {
+    s_title_background_drawn = 1;
     // The final news-report slide becomes the title background. Use the same
     // width and centre as the title, and scale its travel by that width too.
     const f32 aspect = recomp_get_target_aspect_ratio(SSSV_BASE_ASPECT);
@@ -982,6 +1009,7 @@ RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
     // The copyright card is a single 320x240 image, including its starfield.
     // Keep it and the TV report compositions at native aspect. Snapshot the
     // state before it advances; the final starfield slide handles its own width.
+    s_title_background_drawn = 0;
     const s32 copyright_frame = (gIntroSceneState == 0) && (D_80299E08_63D4A8 < 260);
     sssv_intro_4_3_frame = copyright_frame || (gIntroSceneState == 1) ||
         (gIntroSceneState == 2) || (gIntroSceneState == 9) || (gIntroSceneState == 10);
@@ -1030,7 +1058,8 @@ RECOMP_PATCH void render_intro_overlay_frame_63BF88(void) {
     // The HD copyright artwork has a separately expanded starfield. Applying
     // the native card's edge mask here would cut vertical black seams through
     // that background at the boundaries of its centred 4:3 lettering.
-    if (!(copyright_frame && recomp_get_hd_title_enabled())) {
+    if (!(s_title_background_drawn || s_title_layout_frame || gIntroSceneState == 3 || gIntroSceneState == 5 ||
+          (copyright_frame && recomp_get_hd_title_enabled()))) {
         append_intro_black_border_mask(&gMainDL);
     }
     if (sssv_intro_4_3_frame) {
@@ -1125,6 +1154,8 @@ RECOMP_PATCH void setup_world_perspective_6AB090(DisplayList* arg0) {
     gSPMatrix(gXluDL++, &arg0->unk374D0, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gSPPerspNormalize(gXluDL++, gWorldPerspNorm);
 #endif
+
+    gXluStateBarrierEnd = gXluDL;
 
     g_dbg_world_perspective_calls++;
     if (SHOULD_TRACE_PERIODIC(g_dbg_world_perspective_calls, 6, 240)) {

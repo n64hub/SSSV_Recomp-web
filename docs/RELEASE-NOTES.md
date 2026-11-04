@@ -1,34 +1,24 @@
-## 3 November 2026 — v2026.11.03
+## 4 November 2026 — v2026.11.04
 
-- Added Herobrine.
-- Added **Mirror Mode (Experimental)** in the **General** tab, with readable HUD/text and automatic left/right movement and camera reversal.
-- Added `Mirror.tex` rules for world textures that need readable lettering in Mirror Mode.
-- Restored animated static on animal-preview television monitors.
-- Restored animal reflections on the glass dome.
-- Restored motion-blur trails in the animal stats screen, including trails following the HD text.
-- Restored intermittent television interference in the menus.
-- Kept the animal stats foreground at 4:3 proportions, expanding the background up to 16:9 with black sides on wider displays.
-- Renamed the optional artwork pack to **Scotts Somewhat Ok Texture Pack**.
-- Removed Herobrine.
+- Added **Fast Forward** with Disabled / 2X / 4X / 8X / 16X speeds, defaulting to 4X. Tab is the default keyboard binding; the controller binding is initially empty.
+- Added Held (default) and Toggle activation, with safeguards to turn toggle mode off after a two-second hold or excessive repeated presses. Fast forward works in gameplay, menus and cutscenes, keeps accelerated audio playing, and displays a white FF indicator at the top left. Higher speeds depend on system performance.
+- Corrected television static to use clearer, spaced white dots and native-rate animation, with more consistent visibility at different viewing distances.
+- Restored the glass dome's reflection visibility checks and limited animal reflections to nearby animals. Reflections fade between four and five terrain tiles, reaching half visibility at 4.5 tiles.
+- Extended the distance at which animals retain their proper models, reducing the coloured stand-ins seen at a distance.
+- Fixed the temporary black rectangle over the title background when skipping startup screens quickly.
+- Stabilised flower and other scenery sprite interpolation as objects enter view, and corrected the clipped edge of HD flowers.
+- Extended the introductory glass pattern across widescreen and ultrawide views in both glass-breaking sequences, preserving the original breakable panes and shattering effects.
 
-This update fixes the black world in **Sting in the Tail**, protects dense scenes from model-matrix and opaque display-list overflows, and fixes plants and other queued scenery disappearing in crowded views.
+**HD World Textures remain incomplete.** Character eye and body replacements are deferred and excluded. The optional texture pack is bundled with each platform package.
 
-**HD World Textures are incomplete.** This update was released urgently after discovering that Sting in the Tail was broken, so the level fix could reach players without waiting for the texture pack to be finished.
+**No ROM or save data is included.** Supply your supported USA 1.0 ROM through the first-launch picker, `assets/data.z64`, or `--rom "path/to/file.z64"`. Extract the complete package to a writable folder.
 
-It also adds **HD World Textures** for level sprites and tutorial signs, an external `--rom "path/to/file.z64"` option, and automatic import of the original save only when the portable `saves/` folder contains no save data. Existing saves and the original source save are preserved.
+- Windows x64: run `SSSVRecompiled.exe` with the supplied assets and DLLs.
+- Linux x64: built on Ubuntu 24.04; requires SDL2, GTK3, FreeType, X11/XRandR and a Vulkan-capable driver.
+- macOS: separate Apple Silicon and Intel apps targeting macOS 15+. Apps are ad-hoc signed, not notarized.
 
-The earlier widescreen/UI fixes, optional HD menus and HUD, intro improvements and smoother credits remain included. See [the changelog](https://github.com/scottjco/SSSV_Recomp/blob/main/CHANGELOG.md) and [comparison screenshots](https://github.com/scottjco/SSSV_Recomp#screenshot-comparisons).
+The Windows build was checked locally for the changes above. Linux and macOS packages are compiled by GitHub Actions; native gameplay testing remains outstanding. Packages include licenses and SHA-256 checksums, plus a corresponding source archive.
 
-**No ROM or save data is included.** Supply your own supported USA 1.0 ROM through the first-launch file picker, `assets/data.z64`, or the external ROM option. Extract the complete package to a writable folder.
+See the [full changelog](https://github.com/scottjco/SSSV_Recomp/blob/main/CHANGELOG.md) and [screenshots](https://github.com/scottjco/SSSV_Recomp#screenshot-comparisons). Based on Cellenseres/SSSV_Recomp, N64: Recompiled, RT64 and their contributors' work.
 
-Packages: Windows x64, Linux x64, macOS Apple Silicon and macOS Intel, with SHA-256 checksums and a corresponding source archive. Optional artwork lives in `Textures/`; removing that folder hides its HD settings.
-
-- Windows: run `SSSVRecompiled.exe` with its DLLs and assets alongside it.
-- Linux: built on Ubuntu 24.04; requires SDL2, GTK3, FreeType, X11/XRandR and a Vulkan-capable graphics driver.
-- macOS: separate Apple Silicon and Intel apps, targeting macOS 15+. Apps are ad-hoc signed, not Developer ID signed or notarized.
-
-The Windows candidate was exercised locally, including all 32 initial-level scenes, focused pickup tests and repeated same-angle plant approaches. This is not a claim of exhaustive objective testing. Linux and macOS gameplay/graphics still need testing on actual systems; these packages are compiled by GitHub Actions.
-
-Based on Cellenseres/SSSV_Recomp, N64: Recompiled, RT64, and the work of their contributors. Third-party licenses and notices are included.
-
-Character eye and body texture replacements are deferred and are not included in this release.
+Removed Herobrine.
