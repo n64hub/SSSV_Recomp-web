@@ -257,3 +257,12 @@ text = """
 extern void sssv_extend_intro_glass(uint8_t*, recomp_context*);
 sssv_extend_intro_glass(rdram, ctx);
 """
+
+# Finalize alpha-cutout depth once after the level's cell lists are built.
+[[patches.hook]]
+func = "func_80344240_7558F0"
+before_vram = 0x80345888
+text = """
+extern void sssv_fix_world_cutout_depth(uint8_t*, recomp_context*);
+sssv_fix_world_cutout_depth(rdram, ctx);
+"""

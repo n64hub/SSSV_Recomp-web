@@ -5,7 +5,7 @@ on:
       release_tag:
         description: 'New release tag (leave blank to build artifacts only)'
         type: string
-        default: 'v2026.11.04'
+        default: 'v2026.11.04-build5'
   push:
     tags: ['v*']
 permissions:
@@ -161,4 +161,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
-          gh release create "$RELEASE_TAG" release-packages/* --target "$GITHUB_SHA" --title "Space Station Silicon Valley Recompiled - $RELEASE_TAG" --notes-file docs/RELEASE-NOTES.md
+          gh release create "$RELEASE_TAG" release-packages/* --target "$GITHUB_SHA" --title "Space Station Silicon Valley Recompiled - Build 5 ($RELEASE_TAG)" --notes-file docs/RELEASE-NOTES.md

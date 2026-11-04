@@ -1,5 +1,11 @@
 # Changelog
 
+## Build 5 — 4 November 2026
+
+- Fixed energy pickups appearing through fences, including The Battery Farm. The fence’s solid pixels tested depth but did not write it, so sprites drawn later could appear in front of the fence. Cutout surfaces now write depth for their visible pixels while their transparent gaps stay open; glass and other translucent surfaces are unchanged.
+- Reduced the texture pack from approximately 217 MB to 62 MB (72% smaller) by right-sizing oversized sprites, effects, trophies and thumbnails. Transparency is preserved; full-screen artwork, fonts and HUD artwork retain their resolution.
+- Removed Herobrine.
+
 ## 4 November 2026 — v2026.11.04
 
 - Added **Fast Forward** with Disabled / 2X / 4X / 8X / 16X speeds, defaulting to 4X. Tab is the default keyboard binding; the controller binding is initially empty.
