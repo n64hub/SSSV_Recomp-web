@@ -64,10 +64,6 @@ The original project renders a black world in this scene; the current build rend
 
 Is that even a real Gemini logo...?
 
-<img src="docs/screenshots/14-claude-not-used.png" height="360" alt="Deliberately generated joke: disgusted woman points at a plate marked claude while Dan looks shocked">
-
-Claude wasn’t even used in this project.
-
 ## Changelog
 
 ### 4 November 2026 — v2026.11.04
@@ -213,3 +209,7 @@ OpenAI Codex deserves credit for the AI-assisted coding, debugging, and texture 
 I am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp myself.
 
 All credit goes to Wiseguy and Dario plus the rest of his team for even making this possible in the first place even though I know they frown upon projects like this.
+
+<img src="docs/screenshots/14-claude-not-used.png" height="360" alt="Deliberately generated joke: disgusted woman points at a plate marked claude while Dan looks shocked">
+
+Claude wasn’t even used in this project, allegedly. 
