@@ -1,9 +1,16 @@
-# Build 5
+# Build 6 — Linux support and intro-skip fixes
 
-- Fixed energy pickups appearing through fences, including The Battery Farm. The fence’s solid pixels tested depth but did not write it, so sprites drawn later could appear in front of the fence. Cutout surfaces now write depth for their visible pixels while their transparent gaps stay open; glass and other translucent surfaces are unchanged.
-- Reduced the texture pack from approximately 217 MB to 62 MB (72% smaller) by right-sizing oversized sprites, effects, trophies and thumbnails. Transparency is preserved; full-screen artwork, fonts and HUD artwork retain their resolution.
-- Removed Herobrine.
+- Fixed Linux startup crashes and black output.
+- Fixed interrupted gameplay audio when the Linux window is unfocused or minimized.
+- Improved Linux NVIDIA frame pacing and reduced cutscene patch overhead.
+- Restored the dog icon for Linux windows and desktop/taskbar launchers.
+- **Windows and Linux:** skipping the new-game intro now keeps music quiet until the normal ship trigger and shows the mission briefing. Direct level entry keeps its usual behavior.
+- Improved compatibility with newer Linux compilers and corrected startup error handling.
 
-Includes Windows x64, Linux x64, macOS Apple Silicon and macOS Intel packages, with the optional texture pack and licenses. No ROM or saves are included.
+Includes **Windows x64**, **Linux x64**, and corresponding source packages, with the optional texture pack, licenses, and SHA-256 checksums. No ROM or saves are included.
+
+Linux gameplay was tested locally on CachyOS with KDE Wayland and an NVIDIA RTX 5090. Windows is built by GitHub Actions and still needs separate gameplay testing. macOS packages are not included in this release.
+
+Supply your own supported USA 1.0 big-endian `.z64` ROM. Extract the package to a writable folder and launch `SSSVRecompiled.exe` (Windows) or `SSSVRecompiled` (Linux). Escape opens settings; Alt+Enter toggles fullscreen.
 
 HD World Textures remain incomplete.

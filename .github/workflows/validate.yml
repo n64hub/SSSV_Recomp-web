@@ -5,7 +5,7 @@ on:
       release_tag:
         description: 'New release tag (leave blank to build artifacts only)'
         type: string
-        default: 'v2026.11.04-build5'
+        default: 'v2026.11.07-build6'
   push:
     tags: ['v*']
 permissions:
@@ -27,12 +27,6 @@ jobs:
             arch: x64
           - runner: ubuntu-24.04
             platform: Linux
-            arch: x64
-          - runner: macos-15
-            platform: macOS
-            arch: arm64
-          - runner: macos-15-intel
-            platform: macOS
             arch: x64
     defaults:
       run:
@@ -142,7 +136,7 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Publish all platform packages
+    name: Publish Windows and Linux packages
     needs: build
     if: github.event_name == 'push' || inputs.release_tag != ''
     runs-on: ubuntu-24.04
@@ -161,4 +155,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
-          gh release create "$RELEASE_TAG" release-packages/* --target "$GITHUB_SHA" --title "Space Station Silicon Valley Recompiled - Build 5 ($RELEASE_TAG)" --notes-file docs/RELEASE-NOTES.md
+          gh release create "$RELEASE_TAG" release-packages/* --target "$GITHUB_SHA" --title "Space Station Silicon Valley Recompiled - Build 6 ($RELEASE_TAG)" --notes-file docs/RELEASE-NOTES.md

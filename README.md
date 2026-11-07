@@ -66,6 +66,16 @@ Is that even a real Gemini logo...?
 
 ## Changelog
 
+### Build 6 — 7 November 2026
+
+- Fixed Linux startup crashes and black output by correcting generated runtime calls and the Clang patch calling convention.
+- Fixed broken or interrupted gameplay audio when the Linux window loses focus or is minimized.
+- Improved Linux NVIDIA frame pacing and reduced cutscene patch overhead.
+- Restored the dog icon for Linux windows and desktop/taskbar launchers.
+- On **Windows and Linux**, skipping the new-game intro now keeps music quiet until the normal ship trigger and shows the mission briefing once the dog and screen reveal are ready. Entering the level directly retains its normal behavior.
+- Fixed compatibility with newer Linux compilers and corrected SDL initialization error handling.
+- Windows patch compiler settings remain unchanged. The updated Windows build still needs separate gameplay testing.
+
 ### Build 5 — 4 November 2026
 
 - Fixed energy pickups appearing through fences, including The Battery Farm. The fence’s solid pixels tested depth but did not write it, so sprites drawn later could appear in front of the fence. Cutout surfaces now write depth for their visible pixels while their transparent gaps stay open; glass and other translucent surfaces are unchanged.

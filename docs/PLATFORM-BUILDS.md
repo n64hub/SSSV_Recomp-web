@@ -1,10 +1,9 @@
 # Linux and macOS release builds
 
 In GitHub, open **Actions > Platform release builds > Run workflow**.
-The same workflow runs for tags beginning with `v`. It builds Windows x64, Linux x64,
-macOS Apple Silicon, and macOS Intel separately. Successful jobs provide
+The same workflow runs for tags beginning with `v`. Build 6 builds Windows x64 and Linux x64 separately. Successful jobs provide
 downloadable packages and SHA-256 checksums in the run's Artifacts section.
-Enter a new release tag to publish all four packages and corresponding source together after every build succeeds. Leave the tag blank to produce artifacts only. Tag-triggered builds publish under that tag.
+Enter a new release tag to publish both platform packages and corresponding source together after every build succeeds. Leave the tag blank to produce artifacts only. Tag-triggered builds publish under that tag.
 
 The Mac builds currently target macOS 15 and later. They are ad-hoc signed,
 not Developer ID signed or notarized. Linux is built on Ubuntu 24.04 and
