@@ -201,7 +201,7 @@ Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` i
 
 ## Windows, Linux and macOS builds
 
-Linux x64 has now been tested on CachyOS with KDE Wayland and an NVIDIA RTX 5090. The Linux startup, background-audio and frame-pacing fixes are documented in the platform build instructions below. Windows and Linux share the updated intro skip, which keeps music quiet and shows the new-game mission briefing. The updated Windows build still needs separate runtime testing; macOS remains unverified.
+Linux x64 has now been tested on CachyOS with KDE Wayland and an NVIDIA RTX 5090. The Linux startup, background-audio and frame-pacing fixes are documented in the platform build instructions below. Windows and Linux share the updated intro skip, which keeps music quiet and shows the new-game mission briefing. The updated Windows build has also been tested with a Windows 11 Setup and confirmed; macOS remains unverified. I do not have one of those so until I get confirmation I'm leaving it out of my releases.
 
 If you wish to try it:
 Use **Actions > Platform release builds > Run workflow** for Windows x64, Linux x64, Mac Apple Silicon and Mac Intel packages. These builds apply this fork's dependency patches and include HD assets and licenses. No ROM is uploaded or packaged. [Platform build instructions](docs/PLATFORM-BUILDS.md).
