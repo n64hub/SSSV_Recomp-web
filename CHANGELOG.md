@@ -9,6 +9,7 @@
 - On **Windows and Linux**, skipping the new-game intro now keeps music quiet until the normal ship trigger and shows the mission briefing once the dog and screen reveal are ready. Entering the level directly retains its normal behavior.
 - Fixed compatibility with newer Linux compilers and corrected SDL initialization error handling.
 - Windows patch compiler settings remain unchanged. The updated Windows build still needs separate gameplay testing.
+- Removed Herobrine.
 
 ## Build 5 — 4 November 2026
 
