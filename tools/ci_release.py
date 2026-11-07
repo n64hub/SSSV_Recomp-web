@@ -161,6 +161,15 @@ def package(build, platform, arch):
         copy_textures(stage / 'Textures')
         shutil.copy2(ROOT / 'recompcontrollerdb.txt', stage / 'recompcontrollerdb.txt')
     else:
+        # A matching desktop ID supplies the dog icon on Wayland, where window
+        # icons cannot be set by SDL_SetWindowIcon.
+        app_id = 'io.github.scottjco.SSSVRecompiled'
+        app_dir = stage / 'share/applications'
+        icon_dir = stage / 'share/icons/hicolor/512x512/apps'
+        app_dir.mkdir(parents=True)
+        icon_dir.mkdir(parents=True)
+        shutil.copy2(ROOT / '.github/linux/SSSVRecompiled.desktop', app_dir / (app_id + '.desktop'))
+        shutil.copy2(ROOT / 'icons/512.png', icon_dir / (app_id + '.png'))
         shutil.copy2(build / 'SSSVRecompiled', stage / 'SSSVRecompiled')
         (stage / 'SSSVRecompiled').chmod(0o755)
         copy_assets(stage / 'assets')

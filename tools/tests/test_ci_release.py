@@ -21,6 +21,7 @@ class ReleaseSafety(unittest.TestCase):
             build = root / 'build-release'
             for name in ['Mirror.tex', 'build-release/SSSVRecompiled', 'recompcontrollerdb.txt',
                          'README.md', 'README.upstream.md', 'CHANGELOG.md',
+                         '.github/linux/SSSVRecompiled.desktop', 'icons/512.png',
                          'lib/N64ModernRuntime/COPYING', 'release-notices/Inter-OFL.txt']:
                 p = root / name
                 p.parent.mkdir(parents=True, exist_ok=True)
@@ -41,6 +42,8 @@ class ReleaseSafety(unittest.TestCase):
                 ci.package(build, 'Linux', 'x64')
             with tarfile.open(root / 'dist/SSSVRecompiled-Linux-x64.tar.gz') as archive:
                 names = archive.getnames()
+                self.assertTrue(any(n.endswith('share/applications/io.github.scottjco.SSSVRecompiled.desktop') for n in names))
+                self.assertTrue(any(n.endswith('share/icons/hicolor/512x512/apps/io.github.scottjco.SSSVRecompiled.png') for n in names))
                 self.assertTrue(any(n.endswith('Textures/hd-hud/example.png') for n in names))
                 self.assertTrue(any(n.endswith('Textures/hd-font/example.png') for n in names))
                 self.assertTrue(any(n.endswith('Textures/hd-world/example.png') for n in names))

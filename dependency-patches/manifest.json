@@ -18,5 +18,10 @@
     "path": "lib/rt64/src/contrib/plume",
     "revision": "51b1ad443b9f202c5cfc930ae25345d3f2ba7716",
     "patch": "lib-rt64-src-contrib-plume.patch"
+  },
+  {
+    "path": "lib/RecompFrontend/recompui/lib/RmlUi",
+    "revision": "7a06f27db04fe5d13a5dacc19b2b4544673a4eca",
+    "patch": "lib-RecompFrontend-RmlUi.patch"
   }
 ]

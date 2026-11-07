@@ -6,9 +6,13 @@ file(READ "${INPUT_FILE}" PATCH_SOURCE)
 set(PATCH_SOURCE_ORIGINAL "${PATCH_SOURCE}")
 
 # N64Recomp already renames these symbols for normal function emission, but patch
-# reference-symbol calls can still come out as raw libc names on some platforms.
+# reference-symbol calls can still come out as raw runtime/libc names.
+# osVirtualToPhysical is also a native C symbol on Linux: calling it with
+# (rdram, ctx) bypasses the emulated-register wrapper and leaves v0 unchanged,
+# causing framebuffer readback to overwrite game memory during startup.
 # Only rewrite call sites that use the patch ABI signature.
 set(RENAMED_PATCH_CALLS
+  "osVirtualToPhysical"
   "sincosf"
   "sinf"
   "cosf"

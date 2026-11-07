@@ -412,6 +412,18 @@ target_include_directories(SSSVRecompiled PRIVATE
   "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
+# Embed the existing dog artwork for Linux window managers that support window
+# icons. Wayland also resolves the icon through the matching desktop app ID.
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  add_custom_command(
+    OUTPUT "${CMAKE_BINARY_DIR}/sssv_window_icon.c" "${CMAKE_BINARY_DIR}/sssv_window_icon.h"
+    COMMAND file_to_c "${CMAKE_SOURCE_DIR}/icons/512.png" sssv_window_icon
+      "${CMAKE_BINARY_DIR}/sssv_window_icon.c" "${CMAKE_BINARY_DIR}/sssv_window_icon.h"
+    DEPENDS file_to_c "${CMAKE_SOURCE_DIR}/icons/512.png"
+  )
+  target_sources(SSSVRecompiled PRIVATE "${CMAKE_BINARY_DIR}/sssv_window_icon.c")
+endif()
+
 # Slightly better defaults for x64 builds
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
   target_compile_options(SSSVRecompiled PRIVATE

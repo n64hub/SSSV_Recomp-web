@@ -190,7 +190,7 @@ Extract the Windows release and run `SSSVRecompiled.exe`. If `assets/data.z64` i
 
 ## Windows, Linux and macOS builds
 
-There is no guarantee that it will work on anything other than Windows at this time. I will try to resolve that with Linux at least. I am not sure I can do anything about the Mac's because I do not own one of those. 
+Linux x64 has now been tested on CachyOS with KDE Wayland and an NVIDIA RTX 5090. The Linux startup, background-audio and frame-pacing fixes are documented in the platform build instructions below. Windows and Linux share the updated intro skip, which keeps music quiet and shows the new-game mission briefing. The updated Windows build still needs separate runtime testing; macOS remains unverified.
 
 If you wish to try it:
 Use **Actions > Platform release builds > Run workflow** for Windows x64, Linux x64, Mac Apple Silicon and Mac Intel packages. These builds apply this fork's dependency patches and include HD assets and licenses. No ROM is uploaded or packaged. [Platform build instructions](docs/PLATFORM-BUILDS.md).

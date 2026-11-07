@@ -1,0 +1,12 @@
+diff --git a/Include/RmlUi/Core/Containers/robin_hood.h b/Include/RmlUi/Core/Containers/robin_hood.h
+index 3992be14..c8f02f51 100644
+--- a/Include/RmlUi/Core/Containers/robin_hood.h
++++ b/Include/RmlUi/Core/Containers/robin_hood.h
+@@ -41,6 +41,7 @@
+ #include <limits>
+ #include <algorithm>
+ #include <cstdlib>
++#include <cstdint>
+ #include <cstring>
+ #include <functional>
+ #include <memory> // only to support hash of smart pointers

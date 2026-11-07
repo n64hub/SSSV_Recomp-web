@@ -1,8 +1,9 @@
 [Desktop Entry]
-Name=SSSVRecompiled
+Name=Space Station Silicon Valley
 Type=Application
 Terminal=false
-Icon=SSSVRecompiled
+Icon=io.github.scottjco.SSSVRecompiled
 Exec=SSSVRecompiled
+StartupWMClass=io.github.scottjco.SSSVRecompiled
 GenericName=SSSVRecompiled
 Categories=Game;

@@ -26,7 +26,12 @@ COMMON_CPPFLAGS := -D_LANGUAGE_C -DMIPS \
 COMMON_LDFLAGS := -nostdlib --unresolved-symbols=ignore-all --emit-relocs
 
 ifneq ($(findstring clang,$(CC_NAME)),)
-CFLAGS := $(COMMON_CFLAGS) --target=mips64-unknown-elf
+# Clang can select 64-bit argument registers for mips3 despite -mabi=32.
+# MIPS II keeps O32 calls compatible with the original game (including stack
+# arguments and floats), and its instructions are supported by the VR4300.
+# Optimize before recompilation so inline graphics helpers do not turn into
+# thousands of emulated stack loads/stores in cutscenes.
+CFLAGS := $(filter-out -mips3,$(COMMON_CFLAGS)) --target=mips-unknown-elf -march=mips2 -O2 -fno-optimize-sibling-calls
 else
 CFLAGS := $(COMMON_CFLAGS) -march=vr4300 -mtune=vr4300 -G0 -mno-abicalls -mlong-calls
 endif

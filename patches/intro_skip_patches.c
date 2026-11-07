@@ -14,12 +14,15 @@ extern u8 D_803D5538;
 extern void set_game_state(void* entity, s16 state, s32 value);
 extern void load_smashing_start(void);
 extern void stop_all_sounds(void);
+extern void set_music_track(s8 track);
+extern s32 gLevelProgress;
 
 static u8 s_intro_skip_armed;
 static u8 s_intro_skip_pending;
 static u8 s_waiting_for_dog;
 static u8 s_dog_drawn;
 static u8 s_reveal_frames;
+static u8 s_briefing_pending;
 
 // Hooked inside the normal dog's visible model branch, after its culling and
 // camera checks. Only the player dog can release the skip's black screen.
@@ -49,12 +52,22 @@ RECOMP_EXPORT void sssv_update_intro_skip(void) {
             s_waiting_for_dog = 0;
             s_dog_drawn = 0;
             s_reveal_frames = 0;
+            s_briefing_pending = 0;
         } else if (s_waiting_for_dog && s_dog_drawn) {
             // The previous frame submitted the dog; reveal from the next frame
             // so there is no uncovered frame while the model is being prepared.
             s_waiting_for_dog = 0;
             s_dog_drawn = 0;
             s_reveal_frames = 10;
+        }
+        return;
+    }
+    if (s_briefing_pending) {
+        s_briefing_pending = 0;
+        if (gGameState.level == 1) {
+            // Use the original new-game briefing request after the dog and
+            // reveal are ready. The game's normal handler clears this bit.
+            set_game_state(NULL, 0x7FA3, gLevelProgress | 64);
         }
         return;
     }
@@ -81,6 +94,14 @@ RECOMP_EXPORT void sssv_update_intro_skip(void) {
             // intro. This preserves the other progress bits and selected bank.
             set_game_state(NULL, 0x7FA2, D_8023F260.script_progress | 1);
             load_smashing_start();
+            // Level initialization resets the sequence player and may queue a
+            // default track. Cancel that request after the reload, then match
+            // the original intro script's silent post-cutscene music state.
+            // Its ship trigger can still select and fade in the theme normally.
+            stop_all_sounds();
+            set_music_track(0);
+            set_game_state(NULL, 0x7FA1, 0);
+            s_briefing_pending = 1;
             s_waiting_for_dog = 1;
             s_dog_drawn = 0;
             gScreenTransition.unk0 = 2;

@@ -83,6 +83,11 @@ extern std::atomic<uint32_t> sssv_simulation_speed;
 #include "SDL_syswm.h"
 #endif
 
+#if defined(__linux__)
+#include "sssv_window_icon.h"
+#include "contrib/stb/stb_image.h"
+#endif
+
 const std::string version_string = "0.1.2";
 
 template<typename... Ts>
@@ -93,6 +98,12 @@ void exit_error(const char* str, Ts ...args) {
 }
 
 ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
+#if defined(__linux__)
+    SDL_SetHint(SDL_HINT_APP_NAME, "Space Station Silicon Valley");
+    SDL_SetHint("SDL_APP_ID", "io.github.scottjco.SSSVRecompiled");
+    SDL_SetHint("SDL_VIDEO_WAYLAND_WMCLASS", "io.github.scottjco.SSSVRecompiled");
+    SDL_setenv("SDL_VIDEO_X11_WMCLASS", "io.github.scottjco.SSSVRecompiled", 0);
+#endif
     SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
     SDL_SetHint(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS, "0");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
@@ -100,7 +111,7 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) > 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0) {
         exit_error("Failed to initialize SDL2: %s\n", SDL_GetError());
     }
 
@@ -178,6 +189,22 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());
     }
+
+#if defined(__linux__)
+    int icon_width = 0, icon_height = 0, icon_channels = 0;
+    auto* icon_pixels = stbi_load_from_memory(
+        reinterpret_cast<const stbi_uc*>(sssv_window_icon), sssv_window_icon_size,
+        &icon_width, &icon_height, &icon_channels, 4);
+    if (icon_pixels) {
+        auto* icon = SDL_CreateRGBSurfaceWithFormatFrom(icon_pixels, icon_width,
+            icon_height, 32, icon_width * 4, SDL_PIXELFORMAT_RGBA32);
+        if (icon) {
+            SDL_SetWindowIcon(window, icon);
+            SDL_FreeSurface(icon);
+        }
+        stbi_image_free(icon_pixels);
+    }
+#endif
 
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
@@ -310,6 +337,17 @@ void update_gfx(void*) {
                 << "; render_size=" << (dimensions >> 32) << 'x' << uint32_t(dimensions)
                 << "; samples=" << sssv_render_samples.load(std::memory_order_relaxed)
                 << "; focused=" << ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) ? "yes" : "no") << std::endl;
+            if (std::getenv("SSSV_TRACE_AUDIO")) {
+                if (auto* rdram = sssv::mirror::gameMemory.load(std::memory_order_relaxed)) {
+                    frame_diagnostics << "audio_state; track=" << MEM_H(0, int32_t(0x8028645C))
+                        << "; scale=" << MEM_H(0, int32_t(0x801546D8))
+                        << "; target=" << int(MEM_B(0, int32_t(0x803F2D23)))
+                        << "; audio_seen=" << MEM_H(0, int32_t(0x80155188))
+                        << "; active_track=" << MEM_H(0, int32_t(0x8015516C))
+                        << "; seq_playing=" << int(MEM_B(0, int32_t(0x80155168)))
+                        << "; minimized=" << ((SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) ? "yes" : "no") << std::endl;
+                }
+            }
             last_rendered = rendered;
             last_gpu_ns = gpu_ns;
         }

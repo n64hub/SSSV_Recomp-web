@@ -1105,7 +1105,7 @@ index 87392d0a3d8a376c8aa97a13ea7e01c998eab2bd..747ca3ee70014ad97640f11df972f29b
  
                      const auto prevRange = prevCallMap.equal_range(candidate.prevTransformIndex);
 diff --git a/src/hle/rt64_present_queue.cpp b/src/hle/rt64_present_queue.cpp
-index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1cdd82138 100644
+index 3227ab1..da01526 100644
 --- a/src/hle/rt64_present_queue.cpp
 +++ b/src/hle/rt64_present_queue.cpp
 @@ -8,6 +8,14 @@
@@ -1151,7 +1151,26 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
  
                  RenderTargetKey colorTargetKey(fbAddress, scratchFb.width, scratchFb.siz, Framebuffer::Type::Color);
                  colorTarget = &targetManager.get(colorTargetKey, true);
-@@ -272,9 +285,11 @@ namespace RT64 {
+@@ -256,6 +269,18 @@ namespace RT64 {
+             }
+         }
+ 
++#if defined(__linux__) && defined(RT64_SDL_WINDOW_VULKAN)
++        // Wayland does not reliably report compositor-initiated minimization.
++        // Background surfaces can be throttled to 30 Hz; presenting every
++        // interpolated frame would then hold up simulation and audio. Keep
++        // one real frame per workload and acknowledge the skipped interpolation.
++        if (ext.appWindow->sdlWindow &&
++            !(SDL_GetWindowFlags(ext.appWindow->sdlWindow) & SDL_WINDOW_INPUT_FOCUS)) {
++            framesToPresent = 1;
++            targetRate = viOriginalRate;
++        }
++#endif
++
+         // Create the framebuffers if necessary.
+         if (swapChainFramebuffers.empty()) {
+             uint32_t textureCount = ext.swapChain->getTextureCount();
+@@ -272,9 +297,11 @@ namespace RT64 {
                  // Stall until the interpolated color target is available.
                  const uint32_t targetIndex = usingMSAA ? i : (i - 1);
                  std::unique_lock<std::mutex> interpolatedLock(ext.sharedResources->interpolatedMutex);
@@ -1163,7 +1182,7 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
  
                  // Do not present any more frames after this one after reaching the last available frame if the workload was skipped.
                  if ((frameCounters.available == targetIndex) && frameCounters.skipped) {
-@@ -300,7 +315,9 @@ namespace RT64 {
+@@ -300,7 +327,9 @@ namespace RT64 {
              uint32_t swapChainIndex = 0;
              const bool presentFrame = (i < framesToPresent) && swapChainValid;
              if (presentFrame) {
@@ -1173,7 +1192,7 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
              }
  
              if (presentFrame && swapChainValid) {
-@@ -308,6 +325,14 @@ namespace RT64 {
+@@ -308,6 +337,14 @@ namespace RT64 {
                  RenderTexture *swapChainTexture = ext.swapChain->getTexture(swapChainIndex);
                  RenderFramebuffer *swapChainFramebuffer = swapChainFramebuffers[swapChainIndex].get();
                  RenderCommandList *commandList = ext.presentGraphicsWorker->commandList.get();
@@ -1188,7 +1207,7 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
                  commandList->begin();
                  commandList->barriers(RenderBarrierStage::GRAPHICS, RenderTextureBarrier(swapChainTexture, RenderTextureLayout::COLOR_WRITE));
                  
-@@ -359,13 +384,37 @@ namespace RT64 {
+@@ -359,13 +396,37 @@ namespace RT64 {
                          inspector->draw(commandList);
                      }
                      
@@ -1226,7 +1245,7 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
                  }
              }
  
-@@ -395,12 +444,19 @@ namespace RT64 {
+@@ -395,12 +456,19 @@ namespace RT64 {
                  }
  
                  if (presentWaitEnabled) {
@@ -1246,7 +1265,19 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
                  presentProfiler.logAndRestart();
              }
          }
-@@ -451,6 +507,7 @@ namespace RT64 {
+@@ -443,6 +511,11 @@ namespace RT64 {
+ 
+         // Since the swap chain might not need a resize right away, detect present wait.
+         presentWaitEnabled = ext.device->getCapabilities().presentWait;
++#if defined(__linux__)
++        // Keep this in sync with Application's swapchain creation policy.
++        presentWaitEnabled = presentWaitEnabled && !(ext.createdGraphicsAPI == UserConfiguration::GraphicsAPI::Vulkan &&
++            ext.device->getDescription().vendor == RenderDeviceVendor::NVIDIA);
++#endif
+ 
+         int processCursor = -1;
+         bool skipPresent = false;
+@@ -451,6 +524,7 @@ namespace RT64 {
          bool swapChainValid = !ext.swapChain->needsResize();
          while (presentThreadRunning) {
              {
@@ -1254,8 +1285,28 @@ index 3227ab10ed42900a830b407deaf33d79f9174a98..1fbea99601c42d34e3a479e7d8bc62b1
                  std::unique_lock<std::mutex> cursorLock(cursorMutex);
                  cursorCondition.wait(cursorLock, [&]() {
                      return (writeCursor != threadCursor) || !presentThreadRunning;
-@@ -504,7 +561,9 @@ namespace RT64 {
-                 skipPresent = skipPresent || ext.swapChain->isEmpty();
+@@ -465,7 +539,14 @@ namespace RT64 {
+ 
+             if (processCursor >= 0) {
+                 std::unique_lock<std::mutex> threadLock(threadMutex);
+-                const bool needsResize = ext.swapChain->needsResize() || !swapChainValid;
++                bool windowMinimized = false;
++#if defined(__linux__) && defined(RT64_SDL_WINDOW_VULKAN)
++                // Compositors throttle minimized surfaces. Waiting for those
++                // presents also stalls emulation and starves its audio queue.
++                windowMinimized = ext.appWindow->sdlWindow &&
++                    (SDL_GetWindowFlags(ext.appWindow->sdlWindow) & SDL_WINDOW_MINIMIZED);
++#endif
++                const bool needsResize = !windowMinimized && (ext.swapChain->needsResize() || !swapChainValid);
+                 if (needsResize) {
+                     ext.presentGraphicsWorker->commandList->begin();
+                     ext.presentGraphicsWorker->commandList->end();
+@@ -501,10 +582,12 @@ namespace RT64 {
+                     }
+                 }
+ 
+-                skipPresent = skipPresent || ext.swapChain->isEmpty();
++                skipPresent = skipPresent || windowMinimized || ext.swapChain->isEmpty();
  
                  Present &present = presents[processCursor];
 +                sssv_present_stage.store(9, std::memory_order_relaxed);
@@ -2070,3 +2121,24 @@ index 4548f1552d7524e42a854f8faccefb3238c09e90..3341350d3a3d11116ee3207ce7db622f
 -#endif
 \ No newline at end of file
 +#endif
+diff --git a/src/hle/rt64_application.cpp b/src/hle/rt64_application.cpp
+index 785de27..478d331 100644
+--- a/src/hle/rt64_application.cpp
++++ b/src/hle/rt64_application.cpp
+@@ -326,7 +326,15 @@ namespace RT64 {
+         // updating to using plume, this was corrected, but it exposed an issue with NVIDIA drivers (since 580.105.08 only on Linux)
+         // where the wait() will take far more time than expected and cause stuttering. While this seems to work fine everywhere else,
+         // we stick to the pre-plume approach to be safe.
+-        if (device->getCapabilities().presentWait) {
++        bool usePresentWait = device->getCapabilities().presentWait;
++#if defined(__linux__)
++        // NVIDIA's optional present-wait path can stall past the display
++        // deadline on Linux. Normal swapchain synchronization and RT64's
++        // existing frame pacing still apply without this extra latency wait.
++        usePresentWait = usePresentWait && !(chosenGraphicsAPI == UserConfiguration::GraphicsAPI::Vulkan &&
++            device->getDescription().vendor == RenderDeviceVendor::NVIDIA);
++#endif
++        if (usePresentWait) {
+             swapChainDesc.maxFrameLatency = (chosenGraphicsAPI == UserConfiguration::GraphicsAPI::Vulkan) ? 2 : 1;
+             swapChainDesc.enablePresentWait = true;
+         }

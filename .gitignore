@@ -33,3 +33,10 @@ __pycache__/
 /comparison-screenshots/
 /test-builds/
 /RELEASE-NEXT.txt
+
+# Locally installed Linux game (may contain a private ROM and saves).
+/Linux/
+/Play SSSV.sh
+
+# Locally built Linux recompiler tool.
+/N64Recomp
