@@ -2,7 +2,7 @@
 
 ## Purpose of Project
 
-This is a fork of Cellenseres's Space Station Silicon Valley Recompilation Project. This was done to fix the scaling of the appropriate graphics and fix the intro bugs among other things. Credit to Cellenseres for the original project.
+This is a fork of Cellenseres's Space Station Silicon Valley Recompilation Project. This was done to fix the scaling of the appropriate graphics and fix the intro bugs among other things. 
 
 ## Screenshot comparisons
 
@@ -58,11 +58,9 @@ The original project renders a black world in this scene; the current build rend
 
 ![White fast-forward indicator during gameplay](docs/screenshots/13-fast-forward.png)
 
-### Wait a minute, this isn't in the game... Begone with your Nonsense!
+### Wait a minute, this isn't in the game...
 
 <img src="docs/screenshots/09-not-in-the-game.png" width="52%" alt="Deliberately fake SSSV screenshot in a Banjo-Kazooie-inspired level">
-
-Is that even a real Gemini logo...?
 
 ## Changelog
 
@@ -220,16 +218,6 @@ Original project: [Cellenseres/SSSV_Recomp](https://github.com/Cellenseres/SSSV_
 
 Built on [N64: Recompiled](https://github.com/N64Recomp/N64Recomp), [RT64](https://github.com/rt64/rt64), N64ModernRuntime, RecompFrontend, and the work of their contributors. Original upstream documentation and acknowledgements are preserved in [README.upstream.md](README.upstream.md). Dependencies retain their own copyright and license notices. Font licenses are included with their assets.
 
-## AI Disclosure
+## AI
 
-I'm not going to pretend I didn't use AI, I used it. I used it a lot, if you've got a problem with that? Understandable. I'm not going to make any excuses for it.
-
-OpenAI Codex deserves credit for the AI-assisted coding, debugging, and texture work on this fork. Claude wasn't used at all. Any files claiming "Claude was here" are clearly an elaborate alibi.
-
-I am eagerly awaiting a true human-made version of Space Station Silicon Valley recomp myself.
-
-All credit goes to Wiseguy and Dario plus the rest of his team for even making this possible in the first place even though I know they frown upon projects like this.
-
-<img src="docs/screenshots/14-claude-not-used.png" height="360" alt="Deliberately generated joke: disgusted woman points at a plate marked claude while Dan looks shocked">
-
-Claude wasn’t even used in this project, allegedly. 
+Yes.
