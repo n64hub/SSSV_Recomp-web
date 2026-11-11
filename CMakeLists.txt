@@ -292,9 +292,11 @@ file(GLOB FUNC_C_SOURCES "${GAME_GENERATED_DIR}/RecompiledFuncs/*.c")
 file(GLOB FUNC_CXX_SOURCES "${GAME_GENERATED_DIR}/RecompiledFuncs/*.cpp")
 target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
 
-# wasm-ld turns a call through an undeclared function into a trap at run time.
+# wasm-ld turns a call through an undeclared function into a trap at run time, so the hooks' functions are declared
+# (include/sssv_hooks.h) and a call through one that isn't stops the build.
 if(EMSCRIPTEN)
-  target_compile_options(RecompiledFuncs PRIVATE -Werror=implicit-function-declaration)
+  target_compile_options(RecompiledFuncs PRIVATE -Werror=implicit-function-declaration
+    -include "${CMAKE_SOURCE_DIR}/include/sssv_hooks.h")
 endif()
 
 # -----------------------------------------------------------------------------
