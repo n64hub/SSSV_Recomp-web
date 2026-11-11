@@ -1,3 +1,19 @@
+> [!WARNING]
+> **This is n64hub/SSSV_Recomp-web, a fork, not SSSV_Recomp.** Its `main` branch builds the game into a web page
+> (WebGPU, through [N64Recomp-browser](https://github.com/n64hub/N64Recomp-browser)) as well as the desktop build, and
+> everything on that branch past upstream's commits was written by AI (Claude). It is not made, endorsed or supported
+> by [SSSV_Recomp](https://github.com/scottjco/SSSV_Recomp)'s authors: nothing here is offered upstream, and please
+> don't take issues with this fork to them. Building the page: [BUILDING.md](BUILDING.md).
+>
+> This port is here to build out and test N64Recomp-browser's web support on another game than the ones it was written
+> for: what it turns up is fixed there where it can be, so every recomp's page gets the fix.
+
+**Play it in the browser: https://n64hub.com/space-station-silicon-valley/**, with your own Space Station Silicon
+Valley ROM (USA 1.0), picked in the launcher and kept in the browser. It needs WebGPU (Chrome or Edge 113 and up). The
+page is built from this branch and published with N64Recomp-browser's `tools/publish_page.sh`, so it can be a commit or
+two behind. The page has every option the desktop build has but the HD text and textures, whose pack it doesn't have,
+and its launcher has no 3D logo (BUILDING.md, What the page leaves out).
+
 # Space Station Silicon Valley: Recompiled
 
 ## Purpose of Project
