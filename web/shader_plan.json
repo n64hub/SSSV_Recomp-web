@@ -1,11 +1,13 @@
 {
  "header": [
-  "Space Station Silicon Valley (US 1.0), recorded by N64Recomp-browser's tools/record_shaders.mjs from web/shader_plan.json in",
-  "headless Chrome. Section 0 is the launcher, the game's boot, its intro and the title; then a section a level, 2 to 34",
-  "(gGameState.level, 0x803F2D38), each reached in a load of its own from the title by Module._sssv_web_warp(<level>)",
-  "(src/game/recomp_api.cpp: the game's own level loader, as the desktop's test control has it), waited on until the",
-  "level runs, then walked about with the default keys (the stick W A S D, A Space) for 15 s. Level 1 is the new game's",
-  "intro, which section 0 has the start of, and 35 the credits, not recorded."
+  "Space Station Silicon Valley (US 1.0), recorded by N64Recomp-browser's tools/record_shaders.mjs from",
+  "web/shader_plan.json in headless Chrome. Section 0 is the launcher, the game's boot, its opening and the title.",
+  "Section level1 is Smashing Start reached as a player does: Start until Bank Select, A on a new bank, Start through the",
+  "new game's intro, A on the Mission Brief, then a walk with the default keys (the stick W A S D, A Space). Then a",
+  "section a level, 2 to 32 (gGameState.level, 0x803F2D38; the decompilation's include/levels.h names them), each reached",
+  "in a load of its own from the title by Module._sssv_web_warp(<level>) (src/game/recomp_api.cpp: the game's own level",
+  "loader, as the desktop's test control has it), waited on until the level runs, then walked about for 15 s. 33 and 34",
+  "are no levels, and 35 is the credits, not recorded."
  ],
  "page": "SSSVRecompiled.html",
  "load": [
@@ -37,6 +39,133 @@
   ]
  ],
  "sections": [
+  {
+   "name": "level1",
+   "steps": [
+    [
+     "wait",
+     20000
+    ],
+    [
+     "pressUntil",
+     "Enter",
+     "Enter",
+     13,
+     150,
+     2000,
+     "(n64r(0x803F2D38) >>> 16) == 0",
+     60000
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Space",
+     " ",
+     32,
+     150
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "(n64r(0x803F2D38) >>> 16) == 1",
+     15000
+    ],
+    [
+     "wait",
+     6000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     12000
+    ],
+    [
+     "hold",
+     "Space",
+     " ",
+     32,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "KeyW",
+     "w",
+     87,
+     2500
+    ],
+    [
+     "hold",
+     "KeyD",
+     "d",
+     68,
+     700
+    ],
+    [
+     "hold",
+     "KeyW",
+     "w",
+     87,
+     2500
+    ],
+    [
+     "hold",
+     "Space",
+     " ",
+     32,
+     150
+    ],
+    [
+     "wait",
+     1000
+    ],
+    [
+     "hold",
+     "KeyA",
+     "a",
+     65,
+     1400
+    ],
+    [
+     "hold",
+     "KeyW",
+     "w",
+     87,
+     2500
+    ],
+    [
+     "hold",
+     "KeyS",
+     "s",
+     83,
+     1500
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
   {
    "name": "level2",
    "steps": [
@@ -2143,146 +2272,6 @@
     [
      "need",
      "(_sssv_web_warp(32), new Promise((ok) => { const t0 = Date.now(); const t = setInterval(() => { if ((n64r(0x803F2D38) >>> 16) == 32 || Date.now() - t0 > 20000) { clearInterval(t); ok((n64r(0x803F2D38) >>> 16) == 32); } }, 100); }))"
-    ],
-    [
-     "wait",
-     12000
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "KeyD",
-     "d",
-     68,
-     700
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "Space",
-     " ",
-     32,
-     150
-    ],
-    [
-     "wait",
-     1000
-    ],
-    [
-     "hold",
-     "KeyA",
-     "a",
-     65,
-     1400
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "KeyS",
-     "s",
-     83,
-     1500
-    ],
-    [
-     "wait",
-     2000
-    ]
-   ]
-  },
-  {
-   "name": "level33",
-   "steps": [
-    [
-     "need",
-     "(_sssv_web_warp(33), new Promise((ok) => { const t0 = Date.now(); const t = setInterval(() => { if ((n64r(0x803F2D38) >>> 16) == 33 || Date.now() - t0 > 20000) { clearInterval(t); ok((n64r(0x803F2D38) >>> 16) == 33); } }, 100); }))"
-    ],
-    [
-     "wait",
-     12000
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "KeyD",
-     "d",
-     68,
-     700
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "Space",
-     " ",
-     32,
-     150
-    ],
-    [
-     "wait",
-     1000
-    ],
-    [
-     "hold",
-     "KeyA",
-     "a",
-     65,
-     1400
-    ],
-    [
-     "hold",
-     "KeyW",
-     "w",
-     87,
-     2500
-    ],
-    [
-     "hold",
-     "KeyS",
-     "s",
-     83,
-     1500
-    ],
-    [
-     "wait",
-     2000
-    ]
-   ]
-  },
-  {
-   "name": "level34",
-   "steps": [
-    [
-     "need",
-     "(_sssv_web_warp(34), new Promise((ok) => { const t0 = Date.now(); const t = setInterval(() => { if ((n64r(0x803F2D38) >>> 16) == 34 || Date.now() - t0 > 20000) { clearInterval(t); ok((n64r(0x803F2D38) >>> 16) == 34); } }, 100); }))"
     ],
     [
      "wait",
