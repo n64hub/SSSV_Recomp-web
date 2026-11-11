@@ -9,6 +9,9 @@
 # (checkTileCopyTMEM): its framebuffer manager keeps it, without the web's partial syncs and row tile copies, which
 # rt64_state.cpp leaves off. GPUTile takes both sides' fields and is 80 bytes; the mirror world is RasterParams'
 # padding1, padding0 being the web's decal pass. The VI loop keeps the game's clock and waits as the web's does.
+# rt64.patch also has a change of the web's own past those files: rt64_texture_cache.cpp parses the texture pack's
+# database from char pointers, since this rt64's json 3.9 can't read unsigned char with Emscripten's libc++ (upstream
+# moved to 3.12).
 # merged from N64Recomp-browser 73144095de33975c9973083c536c215cb252a5e0
 rt64 CMakeLists.txt
 rt64 src/hle/rt64_framebuffer_manager.cpp
