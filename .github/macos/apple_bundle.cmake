@@ -75,6 +75,13 @@ if(NOT EXISTS ${ENTITLEMENTS_FILE})
     message(FATAL_ERROR "Entitlements file not found at ${ENTITLEMENTS_FILE}")
 endif()
 
+# Textures/ (the HD pack) is in no checkout (CMakeLists.txt): one put there is copied into the bundle, before
+# it is signed.
+set(SSSV_TEXTURES_COPY "")
+if(EXISTS ${CMAKE_SOURCE_DIR}/Textures)
+    set(SSSV_TEXTURES_COPY COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/Textures)
+endif()
+
 # Post-build steps for macOS bundle
 add_custom_command(TARGET SSSVRecompiled POST_BUILD
     # Copy and fix frameworks first
@@ -85,7 +92,7 @@ add_custom_command(TARGET SSSVRecompiled POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/temp_assets/scss
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/temp_assets $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/assets
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/temp_assets
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/Textures
+    ${SSSV_TEXTURES_COPY}
 
     # Copy controller database
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt $<TARGET_BUNDLE_DIR:SSSVRecompiled>/Contents/Resources/
