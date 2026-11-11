@@ -195,7 +195,8 @@ index 4fdf81f43809012a098511a8529af5ba910db2a7..6c76b1a7825ba27f50a77ecbe608ba67
 -                "Adjusts the placement of HUD elements to fit the selected aspect ratio. <recomp-color primary>Expand</recomp-color> will use the aspect ratio of the game's output window.",
 +                "Adjusts HUD placement in Expand aspect mode. <recomp-color primary>Adaptive</recomp-color> moves the HUD gradually outward on ultrawide windows, leaving space at the edges. Original keeps it inside 4:3; Expand follows the window edges.",
                  hud_ratio_mode_options,
-                 ultramodern::renderer::HUDRatioMode::Clamp16x9
+-                ultramodern::renderer::HUDRatioMode::Clamp16x9
++                ultramodern::renderer::HUDRatioMode::Full
              );
 diff --git a/recompui/src/renderer/rt64_render_context.cpp b/recompui/src/renderer/rt64_render_context.cpp
 index a7954c7f9b286ac8cd0341776d32f9332d8f2c79..d690feb75dc558273c335e5213317866b9842988 100644
