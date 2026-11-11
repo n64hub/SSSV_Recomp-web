@@ -40,10 +40,16 @@ Serve `build-web` with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Orig
 (threads need SharedArrayBuffer), or with `coi_serviceworker.js` beside the page where headers can't be set, and open
 it in a browser with WebGPU. The ROM, settings and saves are kept in the browser's storage.
 
+## The launcher's 3D logo
+
+`lib/CellenseresSDK/src/launcher_model3d.cpp` draws it in RT64's draw hook, after the launcher's own, which
+`src/main/main.cpp` installs on the page only: the desktop build starts the game at once, with no launcher. On the page
+its shaders are WGSL, made through naga as RT64's are, and since RT64's framebuffer there is plume's device thread's,
+which doesn't say what it draws into, the logo draws into a color and depth target of its own, the canvas's size, which
+`LauncherCompositePS.hlsl` copies onto the launcher's.
+
 ## What the page leaves out
 
-The launcher's 3D logo: `lib/CellenseresSDK/src/launcher_model3d.cpp` draws it through plume's Vulkan, D3D12 and
-Metal backends, so on the page `launcher_model3d_web.cpp` stands in for it and the launcher shows its menu alone.
 The HD text and textures: their options show only where the texture pack is, and the page has none. Haptics and the
 file dialog: Emscripten's SDL2 has no haptics, and the launcher's Load ROM takes the dump. Everything else is the
 desktop build's, and a page starts with Framerate at Display, RT64 interpolating to the display's rate, and Resolution

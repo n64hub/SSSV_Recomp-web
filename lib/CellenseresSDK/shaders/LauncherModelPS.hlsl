@@ -46,7 +46,8 @@ float3 linear_to_srgb(float3 c) {
 }
 
 float sample_shadow_atlas(float2 uv) {
-    return gShadowAtlas.Sample(gShadowSampler, saturate(uv)).r;
+    // SampleLevel: WGSL takes textureSample only in uniform control flow, and the shadow lookups are in branches.
+    return gShadowAtlas.SampleLevel(gShadowSampler, saturate(uv), 0.0f).r;
 }
 
 float2 clip_to_shadow_uv(float4 clip) {
