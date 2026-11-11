@@ -45,8 +45,9 @@ step() { printf '\n== %s\n' "$*"; }
 # --- 1. Submodules and patches ---
 step "Submodules"
 [[ -f lib/rt64/CMakeLists.txt && -f lib/N64ModernRuntime/N64Recomp/CMakeLists.txt && -f lib/RecompFrontend/CMakeLists.txt &&
-   -f $browser/patches/apply.cmake && -f SSSVRecompSyms/sssv.us.syms.toml ]] ||
-    git submodule update --init --recursive lib/rt64 lib/N64ModernRuntime lib/RecompFrontend $browser SSSVRecompSyms
+   -f lib/RecompFrontend/recompui/lib/RmlUi/CMakeLists.txt && -f $browser/patches/apply.cmake ]] ||
+    git submodule update --init --recursive lib/rt64 lib/N64ModernRuntime lib/RecompFrontend $browser
+[[ $patches_only == 1 || -f SSSVRecompSyms/sssv.us.syms.toml ]] || git submodule update --init SSSVRecompSyms
 
 step "Patches"
 # <name> <checkout> [files left to web/patches/<name>.patch, merged from the commit files.txt names, or left out]
