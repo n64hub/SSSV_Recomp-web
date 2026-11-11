@@ -1,0 +1,29 @@
+# The files where the game's own patches (dependency-patches/) and N64Recomp-browser's web support change the same
+# lines: <project> <path in it> [own]. tools/build_web.sh leaves them out of apply.cmake and applies
+# web/patches/<project>.patch to them instead, the web's change merged by hand on top of the game's, from the
+# N64Recomp-browser commit below; then apply.cmake --since merges in what the web has changed in them since. A file
+# marked own keeps the game's code alone: the web's change to it is left out, then and later (plume's examples, which
+# a page doesn't build).
+#
+# rt64's own is older than the one the web support is made on, and has a TMEM tile copy check of its own
+# (checkTileCopyTMEM): its framebuffer manager keeps it, without the web's partial syncs and row tile copies, which
+# rt64_state.cpp leaves off. GPUTile takes both sides' fields and is 80 bytes; the mirror world is RasterParams'
+# padding1, padding0 being the web's decal pass. The VI loop keeps the game's clock and waits as the web's does.
+# merged from N64Recomp-browser 73144095de33975c9973083c536c215cb252a5e0
+rt64 CMakeLists.txt
+rt64 src/hle/rt64_framebuffer_manager.cpp
+rt64 src/hle/rt64_framebuffer_manager.h
+rt64 src/hle/rt64_present_queue.cpp
+rt64 src/hle/rt64_rdp.cpp
+rt64 src/hle/rt64_state.cpp
+rt64 src/hle/rt64_workload_queue.cpp
+rt64 src/render/rt64_framebuffer_renderer.cpp
+rt64 src/shaders/RasterPS.hlsl
+rt64 src/shaders/TextureSampler.hlsli
+rt64 src/shared/rt64_gpu_tile.h
+plume examples/CMakeLists.txt own
+plume examples/cube/main.cpp own
+plume examples/triangle/main.cpp own
+N64ModernRuntime ultramodern/src/events.cpp
+N64ModernRuntime ultramodern/src/timer.cpp
+RecompFrontend recompui/src/renderer/rt64_render_context.cpp
