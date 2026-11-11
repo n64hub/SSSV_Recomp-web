@@ -12,6 +12,10 @@
 #include <fstream>
 
 #include "recomp.h"
+#ifdef __EMSCRIPTEN__
+#include <atomic>
+#include <emscripten.h>
+#endif
 #include "librecomp/helpers.hpp"
 #include "recompui/recompui.h"
 #include "recompui/config.h"
@@ -89,16 +93,32 @@ extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
     *ctx = saved;
 }
 
+#ifdef __EMSCRIPTEN__
+// The page's way to a level, for its shader list's recording (tools/shader_plan.json): Module._sssv_web_warp(<1-34>)
+// from the page's JavaScript, which the game thread takes up below as it does SSSV_TEST_CONTROL's .level file.
+static std::atomic<int> web_warp_level{0};
+extern "C" EMSCRIPTEN_KEEPALIVE void sssv_web_warp(int level) {
+    web_warp_level.store(level >= 1 && level <= 34 ? level : 0);
+}
+#endif
+
 static void sssv_test_update(uint8_t* rdram, recomp_context* ctx) {
     sssv_test_hd_options();
     if (MEM_BU(0, S32(0x803F2D10)) == 0) {
-        if (const char* control = std::getenv("SSSV_TEST_CONTROL")) {
-            const std::string prefix(control);
+#ifdef __EMSCRIPTEN__
+        const int warp = web_warp_level.exchange(0);
+#else
+        const int warp = 0;
+#endif
+        const char* control = std::getenv("SSSV_TEST_CONTROL");
+        if (control != nullptr || warp != 0) {
+            const std::string prefix(control != nullptr ? control : "");
             std::error_code error;
             // Start the native credits loader atomically on the game thread.
             // This avoids racing a level/menu switch against frame assembly.
-            int requested_level = 0;
-            if (std::filesystem::exists(prefix + ".credits", error)) {
+            int requested_level = warp;
+            if (requested_level != 0 || control == nullptr) {
+            } else if (std::filesystem::exists(prefix + ".credits", error)) {
                 std::filesystem::remove(prefix + ".credits", error);
                 requested_level = 35;
             } else if (std::filesystem::exists(prefix + ".level", error)) {
