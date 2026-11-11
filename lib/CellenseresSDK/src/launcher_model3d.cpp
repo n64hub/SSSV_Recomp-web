@@ -16,7 +16,7 @@
 #ifdef _WIN32
 #include "plume_d3d12.h"
 #endif
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
 #include "plume_vulkan.h"
 #endif
 #if defined(__APPLE__)
@@ -47,10 +47,21 @@
 #include <unordered_map>
 #include <vector>
 
+// A page has WebGPU alone, and its shaders are WGSL (lib/rt64's build_shader_wgsl_impl), so on a page the logo draws
+// into a target of its own and LauncherComposite*.hlsl copies it onto the launcher's (composite_offscreen_logo()).
+#if defined(__EMSCRIPTEN__)
+#include "LauncherModelVS.hlsl.wgsl.h"
+#include "LauncherModelPS.hlsl.wgsl.h"
+#include "LauncherShadowVS.hlsl.wgsl.h"
+#include "LauncherShadowPS.hlsl.wgsl.h"
+#include "LauncherCompositeVS.hlsl.wgsl.h"
+#include "LauncherCompositePS.hlsl.wgsl.h"
+#else
 #include "LauncherModelVS.hlsl.spirv.h"
 #include "LauncherModelPS.hlsl.spirv.h"
 #include "LauncherShadowVS.hlsl.spirv.h"
 #include "LauncherShadowPS.hlsl.spirv.h"
+#endif
 #ifdef _WIN32
 #include "LauncherModelVS.hlsl.dxil.h"
 #include "LauncherModelPS.hlsl.dxil.h"
@@ -77,6 +88,9 @@
 #define GET_SHADER_SIZE(name, format) \
     ((format) == plume::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
     (format) == plume::RenderShaderFormat::METAL ? std::size(name##BlobMSL) : 0)
+#elif defined(__EMSCRIPTEN__)
+#define GET_SHADER_BLOB(name, format) ((format) == plume::RenderShaderFormat::WGSL ? name##BlobWGSL : nullptr)
+#define GET_SHADER_SIZE(name, format) ((format) == plume::RenderShaderFormat::WGSL ? std::size(name##BlobWGSL) : 0)
 #else
 #define GET_SHADER_BLOB(name, format) ((format) == plume::RenderShaderFormat::SPIRV ? name##BlobSPIRV : nullptr)
 #define GET_SHADER_SIZE(name, format) ((format) == plume::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : 0)
@@ -195,14 +209,16 @@ struct Gpu {
     std::unique_ptr<plume::RenderDescriptorSet> set;
     std::unique_ptr<plume::RenderDescriptorSet> marker_set;
     std::unique_ptr<plume::RenderDescriptorSetBuilder> shadow_set_builder;
-    std::unique_ptr<plume::RenderDescriptorSet> shadow_set;
+    // One a face of the point light's atlas, so each face's draw reads its own matrix: with one buffer written before
+    // each face's draw, every draw read what was written last, since the GPU reads it when the list runs.
+    std::array<std::unique_ptr<plume::RenderDescriptorSet>, kShadowFaceCount> shadow_sets;
     std::unique_ptr<plume::RenderBuffer> vb;
     std::unique_ptr<plume::RenderBuffer> ib;
     std::unique_ptr<plume::RenderBuffer> marker_vb;
     std::unique_ptr<plume::RenderBuffer> marker_ib;
     std::unique_ptr<plume::RenderBuffer> cb;
     std::unique_ptr<plume::RenderBuffer> marker_cb;
-    std::unique_ptr<plume::RenderBuffer> shadow_cb;
+    std::array<std::unique_ptr<plume::RenderBuffer>, kShadowFaceCount> shadow_cbs;
     std::unique_ptr<plume::RenderTexture> tex_albedo;
     std::unique_ptr<plume::RenderTexture> tex_normal;
     std::unique_ptr<plume::RenderTexture> tex_spec;
@@ -216,6 +232,20 @@ struct Gpu {
     std::unique_ptr<plume::RenderBuffer> upload;
     std::unordered_map<const plume::RenderFramebuffer*, std::unique_ptr<plume::RenderTexture>> depth_by_src_fb;
     std::unordered_map<const plume::RenderFramebuffer*, std::unique_ptr<plume::RenderFramebuffer>> fb_with_depth_by_src_fb;
+#if defined(__EMSCRIPTEN__)
+    // The page's: the logo's own target, the launcher's size (resolve_framebuffer_for_3d_pass()), and the pass that
+    // copies it onto the launcher's (composite_offscreen_logo()), in the format RT64 presents in.
+    std::unique_ptr<plume::RenderTexture> offscreen_color;
+    std::unique_ptr<plume::RenderTexture> offscreen_depth;
+    std::unique_ptr<plume::RenderFramebuffer> offscreen_fb;
+    std::unique_ptr<plume::RenderShader> composite_vs;
+    std::unique_ptr<plume::RenderShader> composite_ps;
+    std::unique_ptr<plume::RenderDescriptorSetBuilder> composite_set_builder;
+    std::unique_ptr<plume::RenderDescriptorSet> composite_set;
+    std::unique_ptr<plume::RenderPipelineLayout> composite_layout;
+    std::unique_ptr<plume::RenderPipeline> composite_pipeline;
+    plume::RenderFormat target_format = plume::RenderFormat::UNKNOWN;
+#endif
     plume::RenderInputSlot slot{ 0, sizeof(Vertex) };
     uint32_t cb_idx = 0;
     uint32_t a_idx = 0;
@@ -348,6 +378,10 @@ const char* shader_format_name(plume::RenderShaderFormat fmt) {
         return "SPIRV";
     case plume::RenderShaderFormat::METAL:
         return "METAL";
+#if defined(__EMSCRIPTEN__)
+    case plume::RenderShaderFormat::WGSL:
+        return "WGSL";
+#endif
     case plume::RenderShaderFormat::UNKNOWN:
     default:
         return "UNKNOWN";
@@ -383,14 +417,23 @@ const void* ptr_addr(T* ptr) {
 void clear_gpu(State& s){
     s.gpu.set.reset();
     s.gpu.marker_set.reset();
-    s.gpu.shadow_set.reset();
+    for (auto& set : s.gpu.shadow_sets) {
+        set.reset();
+    }
     s.gpu.vb.reset();
     s.gpu.ib.reset();
     s.gpu.marker_vb.reset();
     s.gpu.marker_ib.reset();
     s.gpu.cb.reset();
     s.gpu.marker_cb.reset();
-    s.gpu.shadow_cb.reset();
+    for (auto& cb : s.gpu.shadow_cbs) {
+        cb.reset();
+    }
+#if defined(__EMSCRIPTEN__)
+    s.gpu.offscreen_fb.reset();
+    s.gpu.offscreen_color.reset();
+    s.gpu.offscreen_depth.reset();
+#endif
     s.gpu.tex_albedo.reset();
     s.gpu.tex_normal.reset();
     s.gpu.tex_spec.reset();
@@ -429,6 +472,14 @@ void clear_pipeline(State& s) {
     s.gpu.shadow_sampler.reset();
     s.gpu.set_builder.reset();
     s.gpu.shadow_set_builder.reset();
+#if defined(__EMSCRIPTEN__)
+    s.gpu.composite_set.reset();
+    s.gpu.composite_pipeline.reset();
+    s.gpu.composite_layout.reset();
+    s.gpu.composite_set_builder.reset();
+    s.gpu.composite_vs.reset();
+    s.gpu.composite_ps.reset();
+#endif
     s.gpu.copy_l.reset();
     s.gpu.copy_q.reset();
     s.gpu.copy_f.reset();
@@ -587,7 +638,7 @@ bool ensure_pipeline(State& s){
 #elif defined(__APPLE__)
     if(!shader_ok && sf != plume::RenderShaderFormat::METAL) shader_ok = try_shader_set(plume::RenderShaderFormat::METAL);
     if(!shader_ok && sf != plume::RenderShaderFormat::SPIRV) shader_ok = try_shader_set(plume::RenderShaderFormat::SPIRV);
-#else
+#elif !defined(__EMSCRIPTEN__)
     if(!shader_ok && sf != plume::RenderShaderFormat::SPIRV) shader_ok = try_shader_set(plume::RenderShaderFormat::SPIRV);
 #endif
     if(!shader_ok) return set_diag("createShader (model/shadow)");
@@ -646,7 +697,14 @@ bool ensure_pipeline(State& s){
     pd.inputSlotsCount=1;
     pd.inputElements=e.data();
     pd.inputElementsCount=(uint32_t)e.size();
+#if defined(__EMSCRIPTEN__)
+    // RT64 presents a page in the browser's preferred format, and plume's WebGPU backend makes a pipeline at its first
+    // draw, so no format is refused here for the next to be tried.
+    s.gpu.target_format = d->getCapabilities().preferredSwapChainFormat;
+    const std::array<plume::RenderFormat, 1> rt_formats = { s.gpu.target_format };
+#else
     const std::array<plume::RenderFormat, 2> rt_formats = { kSwapChainFormat, plume::RenderFormat::R8G8B8A8_UNORM };
+#endif
     const std::array<plume::RenderFormat, 3> depth_formats = {
         plume::RenderFormat::D32_FLOAT,
         plume::RenderFormat::D32_FLOAT_S8_UINT,
@@ -727,6 +785,37 @@ bool ensure_pipeline(State& s){
         s.shadow.fallback_reason = "Shadow pipeline unavailable";
         LAUNCHER3D_TRACE("ensure_pipeline: shadow pipeline unavailable, continuing without shadows");
     }
+
+#if defined(__EMSCRIPTEN__)
+    {
+        s.gpu.composite_vs = d->createShader(LauncherCompositeVSBlobWGSL, std::size(LauncherCompositeVSBlobWGSL), "VSMain", plume::RenderShaderFormat::WGSL);
+        s.gpu.composite_ps = d->createShader(LauncherCompositePSBlobWGSL, std::size(LauncherCompositePSBlobWGSL), "PSMain", plume::RenderShaderFormat::WGSL);
+        if (!(s.gpu.composite_vs && s.gpu.composite_ps)) return set_diag("createShader (composite)");
+        s.gpu.composite_set_builder = std::make_unique<plume::RenderDescriptorSetBuilder>();
+        s.gpu.composite_set_builder->begin();
+        s.gpu.composite_set_builder->addTexture(0);
+        s.gpu.composite_set_builder->end();
+        plume::RenderPipelineLayoutBuilder composite_lb{};
+        composite_lb.begin(false, false);
+        composite_lb.addDescriptorSet(*s.gpu.composite_set_builder);
+        composite_lb.end();
+        s.gpu.composite_layout = composite_lb.create(d);
+        s.gpu.composite_set = s.gpu.composite_set_builder->create(d);
+        if (!(s.gpu.composite_layout && s.gpu.composite_set)) return set_diag("createPipelineLayout (composite)");
+        plume::RenderGraphicsPipelineDesc cpd{};
+        cpd.pipelineLayout = s.gpu.composite_layout.get();
+        cpd.vertexShader = s.gpu.composite_vs.get();
+        cpd.pixelShader = s.gpu.composite_ps.get();
+        cpd.renderTargetBlend[0] = plume::RenderBlendDesc::Copy();
+        cpd.renderTargetFormat[0] = s.gpu.target_format;
+        cpd.renderTargetCount = 1;
+        cpd.primitiveTopology = plume::RenderPrimitiveTopology::TRIANGLE_LIST;
+        cpd.cullMode = plume::RenderCullMode::NONE;
+        cpd.depthClipEnabled = true;
+        s.gpu.composite_pipeline = d->createGraphicsPipeline(cpd);
+        if (!s.gpu.composite_pipeline) return set_diag("createGraphicsPipeline (composite)");
+    }
+#endif
 
     plume::RenderCommandListType queue_type = plume::RenderCommandListType::COPY;
     s.gpu.copy_q=d->createCommandQueue(queue_type);
@@ -1018,6 +1107,7 @@ bool try_get_primary_color_attachment(const plume::RenderFramebuffer* src_fb, Pr
     }
 #endif
 
+#if !defined(__EMSCRIPTEN__)
     if (const auto* vk_fb = dynamic_cast<const plume::VulkanFramebuffer*>(src_fb)) {
         if (!vk_fb->colorAttachments.empty() && (vk_fb->colorAttachments[0] != nullptr)) {
             out.texture = vk_fb->colorAttachments[0];
@@ -1025,6 +1115,7 @@ bool try_get_primary_color_attachment(const plume::RenderFramebuffer* src_fb, Pr
             return true;
         }
     }
+#endif
 
 #if defined(__APPLE__)
     if (const auto* metal_fb = dynamic_cast<const plume::MetalFramebuffer*>(src_fb)) {
@@ -1052,6 +1143,37 @@ plume::RenderFramebuffer* resolve_framebuffer_for_3d_pass(State& s, plume::Rende
         return src_fb;
     }
 
+#if defined(__EMSCRIPTEN__)
+    // On a page RT64's framebuffer is plume_device_thread.h's, which doesn't say what it draws into, and a pass can't
+    // have a depth target without its color target, so the logo draws into a color and depth target of its own, the
+    // launcher's size, which composite_offscreen_logo() then copies onto the launcher's.
+    const uint32_t w = src_fb->getWidth();
+    const uint32_t h = src_fb->getHeight();
+    if (!s.gpu.offscreen_fb || (s.gpu.offscreen_fb->getWidth() != w) || (s.gpu.offscreen_fb->getHeight() != h)) {
+        s.gpu.offscreen_fb.reset();
+        s.gpu.offscreen_color = s.gpu.dev->createTexture(plume::RenderTextureDesc::ColorTarget(w, h, s.gpu.target_format));
+        s.gpu.offscreen_depth = s.gpu.dev->createTexture(plume::RenderTextureDesc::DepthTarget(w, h, s.gpu.pipeline_depth_format));
+        if (!(s.gpu.offscreen_color && s.gpu.offscreen_depth)) {
+            return nullptr;
+        }
+        const plume::RenderTexture* color_texture_ptr = s.gpu.offscreen_color.get();
+        plume::RenderFramebufferDesc fb_desc{};
+        fb_desc.colorAttachments = &color_texture_ptr;
+        fb_desc.colorAttachmentsCount = 1;
+        fb_desc.depthAttachment = s.gpu.offscreen_depth.get();
+        s.gpu.offscreen_fb = s.gpu.dev->createFramebuffer(fb_desc);
+        if (!s.gpu.offscreen_fb) {
+            return nullptr;
+        }
+        s.gpu.composite_set->setTexture(0, s.gpu.offscreen_color.get(), plume::RenderTextureLayout::SHADER_READ);
+    }
+    plume::RenderTextureBarrier offscreen_barriers[] = {
+        { s.gpu.offscreen_color.get(), plume::RenderTextureLayout::COLOR_WRITE },
+        { s.gpu.offscreen_depth.get(), plume::RenderTextureLayout::DEPTH_WRITE }
+    };
+    list->barriers(plume::RenderBarrierStage::GRAPHICS, offscreen_barriers, 2);
+    return s.gpu.offscreen_fb.get();
+#else
     PrimaryColorAttachment color_attachment{};
     if (!try_get_primary_color_attachment(src_fb, color_attachment)) {
         return src_fb;
@@ -1126,7 +1248,23 @@ plume::RenderFramebuffer* resolve_framebuffer_for_3d_pass(State& s, plume::Rende
     plume::RenderTextureBarrier depth_barrier(depth_tex_it->second.get(), plume::RenderTextureLayout::DEPTH_WRITE);
     list->barriers(plume::RenderBarrierStage::GRAPHICS, &depth_barrier, 1);
     return depth_fb_it->second.get();
+#endif
 }
+
+#if defined(__EMSCRIPTEN__)
+// The page's: copies what the logo drew in its own target onto the launcher's (LauncherCompositePS.hlsl).
+void composite_offscreen_logo(State& s, plume::RenderCommandList* list, plume::RenderFramebuffer* fb) {
+    plume::RenderTextureBarrier read_barrier(s.gpu.offscreen_color.get(), plume::RenderTextureLayout::SHADER_READ);
+    list->barriers(plume::RenderBarrierStage::GRAPHICS, &read_barrier, 1);
+    list->setFramebuffer(fb);
+    list->setGraphicsPipelineLayout(s.gpu.composite_layout.get());
+    list->setPipeline(s.gpu.composite_pipeline.get());
+    list->setGraphicsDescriptorSet(s.gpu.composite_set.get(), 0);
+    list->setViewports(plume::RenderViewport{ 0, 0, static_cast<float>(fb->getWidth()), static_cast<float>(fb->getHeight()) });
+    list->setScissors(plume::RenderRect{ 0, 0, static_cast<int32_t>(fb->getWidth()), static_cast<int32_t>(fb->getHeight()) });
+    list->drawInstanced(3, 1, 0, 0);
+}
+#endif
 
 V3 compute_model_center_ws(const State& s, const Transform& tr) {
     const M4 model = TRS(tr);
@@ -1161,7 +1299,7 @@ M4 compute_point_shadow_view_proj(const State& s, uint32_t face_index, const Sha
 }
 
 bool draw_shadow_pass(State& s, plume::RenderCommandList* list, const Transform& tr) {
-    if (!s.shadow.resources_ready || (s.gpu.shadow_fb == nullptr) || (s.gpu.shadow_set == nullptr) || (s.gpu.shadow_cb == nullptr)) {
+    if (!s.shadow.resources_ready || (s.gpu.shadow_fb == nullptr) || (s.gpu.shadow_sets[0] == nullptr) || (s.gpu.shadow_cbs[0] == nullptr)) {
         return false;
     }
 
@@ -1182,7 +1320,10 @@ bool draw_shadow_pass(State& s, plume::RenderCommandList* list, const Transform&
     list->setFramebuffer(s.gpu.shadow_fb.get());
     list->setGraphicsPipelineLayout(s.gpu.shadow_layout.get());
     list->setPipeline(s.gpu.shadow_pipeline.get());
-    list->setGraphicsDescriptorSet(s.gpu.shadow_set.get(), 0);
+    // The faces tile the whole atlas, so it is cleared at once: plume's WebGPU backend clears rectangles of a target
+    // only by drawing, which an r32float target can't take without float32-blendable.
+    list->clearColor(0, plume::RenderColor(1.0f, 1.0f, 1.0f, 1.0f));
+    list->clearDepth(true, 1.0f);
 
     plume::RenderVertexBufferView vbv(s.gpu.vb.get(), static_cast<uint64_t>(s.cpu.vertices.size()) * sizeof(Vertex));
     plume::RenderIndexBufferView ibv(s.gpu.ib.get(), static_cast<uint64_t>(s.cpu.indices.size()) * sizeof(uint32_t), plume::RenderFormat::R32_UINT);
@@ -1210,7 +1351,6 @@ bool draw_shadow_pass(State& s, plume::RenderCommandList* list, const Transform&
         const int32_t top = static_cast<int32_t>(tile_y * static_cast<int>(face_res));
         const int32_t right = left + static_cast<int32_t>(face_res);
         const int32_t bottom = top + static_cast<int32_t>(face_res);
-        const plume::RenderRect clear_rect{ left, top, right, bottom };
         const plume::RenderViewport vp{
             static_cast<float>(left),
             static_cast<float>(top),
@@ -1221,17 +1361,16 @@ bool draw_shadow_pass(State& s, plume::RenderCommandList* list, const Transform&
         };
         const plume::RenderRect scissor{ left, top, right, bottom };
 
-        list->clearColor(0, plume::RenderColor(1.0f, 1.0f, 1.0f, 1.0f), &clear_rect, 1);
-        list->clearDepth(true, 1.0f, &clear_rect, 1);
         list->setViewports(vp);
         list->setScissors(scissor);
 
-        void* cb_ptr = s.gpu.shadow_cb->map();
+        void* cb_ptr = s.gpu.shadow_cbs[pass]->map();
         if (cb_ptr == nullptr) {
             return false;
         }
         std::memcpy(cb_ptr, &shadow_cb, sizeof(shadow_cb));
-        s.gpu.shadow_cb->unmap();
+        s.gpu.shadow_cbs[pass]->unmap();
+        list->setGraphicsDescriptorSet(s.gpu.shadow_sets[pass].get(), 0);
 
         list->drawIndexedInstanced(static_cast<uint32_t>(s.gpu.index_count), 1, 0, 0, 0);
     }
@@ -1708,26 +1847,32 @@ bool create_gpu_resources_if_needed(State& s) {
     s.gpu.marker_cb = d->createBuffer(plume::RenderBufferDesc::UploadBuffer(cb_sz, plume::RenderBufferFlag::CONSTANT));
     s.gpu.marker_cb_size = cb_sz;
     LAUNCHER3D_TRACE("hook_draw: step create shadow cb upload");
-    s.gpu.shadow_cb = d->createBuffer(plume::RenderBufferDesc::UploadBuffer(shadow_cb_sz, plume::RenderBufferFlag::CONSTANT));
+    for (auto& cb : s.gpu.shadow_cbs) {
+        cb = d->createBuffer(plume::RenderBufferDesc::UploadBuffer(shadow_cb_sz, plume::RenderBufferFlag::CONSTANT));
+    }
     s.gpu.shadow_cb_size = shadow_cb_sz;
     LAUNCHER3D_TRACE("hook_draw: step create descriptor set");
     s.gpu.set = s.gpu.set_builder->create(d);
     LAUNCHER3D_TRACE("hook_draw: step create marker descriptor set");
     s.gpu.marker_set = s.gpu.set_builder->create(d);
     LAUNCHER3D_TRACE("hook_draw: step create shadow descriptor set");
-    s.gpu.shadow_set = s.gpu.shadow_set_builder->create(d);
+    for (auto& set : s.gpu.shadow_sets) {
+        set = s.gpu.shadow_set_builder->create(d);
+    }
+    const bool shadow_sets_ok = std::all_of(s.gpu.shadow_cbs.begin(), s.gpu.shadow_cbs.end(), [](const auto& cb) { return cb != nullptr; }) &&
+        std::all_of(s.gpu.shadow_sets.begin(), s.gpu.shadow_sets.end(), [](const auto& set) { return set != nullptr; });
 
-    if (!(s.gpu.vb && s.gpu.ib && s.gpu.cb && s.gpu.marker_cb && s.gpu.shadow_cb && s.gpu.set && s.gpu.marker_set && s.gpu.shadow_set)) {
+    if (!(s.gpu.vb && s.gpu.ib && s.gpu.cb && s.gpu.marker_cb && shadow_sets_ok && s.gpu.set && s.gpu.marker_set)) {
         LAUNCHER3D_TRACE(
             "hook_draw: resource alloc failed vb=%s ib=%s cb=%s marker_cb=%s shadow_cb=%s set=%s marker_set=%s shadow_set=%s marker_vb=%s marker_ib=%s",
             yes_no(s.gpu.vb != nullptr),
             yes_no(s.gpu.ib != nullptr),
             yes_no(s.gpu.cb != nullptr),
             yes_no(s.gpu.marker_cb != nullptr),
-            yes_no(s.gpu.shadow_cb != nullptr),
+            yes_no(shadow_sets_ok),
             yes_no(s.gpu.set != nullptr),
             yes_no(s.gpu.marker_set != nullptr),
-            yes_no(s.gpu.shadow_set != nullptr),
+            yes_no(shadow_sets_ok),
             yes_no(s.gpu.marker_vb != nullptr),
             yes_no(s.gpu.marker_ib != nullptr)
         );
@@ -1817,7 +1962,9 @@ bool create_gpu_resources_if_needed(State& s) {
     s.gpu.marker_set->setTexture(s.gpu.n_idx, s.gpu.tex_normal.get(), plume::RenderTextureLayout::SHADER_READ);
     s.gpu.marker_set->setTexture(s.gpu.s_idx, s.gpu.tex_spec.get(), plume::RenderTextureLayout::SHADER_READ);
     s.gpu.marker_set->setTexture(s.gpu.shadow_idx, s.gpu.tex_shadow_fallback.get(), plume::RenderTextureLayout::SHADER_READ);
-    s.gpu.shadow_set->setBuffer(s.gpu.shadow_cb_idx, s.gpu.shadow_cb.get(), s.gpu.shadow_cb_size);
+    for (uint32_t face = 0; face < kShadowFaceCount; face++) {
+        s.gpu.shadow_sets[face]->setBuffer(s.gpu.shadow_cb_idx, s.gpu.shadow_cbs[face].get(), s.gpu.shadow_cb_size);
+    }
     s.gpu.index_count = s.cpu.indices.size();
     s.gpu.ready = true;
     LAUNCHER3D_TRACE("hook_draw: GPU resources ready index_count=%zu marker_index_count=%zu", s.gpu.index_count, s.gpu.marker_index_count);
@@ -1880,6 +2027,9 @@ bool record_model_draw(State& s, plume::RenderCommandList* list, plume::RenderFr
     }
 
     list->setFramebuffer(pass_fb);
+#if defined(__EMSCRIPTEN__)
+    list->clearColor(0, plume::RenderColor(0.0f, 0.0f, 0.0f, 0.0f));
+#endif
     if (pass_fb != fb && s.gpu.pipeline_uses_depth) {
         list->clearDepth(true, 1.0f);
     }
@@ -2022,6 +2172,9 @@ bool record_model_draw(State& s, plume::RenderCommandList* list, plume::RenderFr
                 list->drawIndexedInstanced(static_cast<uint32_t>(s.gpu.marker_index_count), 1, 0, 0, 0);
             }
         }
+#endif
+#if defined(__EMSCRIPTEN__)
+    composite_offscreen_logo(s, list, fb);
 #endif
     return true;
 }

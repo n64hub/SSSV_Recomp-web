@@ -1396,6 +1396,16 @@ int main(int argc, char** argv) {
                 (rt64_context && rt64_context->app && rt64_context->app->device) ? "set" : "null");
             fflush(stdout);
 
+#ifdef __EMSCRIPTEN__
+            // The launcher's 3D logo draws in RT64's draw hook, after the launcher's own. Only the page has a launcher:
+            // the desktop build starts the game at once.
+            csdk::launcher3d::install_render_hook_chain();
+            csdk::launcher3d::prime_render_backend(
+                (rt64_context && rt64_context->app && rt64_context->app->renderInterface) ? rt64_context->app->renderInterface.get() : nullptr,
+                (rt64_context && rt64_context->app && rt64_context->app->device) ? rt64_context->app->device.get() : nullptr
+            );
+#endif
+
             RT64::RenderHookInit* after_init = RT64::GetRenderHookInit();
             RT64::RenderHookDraw* after_draw = RT64::GetRenderHookDraw();
             RT64::RenderHookDeinit* after_deinit = RT64::GetRenderHookDeinit();

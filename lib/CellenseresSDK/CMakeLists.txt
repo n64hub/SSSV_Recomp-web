@@ -1,15 +1,15 @@
-if(EMSCRIPTEN)
-    # No 3D logo on a page: src/launcher_model3d_web.cpp says why.
-    set(CSDK_MODEL3D_SOURCE src/launcher_model3d_web.cpp)
-else()
-    set(CSDK_MODEL3D_SOURCE src/launcher_model3d.cpp)
-endif()
-
 add_library(cellenseres_sdk STATIC
     src/launcher_music.cpp
-    ${CSDK_MODEL3D_SOURCE}
+    src/launcher_model3d.cpp
     src/ui_bridge.cpp
 )
+
+# On a page the shaders are WGSL: lib/rt64's build_*_shader make them through naga when RT64_WGSL is on, as they do
+# RT64's own (its CMakeLists.txt sets these two in its own scope).
+if(EMSCRIPTEN)
+    set(RT64_WGSL ON)
+    set(RT64_PLUME_WGSL "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/plume/examples/cmake/modules/PlumeWGSL.cmake")
+endif()
 
 # `build_*_shader` helpers come from rt64 CMake functions and rely on DXC* vars.
 # CellenseresSDK is added before the top-level DXC vars are configured, so provide
@@ -90,9 +90,11 @@ if(APPLE)
     )
 endif()
 
-if(NOT EMSCRIPTEN)
 build_vertex_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherModelVS.hlsl" "shaders/LauncherModelVS.hlsl")
 build_pixel_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherModelPS.hlsl" "shaders/LauncherModelPS.hlsl")
 build_vertex_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherShadowVS.hlsl" "shaders/LauncherShadowVS.hlsl")
 build_pixel_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherShadowPS.hlsl" "shaders/LauncherShadowPS.hlsl")
+if(EMSCRIPTEN)
+    build_vertex_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherCompositeVS.hlsl" "shaders/LauncherCompositeVS.hlsl")
+    build_pixel_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherCompositePS.hlsl" "shaders/LauncherCompositePS.hlsl")
 endif()

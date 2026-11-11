@@ -597,8 +597,9 @@ add_dependencies(SSSVRecompiled GeneratePatchesArtifacts)
 
 if(EMSCRIPTEN)
   # The page: N64Recomp-browser's frontend/ (the page shell, the file picker, sound, the cross-origin service
-  # worker), and in its .data the launcher's fonts (no 3D model: lib/CellenseresSDK/src/launcher_model3d_web.cpp), the controller database and the mirror rules, where the
-  # program looks for them (its folder is /). No Textures/: the page has no HD Text or HD Textures.
+  # worker), and in its .data the launcher's fonts and 3D logo (launcher_intro.glb, its buffer and Palette.png), the
+  # controller database and the mirror rules, where the program looks for them (its folder is /). No Textures/: the
+  # page has no HD Text or HD Textures.
   add_subdirectory("${CMAKE_SOURCE_DIR}/lib/N64Recomp-browser/frontend" "${CMAKE_BINARY_DIR}/web_frontend")
   if(TARGET fmt)
     target_compile_options(fmt PRIVATE -include cstdlib)
@@ -606,7 +607,6 @@ if(EMSCRIPTEN)
   n64recomp_browser_frontend_page(SSSVRecompiled)
   target_link_options(SSSVRecompiled PRIVATE
     "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/assets@/assets"
-    "SHELL:--exclude-file *launcher_intro*" "SHELL:--exclude-file *Palette.png"
     "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt@/recompcontrollerdb.txt"
     "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/Mirror.tex@/Mirror.tex")
 else()
