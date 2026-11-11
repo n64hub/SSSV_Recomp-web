@@ -1,6 +1,6 @@
 #include "sssv_game.h"
-#include "../../RecompiledPatches/patches_bin.h"
-#include "../../RecompiledPatches/recomp_overlays.inl"
+#include "RecompiledPatches/patches_bin.h"
+#include "RecompiledPatches/recomp_overlays.inl"
 
 #include "librecomp/overlays.hpp"
 #include "librecomp/game.hpp"

@@ -14,7 +14,11 @@
 #include <string>
 #include <cstdlib>
 
-#include "nfd.h"
+#ifndef __EMSCRIPTEN__
+#include "nfd.h" // a browser has no native file dialogs; the page's launcher loads the ROM instead
+#else
+#include "audio_output.h"
+#endif
 
 #include "ultramodern/ultra64.h"
 #include "ultramodern/ultramodern.hpp"
@@ -111,7 +115,12 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
+#ifdef __EMSCRIPTEN__
+    // Emscripten's SDL2 has no haptics, and SDL_Init fails as a whole when asked for them.
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK) != 0) {
+#else
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0) {
+#endif
         exit_error("Failed to initialize SDL2: %s\n", SDL_GetError());
     }
 
@@ -212,7 +221,8 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
 
 #if defined(_WIN32)
     return ultramodern::renderer::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
-#elif defined(__linux__) || defined(__ANDROID__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+    // In a browser the window is the page's canvas, sized by the page.
     return ultramodern::renderer::WindowHandle{ window };
 #elif defined(__APPLE__)
     SDL_MetalView view = SDL_Metal_CreateView(window);
@@ -379,6 +389,26 @@ constexpr uint32_t bytes_per_frame = input_channels * sizeof(float);
 
 void update_audio_converter();
 
+// On a page the sound plays from N64Recomp-browser's AudioWorklet (audio_output.h): SDL2's port plays from the page's
+// thread, which WebGPU's work keeps busy.
+#ifdef __EMSCRIPTEN__
+static uint64_t get_queued_audio_bytes() {
+    return uint64_t(n64recomp_browser::audio::queued_frames()) * output_channels * sizeof(float);
+}
+
+static void queue_audio(const float* samples, uint32_t byte_count) {
+    n64recomp_browser::audio::queue(samples, byte_count / (output_channels * sizeof(float)));
+}
+#else
+static uint64_t get_queued_audio_bytes() {
+    return SDL_GetQueuedAudioSize(audio_device);
+}
+
+static void queue_audio(const float* samples, uint32_t byte_count) {
+    SDL_QueueAudio(audio_device, samples, byte_count);
+}
+#endif
+
 void queue_samples(int16_t* audio_data, size_t sample_count) {
     static std::vector<float> swap_buffer;
     static uint32_t previous_speed = 1;
@@ -422,7 +452,7 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         throw std::runtime_error("Error using SDL audio converter");
     }
 
-    uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
+    uint64_t cur_queued_microseconds = get_queued_audio_bytes() / bytes_per_frame * 1000000 / sample_rate;
     uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
     float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
 
@@ -436,12 +466,12 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         }
     }
 
-    SDL_QueueAudio(audio_device, samples_to_queue, num_bytes_to_queue);
+    queue_audio(samples_to_queue, num_bytes_to_queue);
 }
 
 size_t get_frames_remaining() {
     constexpr float buffer_offset_frames = 1.0f;
-    uint64_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
+    uint64_t buffered_byte_count = get_queued_audio_bytes();
 
     buffered_byte_count = buffered_byte_count * 2 * sample_rate * ultramodern::get_speed_multiplier() / output_sample_rate / output_channels;
 
@@ -473,6 +503,11 @@ void set_frequency(uint32_t freq) {
 }
 
 bool reset_audio(uint32_t output_freq) {
+#ifdef __EMSCRIPTEN__
+    output_sample_rate = n64recomp_browser::audio::open(output_channels);
+    update_audio_converter();
+    return true;
+#endif
     SDL_AudioSpec spec_desired{
         .freq = (int)output_freq,
         .format = AUDIO_F32,
@@ -1149,12 +1184,16 @@ int main(int argc, char** argv) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Input recording error", error.what(), nullptr);
         return EXIT_FAILURE;
     }
+#ifndef __EMSCRIPTEN__
+    // On a page the program's folder (/) is in memory only: no stall log (each write waits for the page's thread),
+    // and saves in the app folder, which the page keeps (N64Recomp-browser's persistent_home.js).
     frame_diagnostics.open(executable_dir / "frame-stalls.log", std::ios::app);
     if (frame_diagnostics) {
         const auto timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         frame_diagnostics << "\n--- session start (Unix time " << timestamp << ") ---" << std::endl;
     }
     ultramodern::set_save_directory(executable_dir / "saves");
+#endif
     std::error_code path_error;
     std::filesystem::current_path(executable_dir, path_error);
     if (path_error) {
@@ -1162,6 +1201,9 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     RT64::SSSVMirror::loadRules(executable_dir / "Mirror.tex");
+#ifndef __EMSCRIPTEN__
+    // A page has no file dialog and no folder of its own: the launcher's Load ROM gives the runtime the ROM, checked
+    // against supported_games' hash and kept by the page, and its Start Game starts it (below).
     const auto rom_path = executable_dir / "assets" / "data.z64";
     auto source_path = external_rom.value_or(rom_path);
     const bool import_rom = !external_rom && !std::filesystem::exists(rom_path, path_error);
@@ -1214,6 +1256,7 @@ int main(int argc, char** argv) {
         }
     }
     recomp::set_rom_contents(std::move(rom_data));
+#endif
 
     recomp::Version project_version{};
     if (!recomp::Version::from_string(version_string, project_version)) {
@@ -1258,12 +1301,18 @@ int main(int argc, char** argv) {
     std::filesystem::current_path("/var/data", ec);
 #endif
 
+#ifndef __EMSCRIPTEN__
     NFD_Init();
+#endif
 
     recompui::programconfig::set_program_name(sssv::program_name);
     recompui::programconfig::set_program_id(sssv::program_id);
 
+#ifndef __EMSCRIPTEN__
     const auto legacy_config_folder = recompui::file::get_legacy_app_folder_path();
+#else
+    const std::filesystem::path legacy_config_folder{};
+#endif
     if (!legacy_config_folder.empty()) {
         auto save_filename = std::filesystem::path(supported_games[0].game_id);
         save_filename += ".bin";
@@ -1310,7 +1359,13 @@ int main(int argc, char** argv) {
 
     sssv::init_config();
 
+#ifdef __EMSCRIPTEN__
+    // The launcher, as the desktop build had it before it started the game at once from its own ROM file.
+    recompui::register_launcher_init_callback(on_launcher_init);
+    recompui::register_launcher_update_callback(sssv::launcher_animation_update);
+#else
     recomp::start_game(supported_games[0].game_id, {});
+#endif
 
     recomp::rsp::callbacks_t rsp_callbacks{
         .get_rsp_microcode = get_rsp_microcode,
@@ -1424,7 +1479,9 @@ int main(int argc, char** argv) {
     csdk::launcher_music::shutdown();
     shutdown_launcher_audio_device();
 
+#ifndef __EMSCRIPTEN__
     NFD_Quit();
+#endif
 
     if (preloaded) {
         release_preload(preload_context);

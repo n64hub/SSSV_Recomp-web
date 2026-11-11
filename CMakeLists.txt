@@ -35,11 +35,38 @@ if(WIN32)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 endif()
 
+# The web page (tools/build_web.sh): the submodules patched by N64Recomp-browser, the game recompiled into
+# GAME_GENERATED_DIR by the web-patched N64Recomp.
+if(EMSCRIPTEN)
+  add_compile_options(-pthread -fwasm-exceptions -msimd128 -mtail-call -sUSE_SDL=2 "-DXXH_HAS_INCLUDE(x)=0")
+  add_link_options(-pthread -fwasm-exceptions -mtail-call)
+  # ccache when it is on PATH.
+  include("${CMAKE_SOURCE_DIR}/lib/N64Recomp-browser/frontend/build_speed.cmake")
+  # The shaders the page specializes at build time: the boot's before the game starts, each section's when the game
+  # first draws there (web/rt64_shaders.txt says how it was recorded).
+  if(EXISTS "${CMAKE_SOURCE_DIR}/web/rt64_shaders.txt")
+    set(RT64_PREBUILT_SHADER_LIST "${CMAKE_SOURCE_DIR}/web/rt64_shaders.txt")
+  endif()
+endif()
+
+# Where the recompiled game (RecompiledFuncs/) and audio microcode (rsp/aspMain.cpp) are: N64Recomp sssv.us.toml and
+# RSPRecomp aspMain.toml make them in the checkout from the ROM (README, Building); the page's in build-web-gen.
+set(GAME_GENERATED_DIR "${CMAKE_SOURCE_DIR}" CACHE PATH "Folder holding RecompiledFuncs/ and rsp/aspMain.cpp")
+foreach(required RecompiledFuncs/funcs.h rsp/aspMain.cpp)
+  if(NOT EXISTS "${GAME_GENERATED_DIR}/${required}")
+    message(FATAL_ERROR "${GAME_GENERATED_DIR}/${required} is missing: make it from your ROM first (README, Building).")
+  endif()
+endforeach()
+
 # -----------------------------------------------------------------------------
 # Third-party / subprojects
 # -----------------------------------------------------------------------------
 set(RT64_STATIC ON CACHE BOOL "" FORCE)
-set(RT64_SDL_WINDOW_VULKAN ON CACHE BOOL "" FORCE)
+if(EMSCRIPTEN)
+  set(RT64_SDL_WINDOW_VULKAN OFF CACHE BOOL "" FORCE)
+else()
+  set(RT64_SDL_WINDOW_VULKAN ON CACHE BOOL "" FORCE)
+endif()
 add_compile_definitions(HLSL_CPU)
 
 # Must be set before RecompFrontend/RT64 targets are configured so plume uses SDL window handles on Linux.
@@ -90,6 +117,8 @@ if(WIN32)
       INTERFACE_INCLUDE_DIRECTORIES "${sdl2_SOURCE_DIR}/include"
     )
   endif()
+elseif(EMSCRIPTEN)
+  # Emscripten's own SDL2 port (-sUSE_SDL=2).
 else()
   # Linux/macOS: rely on system SDL2
   find_package(SDL2 REQUIRED)
@@ -168,6 +197,15 @@ else()
       )
     endif()
   endif()
+endif()
+
+# DXC runs on the machine that builds, which for the page isn't the 32-bit target.
+if(EMSCRIPTEN)
+  set(DXC
+    ${CMAKE_COMMAND} -E env
+    "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64"
+    "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc-linux"
+  )
 endif()
 
 message(STATUS "DXC = ${DXC}")
@@ -250,9 +288,14 @@ target_include_directories(RecompiledFuncs PRIVATE
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/N64Recomp/include"
 )
 
-file(GLOB FUNC_C_SOURCES "${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.c")
-file(GLOB FUNC_CXX_SOURCES "${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.cpp")
+file(GLOB FUNC_C_SOURCES "${GAME_GENERATED_DIR}/RecompiledFuncs/*.c")
+file(GLOB FUNC_CXX_SOURCES "${GAME_GENERATED_DIR}/RecompiledFuncs/*.cpp")
 target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
+
+# wasm-ld turns a call through an undeclared function into a trap at run time.
+if(EMSCRIPTEN)
+  target_compile_options(RecompiledFuncs PRIVATE -Werror=implicit-function-declaration)
+endif()
 
 # -----------------------------------------------------------------------------
 # Recompiled patches library (Phase 1 migration scaffold)
@@ -280,10 +323,19 @@ if(NOT DEFINED PATCHES_LD)
   set(PATCHES_LD mips64-elf-ld)
 endif()
 
-if(WIN32)
+# The page's is the web-patched one tools/build_web.sh builds.
+if(DEFINED SSSV_RECOMP_TOOL)
+elseif(WIN32)
   set(SSSV_RECOMP_TOOL "${CMAKE_SOURCE_DIR}/N64Recomp.exe")
 else()
   set(SSSV_RECOMP_TOOL "${CMAKE_SOURCE_DIR}/N64Recomp")
+endif()
+
+# The recompiled patches, in the checkout as before for the desktop build and in the build dir for the page's.
+if(EMSCRIPTEN)
+  set(SSSV_RECOMPILED_PATCHES_DIR "${CMAKE_BINARY_DIR}/RecompiledPatches")
+else()
+  set(SSSV_RECOMPILED_PATCHES_DIR "${CMAKE_SOURCE_DIR}/RecompiledPatches")
 endif()
 
 set(SSSV_PATCH_BUILD_DIR "${CMAKE_BINARY_DIR}/patches")
@@ -293,7 +345,7 @@ file(TO_CMAKE_PATH "${SSSV_PATCH_BUILD_DIR}" SSSV_PATCH_BUILD_DIR_POSIX)
 file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}" SSSV_SOURCE_DIR_POSIX)
 set(SSSV_PATCH_ELF_POSIX "${SSSV_PATCH_BUILD_DIR_POSIX}/patches.elf")
 set(SSSV_PATCH_BIN_POSIX "${SSSV_PATCH_BUILD_DIR_POSIX}/patches.bin")
-set(SSSV_RECOMPILED_PATCHES_DIR_POSIX "${SSSV_SOURCE_DIR_POSIX}/RecompiledPatches")
+file(TO_CMAKE_PATH "${SSSV_RECOMPILED_PATCHES_DIR}" SSSV_RECOMPILED_PATCHES_DIR_POSIX)
 set(SSSV_SYMS_FILE_POSIX "${SSSV_SOURCE_DIR_POSIX}/SSSVRecompSyms/sssv.us.syms.toml")
 set(SSSV_DATASYMS_FILE_POSIX "${SSSV_SOURCE_DIR_POSIX}/SSSVRecompSyms/sssv.us.datasyms.toml")
 
@@ -305,14 +357,14 @@ configure_file(
 
 set(SSSV_PATCH_RECOMP_OUTPUTS
   "${SSSV_PATCH_BUILD_DIR}/patches.bin"
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c"
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl"
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches.c"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/recomp_overlays.inl"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/funcs.h"
 )
 
 set(SSSV_PATCH_BIN_C_OUTPUTS
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c"
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches_bin.c"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches_bin.h"
 )
 
 add_custom_target(PatchesBin
@@ -328,10 +380,10 @@ add_custom_target(PatchesBin
 
 add_custom_command(
   OUTPUT ${SSSV_PATCH_RECOMP_OUTPUTS}
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/RecompiledPatches"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${SSSV_RECOMPILED_PATCHES_DIR}"
   COMMAND "${SSSV_RECOMP_TOOL}" "${SSSV_PATCH_RECOMP_CONFIG}"
   COMMAND ${CMAKE_COMMAND}
-    -DINPUT_FILE="${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c"
+    -DINPUT_FILE="${SSSV_RECOMPILED_PATCHES_DIR}/patches.c"
     -P "${CMAKE_SOURCE_DIR}/patches/fix_generated_patch_calls.cmake"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   DEPENDS
@@ -344,12 +396,12 @@ add_custom_command(
 
 add_custom_command(
   OUTPUT ${SSSV_PATCH_BIN_C_OUTPUTS}
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/RecompiledPatches"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${SSSV_RECOMPILED_PATCHES_DIR}"
   COMMAND file_to_c
     "${SSSV_PATCH_BUILD_DIR}/patches.bin"
     sssv_patches_bin
-    "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c"
-    "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h"
+    "${SSSV_RECOMPILED_PATCHES_DIR}/patches_bin.c"
+    "${SSSV_RECOMPILED_PATCHES_DIR}/patches_bin.h"
   DEPENDS
     ${SSSV_PATCH_RECOMP_OUTPUTS}
     file_to_c
@@ -362,12 +414,12 @@ add_custom_target(GeneratePatchesArtifacts
 )
 
 target_sources(PatchesLib PRIVATE
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c"
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches.c"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches_bin.c"
 )
 
 set_source_files_properties(
-  "${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c"
+  "${SSSV_RECOMPILED_PATCHES_DIR}/patches.c"
   PROPERTIES COMPILE_FLAGS -fno-strict-aliasing
 )
 
@@ -389,13 +441,13 @@ target_sources(SSSVRecompiled PRIVATE
   "${CMAKE_SOURCE_DIR}/src/game/trophy_collision_patch.cpp"
   "${CMAKE_SOURCE_DIR}/src/game/display_list_buffers.cpp"
   "${CMAKE_SOURCE_DIR}/src/game/sssv_log.cpp"
-  "${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp"
+  "${GAME_GENERATED_DIR}/rsp/aspMain.cpp"
 )
 
 target_include_directories(SSSVRecompiled PRIVATE
   "${CMAKE_SOURCE_DIR}/include"
   "${CMAKE_SOURCE_DIR}/src/main"
-  "${CMAKE_SOURCE_DIR}/RecompiledFuncs"
+  "${GAME_GENERATED_DIR}/RecompiledFuncs"
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/N64Recomp/include"
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/thirdparty/sse2neon"
   "${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/thirdparty/xxHash"
@@ -410,6 +462,8 @@ target_include_directories(SSSVRecompiled PRIVATE
   "${CMAKE_SOURCE_DIR}/lib/RecompFrontend/recompui/src"
   "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include"
   "${CMAKE_CURRENT_BINARY_DIR}"
+  # RecompiledPatches/ is in it.
+  "${SSSV_RECOMPILED_PATCHES_DIR}/.."
 )
 
 # Embed the existing dog artwork for Linux window managers that support window
@@ -535,23 +589,45 @@ target_link_libraries(SSSVRecompiled PRIVATE
   librecomp
   ultramodern
   rt64
-  nfd
 )
 
 add_dependencies(SSSVRecompiled GeneratePatchesArtifacts)
 
-# Make running from build output consistent with packaged builds.
-add_custom_command(TARGET SSSVRecompiled POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/assets"
-    "$<TARGET_FILE_DIR:SSSVRecompiled>/assets"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/Textures"
-    "$<TARGET_FILE_DIR:SSSVRecompiled>/Textures"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt"
-    "$<TARGET_FILE_DIR:SSSVRecompiled>/recompcontrollerdb.txt"
-)
+if(EMSCRIPTEN)
+  # The page: N64Recomp-browser's frontend/ (the page shell, the file picker, sound, the cross-origin service
+  # worker), and in its .data the launcher's fonts (no 3D model: lib/CellenseresSDK/src/launcher_model3d_web.cpp), the controller database and the mirror rules, where the
+  # program looks for them (its folder is /). No Textures/: the page has no HD Text or HD Textures.
+  add_subdirectory("${CMAKE_SOURCE_DIR}/lib/N64Recomp-browser/frontend" "${CMAKE_BINARY_DIR}/web_frontend")
+  if(TARGET fmt)
+    target_compile_options(fmt PRIVATE -include cstdlib)
+  endif()
+  n64recomp_browser_frontend_page(SSSVRecompiled)
+  target_link_options(SSSVRecompiled PRIVATE
+    "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/assets@/assets"
+    "SHELL:--exclude-file *launcher_intro*" "SHELL:--exclude-file *Palette.png"
+    "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt@/recompcontrollerdb.txt"
+    "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/Mirror.tex@/Mirror.tex")
+else()
+  target_link_libraries(SSSVRecompiled PRIVATE nfd)
+
+  # Make running from build output consistent with packaged builds. Textures/ (the HD pack) is in no checkout: one
+  # put there is copied.
+  add_custom_command(TARGET SSSVRecompiled POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CMAKE_SOURCE_DIR}/assets"
+      "$<TARGET_FILE_DIR:SSSVRecompiled>/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt"
+      "$<TARGET_FILE_DIR:SSSVRecompiled>/recompcontrollerdb.txt"
+  )
+  if(EXISTS "${CMAKE_SOURCE_DIR}/Textures")
+    add_custom_command(TARGET SSSVRecompiled POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/Textures"
+        "$<TARGET_FILE_DIR:SSSVRecompiled>/Textures"
+    )
+  endif()
+endif()
 
 set_property(TARGET SSSVRecompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 

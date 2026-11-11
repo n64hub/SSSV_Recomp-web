@@ -1,6 +1,13 @@
+if(EMSCRIPTEN)
+    # No 3D logo on a page: src/launcher_model3d_web.cpp says why.
+    set(CSDK_MODEL3D_SOURCE src/launcher_model3d_web.cpp)
+else()
+    set(CSDK_MODEL3D_SOURCE src/launcher_model3d.cpp)
+endif()
+
 add_library(cellenseres_sdk STATIC
     src/launcher_music.cpp
-    src/launcher_model3d.cpp
+    ${CSDK_MODEL3D_SOURCE}
     src/ui_bridge.cpp
 )
 
@@ -83,7 +90,9 @@ if(APPLE)
     )
 endif()
 
+if(NOT EMSCRIPTEN)
 build_vertex_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherModelVS.hlsl" "shaders/LauncherModelVS.hlsl")
 build_pixel_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherModelPS.hlsl" "shaders/LauncherModelPS.hlsl")
 build_vertex_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherShadowVS.hlsl" "shaders/LauncherShadowVS.hlsl")
 build_pixel_shader(cellenseres_sdk "lib/CellenseresSDK/shaders/LauncherShadowPS.hlsl" "shaders/LauncherShadowPS.hlsl")
+endif()
