@@ -2,7 +2,7 @@
 #include "librecomp/overlays.hpp"
 
 // Include the generated overlay information from RecompiledFuncs
-#include "../../RecompiledFuncs/recomp_overlays.inl"
+#include "recomp_overlays.inl"
 
 namespace sssv {
 
