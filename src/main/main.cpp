@@ -1385,6 +1385,10 @@ int main(int argc, char** argv) {
             fflush(stdout);
 
             auto presentation_mode = ultramodern::renderer::PresentationMode::PresentEarly;
+            // Render to RAM keeps RT64's exact copy, on a page too: the game's CPU reads its frames for the pause
+            // preview, the title's tile wipe and the mission brief's and reset's still backgrounds, and its level loads
+            // decompress into the framebuffers, where a copy landing a list late could overwrite what they wrote. The
+            // late copy measured no faster on a page either (BUILDING.md, Render to RAM).
             auto inner_context = recompui::renderer::create_render_context(rdram, window_handle, presentation_mode, developer_mode);
 
             auto* rt64_context = dynamic_cast<recompui::renderer::RT64Context*>(inner_context.get());

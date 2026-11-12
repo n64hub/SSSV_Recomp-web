@@ -55,6 +55,17 @@ file dialog: Emscripten's SDL2 has no haptics, and the launcher's Load ROM takes
 desktop build's, and a page starts with Framerate at Display, RT64 interpolating to the display's rate, and Resolution
 at Auto, the canvas's size.
 
+## Render to RAM
+
+The page keeps RT64's render to RAM and its exact copy of each frame into RDRAM, which waits 5-6 ms a display list for
+the browser's readback. The game's CPU reads its frames: the pause preview (and the two other menus that start the
+same way) copies one two lists old at half width, Start on the title waits for the list just drawn and cuts it into
+the tile wipe's tiles, and the mission brief and the reset's fade copy a whole frame into the other framebuffer. Its
+level loads also decompress into both framebuffers and the Z buffer, so a copy landing a list late could overwrite
+what the loader wrote. The late copy (`set_render_to_ram_late`) played clean through the title and Smashing Start's
+brief, but measured no faster in Chrome than the exact one, within the noise of the page's own plays, so it isn't
+worth that risk.
+
 ## The shader list
 
 The page specializes the shaders in `web/rt64_shaders.txt` at build time (`RT64_PREBUILT_SHADER_LIST`), so that it
