@@ -83,4 +83,12 @@ then build the page again. A section reaches its level through `Module._sssv_web
 
 `web/play_plan.json` is the page's regular play, 2-3 minutes with every timeout counted, which N64Recomp-browser's
 `tools/play_page.mjs` plays to measure the page: the title, Bank Select, a new game's intro skipped, and Smashing
-Start.
+Start. `web/play_plan_extended.json` starts the same and goes on, in 5 minutes at most, to two of the game's busiest
+levels, Swamp of Eternal Stench and Something Fishy, each reached by `Module._sssv_web_warp` in the same load and
+checked by the level in the game's memory. It is played only when a change needs a longer play (one to a level only
+it reaches), and the shaders it misses go into the list. `web/game_state.js` gives it the game's state: the level, the
+warp, the player kept alive as the desktop's test control keeps it (a warped level can't end: the screens after it
+read what the menus before it would have set up), and the plan's clock. From Smashing Start's walk on its waits and
+holds are on the game's own time, `gGameplayTick` (0x803D5544, which the game steps once a game frame), so every
+browser walks as many of the game's frames; the tick stops while a screen holds the game for A, so there the clock
+counts the browser's time, and the walk's presses go on and close it. Each plan's header says what it plays.

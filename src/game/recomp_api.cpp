@@ -94,8 +94,9 @@ extern "C" void sssv_hd_header_hook(uint8_t* rdram, recomp_context* ctx) {
 }
 
 #ifdef __EMSCRIPTEN__
-// The page's way to a level, for its shader list's recording (tools/shader_plan.json): Module._sssv_web_warp(<1-34>)
-// from the page's JavaScript, which the game thread takes up below as it does SSSV_TEST_CONTROL's .level file.
+// The page's way to a level, for its shader list's recording (web/shader_plan.json) and its extended play
+// (web/play_plan_extended.json, from inside a level): Module._sssv_web_warp(<1-34>) from the page's JavaScript,
+// which the game thread takes up below as it does SSSV_TEST_CONTROL's .level file.
 static std::atomic<int> web_warp_level{0};
 extern "C" EMSCRIPTEN_KEEPALIVE void sssv_web_warp(int level) {
     web_warp_level.store(level >= 1 && level <= 34 ? level : 0);

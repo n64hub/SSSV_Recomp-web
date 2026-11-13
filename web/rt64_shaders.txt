@@ -6,6 +6,8 @@
 # in a load of its own from the title by Module._sssv_web_warp(<level>) (src/game/recomp_api.cpp: the game's own level
 # loader, as the desktop's test control has it), waited on until the level runs, then walked about for 15 s. 33 and 34
 # are no levels, and 35 is the credits, not recorded.
+# Then the misses of web/play_plan_extended.json's play on a new profile in Chrome, Smashing Start and then Swamp of
+# Eternal Stench and Something Fishy reached in the same load by the warp, added to those levels' sections.
 0c386401 00000c7f fcffffff fffdf6fb 0800000b
 0f0a4001 00003c7f fc11fe23 fffff3f9 04cb550b
 0f0a4001 00002c4f fc30fe61 fffff3f9 088a0000
@@ -409,6 +411,7 @@ c81049f9 001b2ccf fc26a004 1ffc93e0 1806008c
 00504244 00002c4f fc50fea1 33fdf6fb 0802440b
 0c184b54 00102c4f fc272c60 15fc9378 08ce140b
 0c184b54 00102c4f fc272c60 15fc9378 0ccf540b
+0c184b54 00102c4f fc272c60 15fc9378 04cf540b
 section level17
 0c193079 00102c4f fc377fff 1ffcf438 0ccf5400
 c8112039 0018ac4f fc1219ff fffffe38 088a000c
@@ -551,6 +554,8 @@ c81049f9 001b2ccf fc26a004 1ffc93e0 18060088
 0c1849d8 00102cbf fc30b5ff fffffe38 088e0008
 c8110038 00182c4f fc127fff fffff838 088a000c
 c8110038 00182c4f fc127fff fffff838 088a0008
+00504240 00002ccf fc119623 ff2fffff 04cb540b
+0c386400 00000cff fcffffff fffdf6fb 0800000b
 section level21
 0c193079 00102c4f fc377fff 1ffcf438 0ccf5400
 c8113079 00182c4f fc30fe04 5ffef3f9 088e0008
