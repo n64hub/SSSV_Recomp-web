@@ -6,14 +6,15 @@
 # a page doesn't build).
 #
 # rt64's own is older than the one the web support is made on, and has a TMEM tile copy check of its own
-# (checkTileCopyTMEM): its framebuffer manager keeps it, without the web's partial syncs and row tile copies, which
-# rt64_state.cpp leaves off. GPUTile takes both sides' fields and is 80 bytes; the mirror world is RasterParams'
-# padding1, padding0 being the web's decal pass. The VI loop keeps the game's clock and waits as the web's does.
+# (checkTileCopyTMEM): its framebuffer manager keeps it, without the web's partial syncs and the tile copies it checks
+# by the texcoords (a row's, and a block's under a larger tile), which rt64_state.cpp leaves off. GPUTile takes both
+# sides' fields and is 80 bytes; the mirror world is RasterParams' padding1, padding0 being the web's decal pass. The
+# VI loop keeps the game's clock and waits as the web's does.
 # rt64_texture_cache.cpp: the game's TMEM upload sits in an else of its own RGBA32 uploads, where the web skips an
 # upload whose buffer maps to nothing (a lost device); and a change of the web's own, the texture pack's database parsed
 # from char pointers, since this rt64's json 3.9 can't read unsigned char with Emscripten's libc++ (upstream moved to
 # 3.12).
-# merged from N64Recomp-browser ffa895caadeaa1936212bfc75b0fb4f736bf1ecc
+# merged from N64Recomp-browser 57973708deee7b3de9ae12ac0e7eb486b0b1d698
 rt64 CMakeLists.txt
 rt64 src/hle/rt64_framebuffer_manager.cpp
 rt64 src/hle/rt64_framebuffer_manager.h
