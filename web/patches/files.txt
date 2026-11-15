@@ -9,10 +9,11 @@
 # (checkTileCopyTMEM): its framebuffer manager keeps it, without the web's partial syncs and row tile copies, which
 # rt64_state.cpp leaves off. GPUTile takes both sides' fields and is 80 bytes; the mirror world is RasterParams'
 # padding1, padding0 being the web's decal pass. The VI loop keeps the game's clock and waits as the web's does.
-# rt64.patch also has a change of the web's own past those files: rt64_texture_cache.cpp parses the texture pack's
-# database from char pointers, since this rt64's json 3.9 can't read unsigned char with Emscripten's libc++ (upstream
-# moved to 3.12).
-# merged from N64Recomp-browser 73144095de33975c9973083c536c215cb252a5e0
+# rt64_texture_cache.cpp: the game's TMEM upload sits in an else of its own RGBA32 uploads, where the web skips an
+# upload whose buffer maps to nothing (a lost device); and a change of the web's own, the texture pack's database parsed
+# from char pointers, since this rt64's json 3.9 can't read unsigned char with Emscripten's libc++ (upstream moved to
+# 3.12).
+# merged from N64Recomp-browser ffa895caadeaa1936212bfc75b0fb4f736bf1ecc
 rt64 CMakeLists.txt
 rt64 src/hle/rt64_framebuffer_manager.cpp
 rt64 src/hle/rt64_framebuffer_manager.h
@@ -24,6 +25,7 @@ rt64 src/render/rt64_framebuffer_renderer.cpp
 rt64 src/shaders/RasterPS.hlsl
 rt64 src/shaders/TextureSampler.hlsli
 rt64 src/shared/rt64_gpu_tile.h
+rt64 src/render/rt64_texture_cache.cpp
 plume examples/CMakeLists.txt own
 plume examples/cube/main.cpp own
 plume examples/triangle/main.cpp own

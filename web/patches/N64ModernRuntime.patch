@@ -1,146 +1,21 @@
---- a/ultramodern/src/timer.cpp
-+++ b/ultramodern/src/timer.cpp
-@@ -4,6 +4,7 @@
- #include <mutex>
- #include <algorithm>
- #include "ultramodern/speed_clock.hpp"
-+#include <unordered_map>
- #include "blockingconcurrentqueue.h"
- 
- #include "ultramodern/ultra64.h"
-@@ -27,6 +28,38 @@
- }
- constexpr uint32_t counter_per_ms = 46'875;
- 
-+#if defined(__EMSCRIPTEN__)
-+// The timer thread's queue, whose wait_dequeue_timed ends at its time. On a page a timed wait can end long after its
-+// time: in Firefox on Windows every one ends on the system timer's tick, 15.6 ms unless the browser's process asks for
-+// a finer one, so a timer a fraction of a millisecond away fired a tick late, and the game thread waiting for it waited
-+// that long (Conker's timers are 0.4 ms or less, about 60 a second). So a timer less than 2 ms away is waited for by
-+// polling the queue, and a farther one on a timer as before: polling the last stretch before those too, up to a tick,
-+// kept the browser ~0.6 cores busier in Firefox with Banjo's page and presented no more.
-+template<typename T>
-+struct TimerQueue : moodycamel::BlockingConcurrentQueue<T> {
-+    TimerQueue() : moodycamel::BlockingConcurrentQueue<T>() {}
-+
-+    template<typename Rep, typename Period>
-+    bool wait_dequeue_timed(T& item, const std::chrono::duration<Rep, Period>& timeout) {
-+        if (timeout >= std::chrono::milliseconds(2)) {
-+            return moodycamel::BlockingConcurrentQueue<T>::wait_dequeue_timed(item, timeout);
-+        }
-+
-+        const auto deadline = std::chrono::high_resolution_clock::now() + timeout;
-+        while (std::chrono::high_resolution_clock::now() < deadline) {
-+            if (this->try_dequeue(item)) {
-+                return true;
-+            }
-+        }
-+
-+        return false;
-+    }
-+};
-+#else
-+template<typename T>
-+using TimerQueue = moodycamel::BlockingConcurrentQueue<T>;
-+#endif
-+
- struct OSTimer {
-     PTR(OSTimer) unused1;
-     PTR(OSTimer) unused2;
-@@ -48,7 +81,7 @@
- 
- struct {
-     std::thread thread;
--    moodycamel::BlockingConcurrentQueue<Action> action_queue{};
-+    TimerQueue<Action> action_queue{};
- } timer_context;
- 
- uint64_t duration_to_ticks(std::chrono::high_resolution_clock::duration duration) {
-@@ -75,10 +108,73 @@
-     return duration_to_ticks(ultramodern::time_since_start());
- }
- 
-+#if defined(__EMSCRIPTEN__)
-+// The timer thread's active timers, ordered by a copy of each one's timestamp taken as it is inserted, not by the
-+// timestamp in the OSTimer: osSetTimer writes that on the game's thread as it is called, and a game that restarts a
-+// timer still pending (osStopTimer, then osSetTimer, as Banjo-Tooie's scheduler does at each retrace with two timers)
-+// moved it inside a set ordered by it while it was there. Out of order, the set's erase missed it, so the timer stayed
-+// first and fired at every pass with no wait, its messages held for a full queue (ULTRAMODERN_HOLD_BLOCKED_MESSAGES)
-+// faster than the game took them: the game thread receiving them never blocked again, the threads below it never ran,
-+// and the held messages took the heap at about 13 MB a second to Aborted(OOM). A timer is still pending at its restart
-+// only where the timer thread runs late, which on a phone's slow cores it does at a level change. It has the calls the
-+// timer thread makes on a std::set, so the thread's loop is the same either way.
-+class TimerSet {
-+public:
-+    TimerSet(RDRAM_ARG1) : rdram(rdram) {}
-+
-+    bool empty() const {
-+        return timers.empty();
-+    }
-+
-+    // The first entry, the timer closest to running out.
-+    auto begin() const {
-+        return timers.begin();
-+    }
-+
-+    // Adds a timer at its timestamp now, in place of where it was if it is active already.
-+    void insert(PTR(OSTimer) timer_) {
-+        erase(timer_);
-+        OSTime timestamp = TO_PTR(OSTimer, timer_)->timestamp;
-+        timers.insert(Entry{ timestamp, timer_ });
-+        keys[timer_] = timestamp;
-+    }
-+
-+    void erase(PTR(OSTimer) timer_) {
-+        auto found = keys.find(timer_);
-+        if (found != keys.end()) {
-+            timers.erase(Entry{ found->second, timer_ });
-+            keys.erase(found);
-+        }
-+    }
-+
-+private:
-+    // An entry reads as its timer, as a std::set<PTR(OSTimer)>'s does.
-+    struct Entry {
-+        OSTime timestamp;
-+        PTR(OSTimer) timer;
-+
-+        operator PTR(OSTimer)() const {
-+            return timer;
-+        }
-+
-+        bool operator<(const Entry& other) const {
-+            return timestamp != other.timestamp ? timestamp < other.timestamp : timer < other.timer;
-+        }
-+    };
-+
-+    uint8_t* rdram;
-+    std::set<Entry> timers{};
-+    std::unordered_map<PTR(OSTimer), OSTime> keys{};
-+};
-+#endif
-+
- void timer_thread(RDRAM_ARG1) {
-     ultramodern::set_native_thread_name("Timer Thread");
-     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::VeryHigh);
- 
-+#if defined(__EMSCRIPTEN__)
-+    TimerSet active_timers{PASS_RDRAM1};
-+#else
-     // Lambda comparator function to keep the set ordered
-     auto timer_sort = [PASS_RDRAM1](PTR(OSTimer) a_, PTR(OSTimer) b_) {
-         OSTimer* a = TO_PTR(OSTimer, a_);
-@@ -95,6 +191,7 @@
- 
-     // Ordered set of timers that are currently active
-     std::set<PTR(OSTimer), decltype(timer_sort)> active_timers{timer_sort};
-+#endif
-     
-     // Lambda to process a timer action to handle adding and removing timers
-     auto process_timer_action = [&](const Action& action) {
+diff --git a/ultramodern/src/events.cpp b/ultramodern/src/events.cpp
+index f94add6..81dbfb0 100644
 --- a/ultramodern/src/events.cpp
 +++ b/ultramodern/src/events.cpp
-@@ -54,6 +54,24 @@
+@@ -39,7 +39,11 @@ struct DummyWorkloadAction {
+     int32_t fb_address;
+ };
+ 
+-using Action = std::variant<SpTaskAction, ScreenUpdateAction, UpdateConfigAction, DummyWorkloadAction>;
++struct PrepareForGameAction {
++    moodycamel::LightweightSemaphore* done;
++};
++
++using Action = std::variant<SpTaskAction, ScreenUpdateAction, UpdateConfigAction, DummyWorkloadAction, PrepareForGameAction>;
+ 
+ struct ViState {
+     const OSViMode* mode;
+@@ -54,6 +58,24 @@ struct ViState {
  #define VI_STATE_BLACK 0x20
  #define VI_STATE_REPEATLINE 0x40
  
@@ -165,7 +40,7 @@
  static struct {
      struct {
          std::thread thread;
-@@ -132,7 +150,7 @@
+@@ -132,7 +154,7 @@ static struct {
      // The same message queue may be used for multiple events, so share a mutex for all of them
      std::mutex message_mutex;
      uint8_t* rdram;
@@ -174,7 +49,7 @@
      moodycamel::BlockingConcurrentQueue<OSTask*> sp_task_queue{};
      moodycamel::ConcurrentQueue<OSThread*> deleted_threads{};
  } events_context{};
-@@ -175,6 +193,182 @@
+@@ -175,6 +197,195 @@ uint64_t total_vis = 0;
  
  
  extern std::atomic_bool exited;
@@ -325,6 +200,18 @@
 +// list the renderer was still reading pointed at what the map's load had put there since: a function pointer read
 +// 0x00010001 and the page trapped, or it trapped in malloc, or it stopped drawing. Held, the game sees the stall as a
 +// console would never show it, one long VI.
++// A stall is two VIs, not six: a page whose every list took about 100 ms left the game six VIs behind each one. In
++// Firefox, its tab hidden on a busy host, Paper Mario's lists took 50-230 ms each (its render to RAM's readbacks waiting
++// on the page's thread), the game stepped its logic three times behind each, and as its intro story handed over to the
++// attract demo it freed what the list in hand pointed at: it trapped in its heap allocator, the free list corrupt, or
++// stopped drawing for good, 4-6 s after the hide in 3 plays of 3. Held after two VIs, as a console's RDP is done with a
++// list a VI or two after it starts, it came through and went on into the demo.
++// Nor once the renderer has told the game the list in hand is done (renderer::rdp_done): it reads nothing more of RDRAM
++// for it, and what is left is its own work, the wait for a busy GPU included. Held there, the game's clock stopped for
++// nothing, and its sound with it, which nothing makes up afterwards: Rush 2049's page in Firefox, uncapped and its tab
++// hidden, held its VIs 91-105 times a play (9.5-11.9 s in all) and its sound ran 238,000-253,000 frames short, most of
++// it through a 5 s wait for a section's prebuilt shaders as its attract race starts; lifted at the RDP's done, it held 4
++// times (only before its sound starts) and lost none.
 +// Both sides touch only lines a game fork's own patches to this file leave alone (DKR-R-web's rewrite the VI messages'
 +// block and the graphics thread's actions).
 +namespace {
@@ -333,8 +220,9 @@
 +    // in Firefox (each worker's own performance.timeOrigin), so only the VI thread's own clock times it.
 +    std::atomic<uint32_t> renderer_loop_turns{ 0 };
 +
-+    // Six VIs: a list or screen update takes a few ms, and on a phone 10-90 ms at the first list of a new screen.
-+    constexpr std::chrono::milliseconds renderer_stall_limit{ 100 };
++    // Two VIs: a list or screen update takes a few ms. The VI thread looks once a VI, so a game gets two or three VIs of
++    // an action before the hold. Over a timed wait's tick in Firefox (15.6 ms), so an idle thread isn't taken for one.
++    constexpr std::chrono::milliseconds renderer_stall_limit{ 30 };
 +
 +    // Whether the graphics thread has made no turn for renderer_stall_limit, as the VI thread (its only caller) has seen.
 +    // None before its loop's first turn.
@@ -343,7 +231,7 @@
 +        static std::chrono::steady_clock::time_point seen_time{};
 +        const uint32_t turns = renderer_loop_turns.load();
 +        const auto now = std::chrono::steady_clock::now();
-+        if ((turns == 0) || (turns != seen_turns)) {
++        if ((turns == 0) || (turns != seen_turns) || ultramodern::renderer::rdp_done_pending()) {
 +            seen_turns = turns;
 +            seen_time = now;
 +            return false;
@@ -357,7 +245,7 @@
  extern moodycamel::LightweightSemaphore graphics_shutdown_ready;
  
  void set_dummy_vi(bool odd);
-@@ -189,16 +383,41 @@
+@@ -189,16 +400,41 @@ void vi_thread_func() {
      int remaining_retraces = 1;
  
      while (!exited) {
@@ -401,7 +289,7 @@
          if (new_total_vis > total_vis + 1) {
              //printf("Skipped % " PRId64 " frames in VI interupt thread!\n", new_total_vis - total_vis - 1);
          }
-@@ -213,12 +432,20 @@
+@@ -213,12 +449,20 @@ void vi_thread_func() {
              events_context.action_queue.enqueue(DummyWorkloadAction{events_context.vi.get_next_state()->framebuffer});
          }
  
@@ -422,7 +310,20 @@
  
          // If the game has started, handle sending VI and AI events.
          if (ultramodern::is_game_started()) {
-@@ -253,6 +480,11 @@
+@@ -247,12 +491,24 @@ void vi_thread_func() {
+ }
+ 
+ void sp_complete() {
++#if ULTRAMODERN_YIELDS_END_QUEUED_GRAPHICS
++    // A graphics task's RSP done went already if a yield was asked of it while it waited (rsp::yield_asked).
++    if ((std::this_thread::get_id() == events_context.sp.gfx_thread.get_id()) && !ultramodern::rsp::graphics_sp_due()) {
++        return;
++    }
++#endif
++
+     uint8_t* rdram = events_context.rdram;
+     std::lock_guard lock{ events_context.message_mutex };
+     ultramodern::enqueue_external_message(events_context.sp.mq, events_context.sp.msg, false, true);
  }
  
  void dp_complete() {
@@ -434,7 +335,23 @@
      uint8_t* rdram = events_context.rdram;
      std::lock_guard lock{ events_context.message_mutex };
      ultramodern::enqueue_external_message(events_context.dp.mq, events_context.dp.msg, false, true);
-@@ -347,6 +579,9 @@
+@@ -313,6 +569,15 @@ void ultramodern::trigger_config_action() {
+     events_context.action_queue.enqueue(UpdateConfigAction{});
+ }
+ 
++// The graphics thread takes it after every action queued before it: the launcher's lists and screen updates, all of
++// them the renderer's before the game's. With Emscripten the VI thread sends no VI while the renderer is in it
++// (renderer_stalled()), so the game, its audio interrupts included, starts after it, as if it had started then.
++void ultramodern::renderer::prepare_for_game() {
++    moodycamel::LightweightSemaphore done;
++    events_context.action_queue.enqueue(PrepareForGameAction{ &done });
++    done.wait();
++}
++
+ std::atomic<ultramodern::renderer::SetupResult> renderer_setup_result = ultramodern::renderer::SetupResult::Success;
+ std::atomic<ultramodern::renderer::GraphicsApi> renderer_chosen_api = ultramodern::renderer::GraphicsApi::Auto;
+ 
+@@ -347,6 +612,9 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
      while (!exited) {
          // Try to pull an action from the queue
          Action action;
@@ -444,3 +361,156 @@
          if (events_context.action_queue.wait_dequeue_timed(action, 1ms)) {
              // Determine the action type and act on it
              if (const auto* task_action = std::get_if<SpTaskAction>(&action)) {
+@@ -386,6 +654,10 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
+             else if (const auto* dummy_workload_action = std::get_if<DummyWorkloadAction>(&action)) {
+                 renderer_context->send_dummy_workload(dummy_workload_action->fb_address);
+             }
++            else if (const auto* prepare_action = std::get_if<PrepareForGameAction>(&action)) {
++                renderer_context->prepare_for_game();
++                prepare_action->done->signal();
++            }
+         }
+     }
+ 
+diff --git a/ultramodern/src/timer.cpp b/ultramodern/src/timer.cpp
+index 414bb6e..5dd92bd 100644
+--- a/ultramodern/src/timer.cpp
++++ b/ultramodern/src/timer.cpp
+@@ -4,6 +4,7 @@
+ #include <mutex>
+ #include <algorithm>
+ #include "ultramodern/speed_clock.hpp"
++#include <unordered_map>
+ #include "blockingconcurrentqueue.h"
+ 
+ #include "ultramodern/ultra64.h"
+@@ -27,6 +28,38 @@ static int64_t real_nanoseconds() {
+ }
+ constexpr uint32_t counter_per_ms = 46'875;
+ 
++#if defined(__EMSCRIPTEN__)
++// The timer thread's queue, whose wait_dequeue_timed ends at its time. On a page a timed wait can end long after its
++// time: in Firefox on Windows every one ends on the system timer's tick, 15.6 ms unless the browser's process asks for
++// a finer one, so a timer a fraction of a millisecond away fired a tick late, and the game thread waiting for it waited
++// that long (Conker's timers are 0.4 ms or less, about 60 a second). So a timer less than 2 ms away is waited for by
++// polling the queue, and a farther one on a timer as before: polling the last stretch before those too, up to a tick,
++// kept the browser ~0.6 cores busier in Firefox with Banjo's page and presented no more.
++template<typename T>
++struct TimerQueue : moodycamel::BlockingConcurrentQueue<T> {
++    TimerQueue() : moodycamel::BlockingConcurrentQueue<T>() {}
++
++    template<typename Rep, typename Period>
++    bool wait_dequeue_timed(T& item, const std::chrono::duration<Rep, Period>& timeout) {
++        if (timeout >= std::chrono::milliseconds(2)) {
++            return moodycamel::BlockingConcurrentQueue<T>::wait_dequeue_timed(item, timeout);
++        }
++
++        const auto deadline = std::chrono::high_resolution_clock::now() + timeout;
++        while (std::chrono::high_resolution_clock::now() < deadline) {
++            if (this->try_dequeue(item)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++};
++#else
++template<typename T>
++using TimerQueue = moodycamel::BlockingConcurrentQueue<T>;
++#endif
++
+ struct OSTimer {
+     PTR(OSTimer) unused1;
+     PTR(OSTimer) unused2;
+@@ -48,7 +81,7 @@ using Action = std::variant<AddTimerAction, RemoveTimerAction>;
+ 
+ struct {
+     std::thread thread;
+-    moodycamel::BlockingConcurrentQueue<Action> action_queue{};
++    TimerQueue<Action> action_queue{};
+ } timer_context;
+ 
+ uint64_t duration_to_ticks(std::chrono::high_resolution_clock::duration duration) {
+@@ -75,10 +108,73 @@ uint64_t time_now() {
+     return duration_to_ticks(ultramodern::time_since_start());
+ }
+ 
++#if defined(__EMSCRIPTEN__)
++// The timer thread's active timers, ordered by a copy of each one's timestamp taken as it is inserted, not by the
++// timestamp in the OSTimer: osSetTimer writes that on the game's thread as it is called, and a game that restarts a
++// timer still pending (osStopTimer, then osSetTimer, as Banjo-Tooie's scheduler does at each retrace with two timers)
++// moved it inside a set ordered by it while it was there. Out of order, the set's erase missed it, so the timer stayed
++// first and fired at every pass with no wait, its messages held for a full queue (ULTRAMODERN_HOLD_BLOCKED_MESSAGES)
++// faster than the game took them: the game thread receiving them never blocked again, the threads below it never ran,
++// and the held messages took the heap at about 13 MB a second to Aborted(OOM). A timer is still pending at its restart
++// only where the timer thread runs late, which on a phone's slow cores it does at a level change. It has the calls the
++// timer thread makes on a std::set, so the thread's loop is the same either way.
++class TimerSet {
++public:
++    TimerSet(RDRAM_ARG1) : rdram(rdram) {}
++
++    bool empty() const {
++        return timers.empty();
++    }
++
++    // The first entry, the timer closest to running out.
++    auto begin() const {
++        return timers.begin();
++    }
++
++    // Adds a timer at its timestamp now, in place of where it was if it is active already.
++    void insert(PTR(OSTimer) timer_) {
++        erase(timer_);
++        OSTime timestamp = TO_PTR(OSTimer, timer_)->timestamp;
++        timers.insert(Entry{ timestamp, timer_ });
++        keys[timer_] = timestamp;
++    }
++
++    void erase(PTR(OSTimer) timer_) {
++        auto found = keys.find(timer_);
++        if (found != keys.end()) {
++            timers.erase(Entry{ found->second, timer_ });
++            keys.erase(found);
++        }
++    }
++
++private:
++    // An entry reads as its timer, as a std::set<PTR(OSTimer)>'s does.
++    struct Entry {
++        OSTime timestamp;
++        PTR(OSTimer) timer;
++
++        operator PTR(OSTimer)() const {
++            return timer;
++        }
++
++        bool operator<(const Entry& other) const {
++            return timestamp != other.timestamp ? timestamp < other.timestamp : timer < other.timer;
++        }
++    };
++
++    uint8_t* rdram;
++    std::set<Entry> timers{};
++    std::unordered_map<PTR(OSTimer), OSTime> keys{};
++};
++#endif
++
+ void timer_thread(RDRAM_ARG1) {
+     ultramodern::set_native_thread_name("Timer Thread");
+     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::VeryHigh);
+ 
++#if defined(__EMSCRIPTEN__)
++    TimerSet active_timers{PASS_RDRAM1};
++#else
+     // Lambda comparator function to keep the set ordered
+     auto timer_sort = [PASS_RDRAM1](PTR(OSTimer) a_, PTR(OSTimer) b_) {
+         OSTimer* a = TO_PTR(OSTimer, a_);
+@@ -95,6 +191,7 @@ void timer_thread(RDRAM_ARG1) {
+ 
+     // Ordered set of timers that are currently active
+     std::set<PTR(OSTimer), decltype(timer_sort)> active_timers{timer_sort};
++#endif
+     
+     // Lambda to process a timer action to handle adding and removing timers
+     auto process_timer_action = [&](const Action& action) {
