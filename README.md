@@ -10,9 +10,8 @@
 
 **Play it in the browser: https://n64hub.com/space-station-silicon-valley/**, with your own Space Station Silicon
 Valley ROM (USA 1.0), picked in the launcher and kept in the browser. It needs WebGPU (Chrome or Edge 113 and up). The
-page is built from this branch and published with N64Recomp-browser's `tools/publish_page.sh`, so it can be a commit or
-two behind. The page has every option the desktop build has but the HD text and textures, whose pack it doesn't have
-(BUILDING.md, What the page leaves out).
+page is built from this branch, so it can be a commit or two behind. The page has every option the desktop build has but
+the HD text and textures, whose pack it doesn't have (BUILDING.md, What the page leaves out).
 
 # Space Station Silicon Valley: Recompiled
 
