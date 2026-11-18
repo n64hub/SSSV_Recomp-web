@@ -14,7 +14,7 @@
 # upload whose buffer maps to nothing (a lost device); and a change of the web's own, the texture pack's database parsed
 # from char pointers, since this rt64's json 3.9 can't read unsigned char with Emscripten's libc++ (upstream moved to
 # 3.12).
-# merged from N64Recomp-browser 57973708deee7b3de9ae12ac0e7eb486b0b1d698
+# merged from N64Recomp-browser ad923c9b1d519e3904c1fe5fb0f6386321711260
 rt64 CMakeLists.txt
 rt64 src/hle/rt64_framebuffer_manager.cpp
 rt64 src/hle/rt64_framebuffer_manager.h
